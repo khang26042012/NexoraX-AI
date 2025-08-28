@@ -1,0 +1,2027 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NovaX AI - AI Chat Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        .message-bubble {
+            animation: slideInUp 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        .message-content {
+            white-space: pre-wrap;      /* Giữ xuống dòng và khoảng trắng */
+            word-wrap: break-word;      /* Tự xuống dòng khi quá dài */
+            line-height: 1.5;          /* Khoảng cách dòng đẹp hơn */
+        }
+        
+        .message-content p {
+            margin-bottom: 0.5rem;     /* Khoảng cách giữa các đoạn */
+            text-indent: 0;            /* Không thụt vào đầu dòng */
+        }
+        
+        .message-content p:last-child {
+            margin-bottom: 0;          /* Bỏ margin cuối cùng */
+        }
+        
+        /* Markdown styling */
+        .message-content h1, .message-content h2, .message-content h3, 
+        .message-content h4, .message-content h5, .message-content h6 {
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+        
+        .message-content h1 { font-size: 1.5rem; }
+        .message-content h2 { font-size: 1.3rem; }
+        .message-content h3 { font-size: 1.1rem; }
+        
+        .message-content strong, .message-content b {
+            font-weight: bold;
+        }
+        
+        .message-content em, .message-content i {
+            font-style: italic;
+        }
+        
+        .message-content ul, .message-content ol {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+        }
+        
+        .message-content li {
+            margin: 0.25rem 0;
+        }
+        
+        .message-content code {
+            background-color: rgba(0, 0, 0, 0.1);
+            padding: 0.125rem 0.25rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+        
+        .message-content pre {
+            background-color: rgba(0, 0, 0, 0.05);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin: 0.5rem 0;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .message-content pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+        
+        .message-content blockquote {
+            border-left: 4px solid #3b82f6;
+            padding-left: 1rem;
+            margin: 0.5rem 0;
+            font-style: italic;
+            color: #6b7280;
+        }
+        
+        /* Dark mode cho Markdown */
+        .dark .message-content code {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #f1f5f9;
+        }
+        
+        .dark .message-content pre {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .dark .message-content blockquote {
+            color: #9ca3af;
+        }
+        
+        @keyframes slideInUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(30px) scale(0.9) rotateX(10deg); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0) scale(1) rotateX(0deg); 
+            }
+        }
+        
+        .typing-indicator {
+            animation: typingPulse 1.5s infinite;
+        }
+        
+        @keyframes typingPulse {
+            0%, 100% { opacity: 0.3; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+        
+        /* .message-bubble:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        } */
+        
+        .sidebar-transition {
+            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        .chat-item {
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+            transform-origin: left center;
+        }
+        
+        .chat-item:hover {
+            transform: translateX(8px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .chat-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.2), transparent);
+            transition: left 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        .chat-item:hover::before {
+            left: 100%;
+        }
+        
+        .chat-item::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background: linear-gradient(to bottom, #3b82f6, #8b5cf6);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .chat-item:hover::after {
+            transform: scaleY(1);
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .scale-in {
+            animation: scaleIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        @keyframes scaleIn {
+            from { 
+                opacity: 0; 
+                transform: scale(0.9); 
+            }
+            to { 
+                opacity: 1; 
+                transform: scale(1); 
+            }
+        }
+        
+        .bounce-in {
+            animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.3) rotate(-180deg);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.1) rotate(-90deg);
+            }
+            70% {
+                transform: scale(0.9) rotate(-45deg);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+        
+        .float {
+            /* Removed annoying float animation */
+        }
+        
+        .glow {
+            /* Removed annoying glow animation */
+        }
+        
+        .pulse-ring {
+            /* Removed annoying pulse animation */
+        }
+        
+        .wiggle {
+            animation: wiggle 0.5s ease-in-out;
+        }
+        
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-3deg); }
+            75% { transform: rotate(3deg); }
+        }
+        
+        .heartbeat {
+            /* Removed annoying heartbeat animation */
+        }
+        
+        .slide-in-left {
+            animation: slideInLeft 0.5s ease-out;
+        }
+        
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .slide-in-right {
+            animation: slideInRight 0.5s ease-out;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .rotate-in {
+            animation: rotateIn 0.5s ease-out;
+        }
+        
+        @keyframes rotateIn {
+            from {
+                opacity: 0;
+                transform: rotate(-180deg) scale(0.5);
+            }
+            to {
+                opacity: 1;
+                transform: rotate(0deg) scale(1);
+            }
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .custom-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e0 transparent;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, #cbd5e0, #a0aec0);
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(to bottom, #a0aec0, #718096);
+            transform: scaleX(1.2);
+        }
+        
+        /* Performance optimizations */
+        * {
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .chat-container {
+            height: 100vh;   /* full chiều cao màn hình */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .input-area {
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .chat-container > .border-t {
+            margin-top: auto;
+        }
+        
+        .home-container {
+            height: 100vh;
+        }
+        
+        .dark { 
+            background-color: #0f0f23; 
+            color: #f8fafc;
+        }
+        
+        /* Dark mode cho tất cả elements */
+        .dark .bg-white { background-color: #1a1a2e !important; }
+        .dark .bg-gray-50 { background-color: #0f0f23 !important; }
+        .dark .bg-gray-100 { background-color: #16213e !important; }
+        .dark .bg-gray-200 { background-color: #1a1a2e !important; }
+        .dark .text-gray-900 { color: #f8fafc !important; }
+        .dark .text-gray-700 { color: #e2e8f0 !important; }
+        .dark .text-gray-600 { color: #cbd5e1 !important; }
+        .dark .text-gray-500 { color: #94a3b8 !important; }
+        .dark .text-gray-400 { color: #64748b !important; }
+        .dark .text-gray-800 { color: #f1f5f9 !important; }
+        .dark .border-gray-300 { border-color: #334155 !important; }
+        .dark .border-gray-200 { border-color: #1e293b !important; }
+        
+        /* Dark mode cho chat screen background */
+        .dark #chatScreen { background-color: #0f0f23 !important; }
+        .dark #messagesContainer { background-color: #0f0f23 !important; }
+        .dark .chat-container { background-color: #0f0f23 !important; }
+        
+        /* Dark mode cho home screen */
+        .dark .bg-gradient-to-br { 
+            background: linear-gradient(to bottom right, #0f172a, #1e293b) !important; 
+        }
+        
+        /* Dark mode cho chat messages */
+        .dark .bg-blue-600 { background-color: #2563eb !important; }
+        .dark .border-gray-200 { border-color: #374151 !important; }
+        
+        /* Dark mode cho glass effect */
+        .dark .glass-effect { 
+            backdrop-filter: blur(10px);
+            background: rgba(26, 26, 46, 0.9) !important;
+        }
+        
+        /* Dark mode cho hover effects */
+        .dark .hover\:bg-gray-100:hover { background-color: #334155 !important; }
+        .dark .hover\:bg-gray-50:hover { background-color: #1e293b !important; }
+        .dark .hover\:text-red-500:hover { color: #ef4444 !important; }
+        .dark .hover\:text-blue-500:hover { color: #3b82f6 !important; }
+        
+        /* Dark mode cho input fields */
+        .dark input[type="text"], .dark textarea {
+            background-color: #1e293b !important;
+            border-color: #374151 !important;
+            color: #f1f5f9 !important;
+        }
+        
+        .dark input[type="text"]:focus, .dark textarea:focus {
+            border-color: #3b82f6 !important;
+            background-color: #1e293b !important;
+        }
+        
+        .dark input[type="text"]::placeholder, .dark textarea::placeholder {
+            color: #9ca3af !important;
+        }
+        
+        /* Dark mode cho modals */
+        .dark #settingsContent, .dark #aboutContent, .dark #clearAllContent, .dark #feedbackContent {
+            background-color: #1a1a2e !important;
+            color: #f1f5f9 !important;
+        }
+        
+        /* Dark mode cho dynamic modals */
+        .dark .bg-white {
+            background-color: #1a1a2e !important;
+        }
+        
+        .dark .text-gray-900 {
+            color: #f1f5f9 !important;
+        }
+        
+        .dark .text-gray-600 {
+            color: #cbd5e1 !important;
+        }
+        
+        /* Dark mode cho message bubbles */
+        .dark .message-bubble .bg-white {
+            background-color: #1e293b !important;
+            color: #f1f5f9 !important;
+            border-color: #374151 !important;
+        }
+        
+        /* Nút sidebar toggle mobile và desktop */
+        #sidebarToggle:hover {
+            transform: scale(1.05);
+        }
+        
+        #desktopSidebarToggle:hover {
+            transform: scale(1.05);
+        }
+        
+        /* Nút đóng sidebar */
+        #closeSidebar:hover {
+            transform: scale(1.05);
+        }
+        
+
+        
+
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 transition-colors duration-300">
+
+    <!-- Sidebar -->
+    <div id="sidebar" class="fixed left-0 top-0 h-full w-80 glass-effect border-r border-gray-200 z-50 sidebar-transition transform -translate-x-full shadow-xl">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <!-- Logo sidebar -->
+                    <div class="w-10 h-10 flex items-center justify-center">
+                        <img src="https://i.postimg.cc/Jyz7fhf8/image.png" alt="NovaX AI Sidebar Logo" class="w-10 h-10 object-contain drop-shadow-lg" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg" style="display: none;">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">NovaX AI</h1>
+                    <!-- Thay "NovaX" bằng tên bạn muốn -->
+                </div>
+                <svg id="closeSidebar" class="lg:hidden w-10 h-10 text-gray-500 hover:text-red-500 drop-shadow-2xl hover:scale-125 cursor-pointer transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </div>
+        </div>
+        
+        <div class="p-4">
+            <button id="newChatBtn" class="w-full gradient-bg text-white px-4 py-3 rounded-xl hover:shadow-lg transition-all duration-300 mb-6 font-medium transform hover:scale-105 slide-in-left">
+                <span class="flex items-center justify-center space-x-2">
+                    <svg class="w-5 h-5 rotate-in transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    <span class="transition-all duration-300">Tạo cuộc trò chuyện mới</span>
+                </span>
+            </button>
+            
+            <div class="mb-6">
+                <div class="relative">
+                    <input type="text" id="searchInput" placeholder="Tìm kiếm cuộc trò chuyện..." 
+                           class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:shadow-md focus:shadow-lg">
+                    <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+            </div>
+            
+            <div id="chatList" class="space-y-2 max-h-96 overflow-y-auto custom-scrollbar">
+                <!-- Chat list will be populated here -->
+            </div>
+        </div>
+        
+        <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 bg-white bg-opacity-80">
+            <button id="settingsBtn" class="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-xl mb-2 transition-all duration-300 flex items-center space-x-3">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+                <span>Cài đặt</span>
+            </button>
+
+            <button id="themeToggle" class="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-xl transition-all duration-300 flex items-center space-x-3">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                </svg>
+                <span>Dark Mode</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Sidebar Toggle Button - Mobile -->
+    <svg id="sidebarToggle" class="fixed top-4 left-4 z-[60] lg:hidden w-8 h-8 text-gray-700 dark:text-gray-300 drop-shadow-lg hover:scale-110 cursor-pointer transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="opacity: 1; pointer-events: auto;">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+    </svg>
+    
+    <!-- Sidebar Toggle Button - Desktop -->
+    <svg id="desktopSidebarToggle" class="fixed top-4 left-4 z-[60] hidden lg:block w-8 h-8 text-gray-700 dark:text-gray-300 drop-shadow-lg hover:scale-110 cursor-pointer transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="opacity: 0; pointer-events: none;">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+    </svg>
+    
+    <!-- Desktop Close Sidebar Button -->
+    <svg id="desktopCloseSidebar" class="fixed top-4 right-4 z-[60] hidden lg:block w-8 h-8 text-gray-700 dark:text-gray-300 drop-shadow-lg hover:scale-110 cursor-pointer transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="opacity: 0; pointer-events: none;">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+    </svg>
+    
+
+
+    <!-- Main Content -->
+    <div id="mainContent" class="transition-all duration-300">
+        <!-- Home Screen -->
+        <div id="homeScreen" class="home-container flex flex-col items-center justify-center px-4 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-blue-900">
+            <div class="text-center max-w-2xl fade-in">
+                <div class="flex flex-col items-center justify-center min-h-[60vh] space-y-8">
+                    <!-- Logo -->
+                    <div class="w-32 h-32 flex items-center justify-center bounce-in">
+                        <img src="https://i.postimg.cc/Jyz7fhf8/image.png" alt="NovaX AI Logo" class="w-32 h-32 object-contain drop-shadow-2xl" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="w-32 h-32 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-600 rounded-full flex items-center justify-center shadow-2xl" style="display: none;">
+                            <svg class="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Tên NovaX AI -->
+                    <h1 class="text-6xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent slide-in-left">NovaX AI</h1>
+
+                    <!-- Câu chào -->
+                    <p class="text-xl text-gray-600 dark:text-gray-300 font-medium">Xin chào! Tôi có thể giúp gì cho bạn?</p>
+                </div>
+                
+                <div class="relative max-w-6xl mx-auto">
+                    <div class="relative group">
+                        <div class="absolute -inset-1 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-3xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+                        <div class="relative bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-600/50 shadow-2xl">
+                            <textarea id="homeInput" placeholder="Nhập tin nhắn của bạn để bắt đầu cuộc trò chuyện..." 
+                                   class="w-full px-10 py-7 pr-20 text-xl bg-transparent border-none rounded-2xl focus:outline-none focus:ring-0 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 resize-none min-h-[80px] max-h-[200px]" rows="2"></textarea>
+                            <button id="homeSendBtn" class="absolute right-5 bottom-5 text-blue-600 hover:text-blue-700 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 hover:scale-110 hover:rotate-3">
+                                <svg class="w-7 h-7 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-center mt-6 text-sm text-gray-500 dark:text-gray-400">
+                        <div class="flex items-center space-x-4 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm px-4 py-2 rounded-full border border-gray-200/50 dark:border-gray-600/50">
+                            <span class="flex items-center space-x-2">
+                                <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                </svg>
+                                <span>Nhấn Enter để gửi</span>
+                            </span>
+                            <div class="w-px h-4 bg-gray-300 dark:bg-gray-600"></div>
+                            <span class="flex items-center space-x-2">
+                                <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                </svg>
+                                <span>AI thông minh</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat Screen -->
+        <div id="chatScreen" class="hidden">
+            <div class="chat-container flex flex-col">
+                <div id="messagesContainer" class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar smooth-scroll gpu-accelerated">
+                    <!-- Messages will be populated here -->
+                </div>
+                
+                <div class="">
+                    <div class="max-w-5xl mx-auto px-4 py-0">
+                        <div class="relative group">
+                            <div class="absolute -inset-1 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+                            <div class="relative bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-gray-600/50 shadow-lg">
+                                <textarea id="chatInput" placeholder="Nhập tin nhắn của bạn…" 
+                                       class="w-full px-8 py-5 pr-18 text-lg bg-transparent border-none rounded-xl focus:outline-none focus:ring-0 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 resize-none min-h-[60px] max-h-[150px]" rows="1"></textarea>
+                                <button id="sendBtn" class="absolute right-5 bottom-5 text-blue-600 hover:text-blue-700 p-3 rounded-lg hover:bg-blue-50 transition-all duration-300 hover:scale-110 hover:rotate-3">
+                                    <svg class="w-6 h-6 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- ⚠️ Dòng cảnh báo -->
+                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">
+                            NovaX có thể mắc lỗi. Hãy kiểm tra các thông tin quan trọng.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-50 z-[100] hidden flex items-center justify-center">
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0" id="settingsContent">
+            <h2 class="text-xl font-bold mb-4">Cài đặt</h2>
+            <div class="space-y-4">
+                <!-- Chọn Model AI -->
+                <div class="border-b border-gray-200 pb-4">
+                    <button id="modelToggleBtn" class="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-300 flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                            </svg>
+                            <div>
+                                <div class="font-medium text-gray-900">Chọn Model AI</div>
+                                <div id="currentModelText" class="text-sm text-gray-500">NovaX (v1.0) - Gemini Flash 2.0</div>
+                            </div>
+                        </div>
+                        <svg id="modelToggleIcon" class="w-4 h-4 text-gray-400 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    
+                    <div id="modelOptions" class="hidden mt-2 px-4 space-y-2 transition-all duration-300">
+                        <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-all duration-300">
+                            <input type="radio" name="aiModel" value="gemini" class="mr-3 text-blue-600 focus:ring-blue-500" checked>
+                            <div class="flex-1">
+                                <div class="font-medium text-gray-900">NovaX (v1.0) - Gemini Flash 2.0</div>
+                                <div class="text-sm text-gray-500">Dùng để chat hằng ngày</div>
+                            </div>
+                            <div class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Khuyến nghị</div>
+                        </label>
+                        <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-all duration-300">
+                            <input type="radio" name="aiModel" value="llama" class="mr-3 text-blue-600 focus:ring-blue-500">
+                            <div class="flex-1">
+                                <div class="font-medium text-gray-900">NovaX (v2.0) - Llama 3.1 8B Instant</div>
+                                <div class="text-sm text-gray-500">AI siêu nhanh từ Meta trên Groq</div>
+                            </div>
+                            <div class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">Siêu nhanh</div>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Giới thiệu -->
+                <div class="border-b border-gray-200 pb-4">
+                    <button id="aboutBtn" class="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-300 flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span>Giới thiệu</span>
+                        </div>
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+
+                
+                <!-- Xóa tất cả tin nhắn -->
+                <div class="border-b border-gray-200 pb-4">
+                    <button id="clearAllBtn" class="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-all duration-300 flex items-center space-x-3">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                        <span>Xóa tất cả tin nhắn</span>
+                    </button>
+                </div>
+                
+                <!-- Phản hồi -->
+                <div>
+                    <button id="feedbackBtn" class="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-300 flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                            </svg>
+                            <span>Phản hồi</span>
+                        </div>
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-2 mt-6">
+                <button id="cancelSettings" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Modal -->
+    <div id="aboutModal" class="fixed inset-0 bg-black bg-opacity-50 z-[100] hidden flex items-center justify-center">
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-lg w-full mx-4 transform transition-all duration-300 scale-95 opacity-0" id="aboutContent">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold">Giới thiệu NovaX AI</h2>
+                <button id="closeAbout" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div class="text-center mb-6">
+                    <div class="w-20 h-20 mx-auto flex items-center justify-center mb-4">
+                        <img src="https://i.postimg.cc/Jyz7fhf8/image.png" alt="NovaX AI About Logo" class="w-20 h-20 object-contain drop-shadow-lg" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg" style="display: none;">
+                            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-gray-700 leading-relaxed">
+                    <p class="mb-4">
+                        <strong>NovaX AI</strong> là một ứng dụng trò chuyện AI thông minh được phát triển với công nghệ hiện đại. 
+                        Ứng dụng tích hợp trí tuệ nhân tạo Google Gemini để mang đến trải nghiệm chat tự nhiên và hữu ích.
+                    </p>
+                    <p class="mb-4">
+                        Với giao diện đẹp mắt, tính năng lưu trữ cuộc trò chuyện và nhiều hiệu ứng animation mượt mà, 
+                        NovaX AI được thiết kế để phục vụ nhu cầu học tập và giải trí của người dùng.
+                    </p>
+                    <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                        <p class="text-blue-800 font-medium">
+                            🎯 Mục đích: Dự án được tạo ra để tham gia cuộc thi KHOA HỌC KĨ THUẬT, 
+                            thể hiện khả năng ứng dụng công nghệ trong giáo dục và đời sống.
+                        </p>
+                    </div>
+                    <div class="text-center pt-4 border-t border-gray-200">
+                        <p class="text-gray-600">
+                            <strong>Người tạo:</strong><br>
+                            <span class="text-blue-600 font-semibold">Phan Trọng Khang | 8¹</span><br>
+                            <span class="text-sm">Trường THCS Vĩnh Hòa</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clear All Confirmation Modal -->
+    <div id="clearAllModal" class="fixed inset-0 bg-black bg-opacity-50 z-[100] hidden flex items-center justify-center">
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full mx-4 transform transition-all duration-300 scale-95 opacity-0" id="clearAllContent">
+            <div class="text-center">
+                <div class="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-4">
+                    <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Xóa tất cả tin nhắn?</h3>
+                <p class="text-gray-600 mb-6">Hành động này sẽ xóa vĩnh viễn tất cả cuộc trò chuyện và không thể hoàn tác.</p>
+                <div class="flex space-x-3">
+                    <button id="cancelClearAll" class="flex-1 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">Hủy</button>
+                    <button id="confirmClearAll" class="flex-1 px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-lg transition-colors">Xóa tất cả</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Feedback Modal -->
+    <div id="feedbackModal" class="fixed inset-0 bg-black bg-opacity-50 z-[100] hidden flex items-center justify-center">
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0" id="feedbackContent">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold">Đánh giá ứng dụng</h2>
+                <button id="closeFeedback" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div class="text-center">
+                    <p class="text-gray-600 mb-4">Bạn cảm thấy ứng dụng NovaX như thế nào?</p>
+                    <div class="flex justify-center space-x-2 mb-4" id="starRating">
+                        <button class="star text-3xl text-gray-300 hover:text-yellow-400 transition-colors" data-rating="1">★</button>
+                        <button class="star text-3xl text-gray-300 hover:text-yellow-400 transition-colors" data-rating="2">★</button>
+                        <button class="star text-3xl text-gray-300 hover:text-yellow-400 transition-colors" data-rating="3">★</button>
+                        <button class="star text-3xl text-gray-300 hover:text-yellow-400 transition-colors" data-rating="4">★</button>
+                        <button class="star text-3xl text-gray-300 hover:text-yellow-400 transition-colors" data-rating="5">★</button>
+                    </div>
+                    <p id="ratingText" class="text-sm text-gray-500 mb-4">Nhấn vào sao để đánh giá</p>
+                </div>
+                <textarea id="feedbackText" placeholder="Chia sẻ ý kiến của bạn về ứng dụng..." 
+                          class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" 
+                          rows="3"></textarea>
+                <div class="flex space-x-3">
+                    <button id="cancelFeedback" class="flex-1 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">Hủy</button>
+                    <button id="submitFeedback" class="flex-1 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors">Gửi đánh giá</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class NovaXChat {
+            constructor() {
+                this.currentChatId = null;
+                this.chats = JSON.parse(localStorage.getItem('novax_chats') || '{}');
+                this.apiKey = localStorage.getItem('novax_api_key') || 'AIzaSyBh1t_Ab1C3t53nka9Lt2gbtzrFxP6SZWM';
+                this.isDarkMode = localStorage.getItem('novax_dark_mode') === 'true';
+                this.currentRating = 0;
+                this.selectedModel = localStorage.getItem('novax_selected_model') || 'gemini';
+
+                
+                this.initializeElements();
+                this.setupEventListeners();
+                this.loadTheme();
+                this.loadModelSelection();
+                this.initializeDesktopSidebar();
+
+                this.renderChatList();
+            }
+            
+            initializeElements() {
+                this.sidebar = document.getElementById('sidebar');
+                this.sidebarToggle = document.getElementById('sidebarToggle');
+                this.homeScreen = document.getElementById('homeScreen');
+                this.chatScreen = document.getElementById('chatScreen');
+                this.homeInput = document.getElementById('homeInput');
+                this.chatInput = document.getElementById('chatInput');
+                this.messagesContainer = document.getElementById('messagesContainer');
+                this.chatList = document.getElementById('chatList');
+                this.themeToggle = document.getElementById('themeToggle');
+                this.settingsModal = document.getElementById('settingsModal');
+                this.aboutModal = document.getElementById('aboutModal');
+                this.clearAllModal = document.getElementById('clearAllModal');
+                this.feedbackModal = document.getElementById('feedbackModal');
+
+                this.searchInput = document.getElementById('searchInput');
+            }
+            
+            setupEventListeners() {
+                // Sidebar toggle mobile
+                this.sidebarToggle.addEventListener('click', () => this.toggleSidebar());
+                
+                // Sidebar toggle desktop
+                document.getElementById('desktopSidebarToggle').addEventListener('click', () => this.toggleDesktopSidebar());
+                
+                // Close sidebar button
+                document.getElementById('closeSidebar').addEventListener('click', () => this.closeSidebar());
+                
+                // Desktop close sidebar button
+                document.getElementById('desktopCloseSidebar').addEventListener('click', () => this.closeDesktopSidebar());
+                
+                // Home input
+                this.homeInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey && this.homeInput.value.trim()) {
+                        e.preventDefault();
+                        this.startNewChat(this.homeInput.value.trim());
+                    }
+                });
+                
+                // Auto-resize home input
+                this.homeInput.addEventListener('input', () => {
+                    this.autoResizeTextarea(this.homeInput);
+                });
+                
+                document.getElementById('homeSendBtn').addEventListener('click', () => {
+                    if (this.homeInput.value.trim()) {
+                        this.startNewChat(this.homeInput.value.trim());
+                    }
+                });
+                
+                // Chat input
+                this.chatInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey && this.chatInput.value.trim()) {
+                        e.preventDefault();
+                        this.sendMessage(this.chatInput.value.trim());
+                    }
+                });
+                
+                // Auto-resize chat input
+                this.chatInput.addEventListener('input', () => {
+                    this.autoResizeTextarea(this.chatInput);
+                });
+                
+                document.getElementById('sendBtn').addEventListener('click', () => {
+                    if (this.chatInput.value.trim()) {
+                        this.sendMessage(this.chatInput.value.trim());
+                    }
+                });
+                
+                // New chat button
+                document.getElementById('newChatBtn').addEventListener('click', () => {
+                    this.showHomeScreen();
+                    this.closeSidebar();
+                });
+                
+                // Theme toggle
+                this.themeToggle.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.toggleTheme();
+                });
+                
+                // Settings
+                document.getElementById('settingsBtn').addEventListener('click', () => this.showSettings());
+                document.getElementById('cancelSettings').addEventListener('click', () => this.hideSettings());
+                
+                // About
+                document.getElementById('aboutBtn').addEventListener('click', () => this.showAbout());
+                document.getElementById('closeAbout').addEventListener('click', () => this.hideAbout());
+                
+                // Clear All
+                document.getElementById('clearAllBtn').addEventListener('click', () => this.showClearAllConfirmation());
+                document.getElementById('cancelClearAll').addEventListener('click', () => this.hideClearAllConfirmation());
+                document.getElementById('confirmClearAll').addEventListener('click', () => this.clearAllChats());
+                
+
+                
+                // Feedback
+                document.getElementById('feedbackBtn').addEventListener('click', () => this.showFeedback());
+                document.getElementById('closeFeedback').addEventListener('click', () => this.hideFeedback());
+                document.getElementById('cancelFeedback').addEventListener('click', () => this.hideFeedback());
+                document.getElementById('submitFeedback').addEventListener('click', () => this.submitFeedback());
+                
+                // Star rating
+                document.querySelectorAll('.star').forEach(star => {
+                    star.addEventListener('click', (e) => this.setRating(parseInt(e.target.dataset.rating)));
+                    star.addEventListener('mouseenter', (e) => this.highlightStars(parseInt(e.target.dataset.rating)));
+                });
+                
+                document.getElementById('starRating').addEventListener('mouseleave', () => this.resetStarHighlight());
+                
+                // Model selection
+                document.querySelectorAll('input[name="aiModel"]').forEach(radio => {
+                    radio.addEventListener('change', (e) => this.changeModel(e.target.value));
+                });
+                
+                // Model toggle
+                document.getElementById('modelToggleBtn').addEventListener('click', () => this.toggleModelOptions());
+                
+                // Search
+                this.searchInput.addEventListener('input', (e) => this.searchChats(e.target.value));
+                
+                // Close sidebar when clicking outside on mobile (but not when clicking modals)
+                document.addEventListener('click', (e) => {
+                    if (window.innerWidth < 1024 && 
+                        !this.sidebar.contains(e.target) && 
+                        !this.sidebarToggle.contains(e.target) &&
+                        !this.settingsModal.contains(e.target) &&
+                        !this.aboutModal.contains(e.target) &&
+                        !this.clearAllModal.contains(e.target) &&
+                        !this.feedbackModal.contains(e.target)) {
+                        this.closeSidebar();
+                    }
+                });
+            }
+            
+            toggleSidebar() {
+                const isHidden = this.sidebar.classList.contains('-translate-x-full');
+                
+                if (isHidden) {
+                    // Opening sidebar
+                    this.sidebar.classList.remove('-translate-x-full');
+                    this.sidebarToggle.style.opacity = '0';
+                    this.sidebarToggle.style.pointerEvents = 'none';
+                } else {
+                    // Closing sidebar
+                    this.sidebar.classList.add('-translate-x-full');
+                    this.sidebarToggle.style.opacity = '1';
+                    this.sidebarToggle.style.pointerEvents = 'auto';
+                }
+            }
+            
+            closeSidebar() {
+                // Closing sidebar
+                this.sidebar.classList.add('-translate-x-full');
+                this.sidebarToggle.style.opacity = '1';
+                this.sidebarToggle.style.pointerEvents = 'auto';
+            }
+            
+            toggleDesktopSidebar() {
+                const isHidden = this.sidebar.classList.contains('-translate-x-full');
+                const desktopToggle = document.getElementById('desktopSidebarToggle');
+                const desktopClose = document.getElementById('desktopCloseSidebar');
+                
+                if (isHidden) {
+                    // Opening sidebar
+                    this.sidebar.classList.remove('-translate-x-full');
+                    desktopToggle.style.opacity = '0';
+                    desktopToggle.style.pointerEvents = 'none';
+                    // Position close button at top-right of sidebar (320px from left + 16px padding)
+                    desktopClose.style.left = '336px';
+                    desktopClose.style.right = 'auto';
+                    desktopClose.style.opacity = '1';
+                    desktopClose.style.pointerEvents = 'auto';
+                } else {
+                    // Closing sidebar
+                    this.sidebar.classList.add('-translate-x-full');
+                    desktopToggle.style.opacity = '1';
+                    desktopToggle.style.pointerEvents = 'auto';
+                    desktopClose.style.opacity = '0';
+                    desktopClose.style.pointerEvents = 'none';
+                }
+            }
+            
+            closeDesktopSidebar() {
+                const desktopToggle = document.getElementById('desktopSidebarToggle');
+                const desktopClose = document.getElementById('desktopCloseSidebar');
+                
+                // Closing sidebar
+                this.sidebar.classList.add('-translate-x-full');
+                desktopToggle.style.opacity = '1';
+                desktopToggle.style.pointerEvents = 'auto';
+                desktopClose.style.opacity = '0';
+                desktopClose.style.pointerEvents = 'none';
+            }
+            
+            initializeDesktopSidebar() {
+                // Desktop sidebar starts closed, show toggle button and hide close button
+                const desktopToggle = document.getElementById('desktopSidebarToggle');
+                const desktopClose = document.getElementById('desktopCloseSidebar');
+                
+                // Ensure sidebar is closed initially
+                this.sidebar.classList.add('-translate-x-full');
+                
+                desktopToggle.style.opacity = '1';
+                desktopToggle.style.pointerEvents = 'auto';
+                desktopClose.style.opacity = '0';
+                desktopClose.style.pointerEvents = 'none';
+            }
+            
+            showHomeScreen() {
+                this.homeScreen.classList.remove('hidden');
+                this.chatScreen.classList.add('hidden');
+                this.currentChatId = null;
+                this.homeInput.value = '';
+                this.homeInput.style.height = 'auto'; // Reset textarea height
+                this.homeInput.focus();
+            }
+            
+            showChatScreen() {
+                this.homeScreen.classList.add('hidden');
+                this.chatScreen.classList.remove('hidden');
+                this.chatInput.focus();
+            }
+            
+            startNewChat(message) {
+                // Clear any existing chat state
+                this.currentChatId = null;
+                this.messagesContainer.innerHTML = '';
+                
+                // Create new chat with unique ID
+                const chatId = Date.now().toString() + '_' + Math.random().toString(36).substr(2, 9);
+                this.currentChatId = chatId;
+                
+                this.chats[chatId] = {
+                    id: chatId,
+                    title: message.substring(0, 30) + (message.length > 30 ? '...' : ''),
+                    messages: [],
+                    createdAt: new Date().toISOString(),
+                    isPinned: false
+                };
+                
+                // Save immediately after creating new chat
+                this.saveChats();
+                
+                this.showChatScreen();
+                this.sendMessage(message);
+                this.renderChatList();
+            }
+            
+            async sendMessage(message) {
+                if (!this.currentChatId || !message || !message.trim()) return;
+                
+                const chat = this.chats[this.currentChatId];
+                if (!chat) return;
+                
+                const trimmedMessage = message.trim();
+                
+                // Add user message
+                const userMessage = {
+                    id: Date.now(),
+                    role: 'user',
+                    content: trimmedMessage,
+                    timestamp: new Date().toISOString()
+                };
+                
+                chat.messages.push(userMessage);
+                this.renderMessage(userMessage);
+                this.chatInput.value = '';
+                this.chatInput.style.height = 'auto'; // Reset textarea height
+                
+                // Add AI response placeholder
+                const aiMessage = {
+                    id: Date.now() + 1,
+                    role: 'assistant',
+                    content: '',
+                    timestamp: new Date().toISOString(),
+                    isTyping: true
+                };
+                
+                chat.messages.push(aiMessage);
+                this.renderMessage(aiMessage);
+                
+                // Get AI response
+                try {
+                    await this.getAIResponse(trimmedMessage, aiMessage);
+                } catch (error) {
+                    console.error('Error getting AI response:', error);
+                    aiMessage.content = "Xin lỗi, đã có lỗi xảy ra. Vui lòng thử lại.";
+                    aiMessage.isTyping = false;
+                    this.updateMessage(aiMessage);
+                } finally {
+                    this.saveChats();
+                }
+            }
+            
+            async getAIResponse(message, aiMessage) {
+                try {
+                    if (this.selectedModel === 'gemini') {
+                        await this.getGeminiResponse(message, aiMessage);
+                    } else if (this.selectedModel === 'llama') {
+                        await this.getMixtralResponse(message, aiMessage);
+                    }
+                } catch (error) {
+                    console.error('AI API Error:', error);
+                    aiMessage.content = "Xin lỗi, hiện tại tôi không thể trả lời. Vui lòng kiểm tra kết nối mạng hoặc thử lại sau.";
+                    aiMessage.isTyping = false;
+                    this.updateMessage(aiMessage);
+                }
+            }
+            
+            async getGeminiResponse(message, aiMessage) {
+                try {
+                    const apiKey = this.apiKey || 'AIzaSyBh1t_Ab1C3t53nka9Lt2gbtzrFxP6SZWM';
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+                    
+                    const requestBody = {
+                        contents: [{
+                            parts: [{
+                                text: message
+                            }]
+                        }],
+                        generationConfig: {
+                            temperature: 0.7,
+                            topK: 40,
+                            topP: 0.95,
+                            maxOutputTokens: 1024,
+                        }
+                    };
+                    
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(requestBody)
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data.candidates && data.candidates[0] && data.candidates[0].content && 
+                        data.candidates[0].content.parts && data.candidates[0].content.parts[0] && 
+                        data.candidates[0].content.parts[0].text) {
+                        
+                        const aiResponse = data.candidates[0].content.parts[0].text.trim();
+                        
+                        if (aiResponse) {
+                            // Simulate streaming effect
+                            const words = aiResponse.split(' ');
+                            let currentText = '';
+                            
+                            for (let i = 0; i < words.length; i++) {
+                                currentText += (i > 0 ? ' ' : '') + words[i];
+                                aiMessage.content = currentText;
+                                this.updateMessage(aiMessage);
+                                await new Promise(resolve => setTimeout(resolve, 50));
+                            }
+                            
+                            aiMessage.isTyping = false;
+                            this.updateMessage(aiMessage);
+                            return;
+                        }
+                    }
+                    
+                    throw new Error('Invalid Gemini response format or empty content');
+                    
+                } catch (error) {
+                    console.error('Gemini API Error:', error);
+                    
+                    // Fallback to demo response for Gemini
+                    const demoResponses = [
+                        "Xin chào! Tôi là NovaX v1.0 sử dụng Google Gemini Flash 2.0. Tôi có thể giúp bạn trả lời câu hỏi, giải thích khái niệm, và hỗ trợ học tập.",
+                        "Đây là phản hồi từ Google Gemini Flash 2.0 - model AI tiên tiến với khả năng hiểu ngôn ngữ tự nhiên và cung cấp thông tin chính xác.",
+                        "Tôi có thể giúp bạn với nhiều chủ đề khác nhau như học tập, giải bài tập, tìm hiểu kiến thức, và trò chuyện thông thường. Hãy hỏi tôi bất cứ điều gì!",
+                        "Với công nghệ Gemini Flash 2.0, tôi có thể xử lý các câu hỏi phức tạp và đưa ra câu trả lời hữu ích, chính xác cho bạn.",
+                        "Tôi đang sử dụng Google Gemini Flash 2.0 - một trong những model AI mạnh mẽ nhất hiện tại. Bạn muốn tìm hiểu về điều gì?"
+                    ];
+                    
+                    const randomResponse = demoResponses[Math.floor(Math.random() * demoResponses.length)];
+                    
+                    // Simulate streaming effect for fallback
+                    const words = randomResponse.split(' ');
+                    let currentText = '';
+                    
+                    for (let i = 0; i < words.length; i++) {
+                        currentText += (i > 0 ? ' ' : '') + words[i];
+                        aiMessage.content = currentText;
+                        this.updateMessage(aiMessage);
+                        await new Promise(resolve => setTimeout(resolve, 50));
+                    }
+                    
+                    aiMessage.isTyping = false;
+                    this.updateMessage(aiMessage);
+                }
+            }
+            
+            async getMixtralResponse(message, aiMessage) {
+                try {
+                    const API_TOKEN = "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";
+                    const API_URL = "https://api.groq.com/openai/v1/chat/completions";
+                    
+                    console.log(`NovaX 2.0 using Groq Llama 3.1 8B Instant for message: ${message.substring(0, 50)}...`);
+                    
+                    const response = await fetch(API_URL, {
+                        method: "POST",
+                        headers: {
+                            "Authorization": `Bearer ${API_TOKEN}`,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            model: "llama-3.1-8b-instant",
+                            messages: [
+                                {
+                                    role: "system",
+                                    content: "Bạn là NovaX v2.0 được hỗ trợ bởi Llama 3.1 8B Instant trên Groq - một trí tuệ nhân tạo siêu nhanh và thông minh. Hãy trả lời bằng tiếng Việt một cách tự nhiên, thân thiện và chính xác. Bạn có khả năng mạnh mẽ trong cả trò chuyện thông thường và hỗ trợ lập trình."
+                                },
+                                {
+                                    role: "user",
+                                    content: message
+                                }
+                            ],
+                            temperature: 0.7,
+                            max_tokens: 1024,
+                            top_p: 0.95,
+                            stream: false
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('Groq Llama 3.1 API Error:', response.status, errorText);
+                        throw new Error(`HTTP ${response.status}: ${errorText}`);
+                    }
+                    
+                    const data = await response.json();
+                    console.log('NovaX 2.0 Groq Llama 3.1 response:', data);
+                    
+                    if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
+                        const aiResponse = data.choices[0].message.content.trim();
+                        
+                        if (aiResponse && aiResponse.length > 0) {
+                            console.log('Successfully got NovaX 2.0 response from Groq Llama 3.1');
+                            
+                            // Simulate streaming effect
+                            const words = aiResponse.split(' ');
+                            let currentText = '';
+                            
+                            for (let i = 0; i < words.length; i++) {
+                                currentText += (i > 0 ? ' ' : '') + words[i];
+                                aiMessage.content = currentText;
+                                this.updateMessage(aiMessage);
+                                await new Promise(resolve => setTimeout(resolve, 25)); // Faster streaming for "instant" feel
+                            }
+                            
+                            aiMessage.isTyping = false;
+                            this.updateMessage(aiMessage);
+                            return;
+                        }
+                    }
+                    
+                    throw new Error('Invalid or empty response from Groq Llama 3.1');
+                    
+                } catch (error) {
+                    console.error('NovaX 2.0 Groq Llama 3.1 API Error:', error);
+                    
+                    // Enhanced fallback responses for Llama 3.1
+                    const smartResponses = [
+                        `Xin chào! Tôi là NovaX v2.0 được hỗ trợ bởi Llama 3.1 8B Instant trên Groq - AI siêu nhanh từ Meta! 
+
+Về câu hỏi "${message.substring(0, 50)}${message.length > 50 ? '...' : ''}", đây là một chủ đề thú vị! Tôi có khả năng:
+
+⚡ **Tốc độ siêu nhanh** với Groq inference engine
+🧠 **Suy luận mạnh mẽ** với Llama 3.1 architecture  
+💻 **Lập trình chuyên nghiệp** với khả năng code generation xuất sắc
+📚 **Kiến thức toàn diện** từ training data khổng lồ của Meta
+
+🚀 **Tại sao Groq + Llama 3.1?**
+- Groq là chip AI chuyên dụng, nhanh gấp 10x GPU thường
+- Llama 3.1 8B là model mã nguồn mở mạnh nhất từ Meta
+- Kết hợp tạo ra trải nghiệm AI "instant" thực sự
+
+💡 **Thử lại hoặc chuyển sang Gemini Flash 2.0 nếu cần!**`,
+
+                        `Chào bạn! NovaX v2.0 với Llama 3.1 8B Instant trên Groq đang xử lý: "${message.substring(0, 40)}${message.length > 40 ? '...' : ''}"
+
+🚀 **Sức mạnh của Llama 3.1 + Groq:**
+- Inference siêu nhanh với Groq LPU (Language Processing Unit)
+- Khả năng reasoning và logic vượt trội
+- Code generation và debugging chuyên nghiệp
+- Hiểu ngữ cảnh phức tạp với 8B parameters
+
+⚡ **Groq LPU vs GPU thường:**
+- Thiết kế chuyên dụng cho AI inference
+- Tốc độ xử lý nhanh gấp 10-18x
+- Độ trễ thấp, phản hồi "instant"
+- Tối ưu hóa cho các model transformer như Llama
+
+🎯 **Mẹo:** Hãy thử Gemini Flash 2.0 để so sánh hiệu suất!`,
+
+                        `NovaX v2.0 - Powered by Llama 3.1 8B Instant on Groq! ⚡
+
+Câu hỏi: "${message.substring(0, 35)}${message.length > 35 ? '...' : ''}" 
+
+✨ **Llama 3.1 đặc biệt ở:**
+- Architecture transformer tiên tiến từ Meta
+- Training trên dataset khổng lồ, đa dạng
+- Khả năng few-shot learning xuất sắc
+- Mã nguồn mở, minh bạch và đáng tin cậy
+
+🔥 **Groq Infrastructure:**
+- LPU (Language Processing Unit) thế hệ mới
+- Thiết kế từ đầu cho AI inference
+- Băng thông memory cực cao
+- Parallel processing tối ưu
+
+🎯 **Kết quả:** AI siêu nhanh, siêu thông minh! Thử Gemini nếu muốn so sánh!`
+                    ];
+                    
+                    const contextualResponse = smartResponses[Math.floor(Math.random() * smartResponses.length)];
+                    
+                    // Simulate streaming effect for fallback
+                    const words = contextualResponse.split(' ');
+                    let currentText = '';
+                    
+                    for (let i = 0; i < words.length; i++) {
+                        currentText += (i > 0 ? ' ' : '') + words[i];
+                        aiMessage.content = currentText;
+                        this.updateMessage(aiMessage);
+                        await new Promise(resolve => setTimeout(resolve, 20)); // Even faster for fallback
+                    }
+                    
+                    aiMessage.isTyping = false;
+                    this.updateMessage(aiMessage);
+                }
+            }
+            
+            renderMessage(message) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message-bubble flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`;
+                messageDiv.id = `message-${message.id}`;
+                
+                const bubbleClass = message.role === 'user' 
+                    ? 'bg-blue-600 text-white shadow-lg' 
+                    : 'bg-white border border-gray-200 text-gray-900 shadow-md';
+                
+                const messageContent = document.createElement('div');
+                messageContent.className = `max-w-xs lg:max-w-md px-4 py-3 rounded-lg ${bubbleClass}`;
+                
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'message-content';
+                
+                // Parse Markdown cho tin nhắn AI, giữ nguyên text cho user
+                if (message.role === 'assistant' && message.content) {
+                    try {
+                        contentDiv.innerHTML = marked.parse(message.content);
+                    } catch (error) {
+                        console.error('Markdown parse error:', error);
+                        contentDiv.textContent = message.content;
+                    }
+                } else {
+                    contentDiv.textContent = message.content || '';
+                }
+                
+                messageContent.appendChild(contentDiv);
+                
+                if (message.isTyping) {
+                    const typingDiv = document.createElement('div');
+                    typingDiv.className = 'typing-indicator mt-2 text-center';
+                    typingDiv.innerHTML = '<span class="inline-block w-2 h-2 bg-current rounded-full animate-pulse mx-1"></span><span class="inline-block w-2 h-2 bg-current rounded-full animate-pulse mx-1" style="animation-delay: 0.2s"></span><span class="inline-block w-2 h-2 bg-current rounded-full animate-pulse mx-1" style="animation-delay: 0.4s"></span>';
+                    messageContent.appendChild(typingDiv);
+                }
+                
+                messageDiv.appendChild(messageContent);
+                this.messagesContainer.appendChild(messageDiv);
+                
+                this.scrollToBottom();
+            }
+            
+            updateMessage(message) {
+                const messageElement = document.getElementById(`message-${message.id}`);
+                if (messageElement) {
+                    const contentElement = messageElement.querySelector('.message-content');
+                    const typingElement = messageElement.querySelector('.typing-indicator');
+                    
+                    if (contentElement) {
+                        // Parse Markdown cho tin nhắn AI, giữ nguyên text cho user
+                        if (message.role === 'assistant' && message.content) {
+                            try {
+                                contentElement.innerHTML = marked.parse(message.content);
+                            } catch (error) {
+                                console.error('Markdown parse error:', error);
+                                contentElement.textContent = message.content;
+                            }
+                        } else {
+                            contentElement.textContent = message.content || '';
+                        }
+                    }
+                    
+                    if (!message.isTyping && typingElement) {
+                        typingElement.remove();
+                    }
+                }
+                this.scrollToBottom();
+            }
+            
+            scrollToBottom() {
+                if (this.messagesContainer) {
+                    requestAnimationFrame(() => {
+                        this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+                    });
+                }
+            }
+            
+            loadChat(chatId) {
+                // Check if chat exists
+                if (!this.chats[chatId]) {
+                    this.showNotification('Cuộc trò chuyện không tồn tại!', 'error');
+                    this.renderChatList();
+                    return;
+                }
+                
+                this.currentChatId = chatId;
+                const chat = this.chats[chatId];
+                
+                // Clear messages container first
+                this.messagesContainer.innerHTML = '';
+                
+                // Load messages
+                if (chat.messages && chat.messages.length > 0) {
+                    chat.messages.forEach(message => {
+                        if (!message.isTyping) {
+                            this.renderMessage(message);
+                        }
+                    });
+                }
+                
+                this.showChatScreen();
+                this.closeSidebar();
+            }
+            
+            // COMPLETELY REWRITTEN DELETE FUNCTION
+            handleChatItemClick(event) {
+                // Prevent default behavior
+                event.preventDefault();
+                event.stopPropagation();
+                
+                const target = event.target;
+                const chatItem = target.closest('.chat-item');
+                
+                if (!chatItem) return;
+                
+                const chatId = chatItem.dataset.chatId;
+                if (!chatId) return;
+                
+                // Check if clicked on delete button or its children
+                if (target.closest('.delete-chat-btn')) {
+                    this.confirmDeleteChat(chatId);
+                    return;
+                }
+                
+                // Check if clicked on pin button or its children
+                if (target.closest('.pin-chat-btn')) {
+                    this.togglePinChat(chatId);
+                    return;
+                }
+                
+                // Otherwise, load the chat
+                this.loadChat(chatId);
+            }
+            
+            confirmDeleteChat(chatId) {
+                // Check if chat exists
+                if (!this.chats[chatId]) {
+                    this.showNotification('Cuộc trò chuyện không tồn tại!', 'error');
+                    this.renderChatList();
+                    return;
+                }
+                
+                // Check if chat is pinned - prevent deletion
+                if (this.chats[chatId].isPinned) {
+                    this.showNotification('Không thể xóa cuộc trò chuyện đã ghim! Vui lòng bỏ ghim trước.', 'error');
+                    return;
+                }
+                
+                const chatTitle = this.chats[chatId].title;
+                
+                // Create custom confirmation dialog
+                const confirmDialog = document.createElement('div');
+                confirmDialog.className = 'fixed inset-0 bg-black bg-opacity-50 z-[110] flex items-center justify-center';
+                confirmDialog.innerHTML = `
+                    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full mx-4 transform scale-95 opacity-0 transition-all duration-300">
+                        <div class="text-center">
+                            <div class="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-4">
+                                <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Xóa cuộc trò chuyện?</h3>
+                            <p class="text-gray-600 dark:text-gray-400 mb-6">"${chatTitle}" sẽ bị xóa vĩnh viễn và không thể khôi phục.</p>
+                            <div class="flex space-x-3">
+                                <button class="cancel-delete flex-1 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">Hủy</button>
+                                <button class="confirm-delete flex-1 px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-lg transition-colors">Xóa</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(confirmDialog);
+                
+                // Animate in
+                setTimeout(() => {
+                    const content = confirmDialog.querySelector('div > div');
+                    content.classList.remove('scale-95', 'opacity-0');
+                    content.classList.add('scale-100', 'opacity-100');
+                }, 10);
+                
+                // Handle buttons
+                const cancelBtn = confirmDialog.querySelector('.cancel-delete');
+                const confirmBtn = confirmDialog.querySelector('.confirm-delete');
+                
+                const closeDialog = () => {
+                    const content = confirmDialog.querySelector('div > div');
+                    content.classList.remove('scale-100', 'opacity-100');
+                    content.classList.add('scale-95', 'opacity-0');
+                    setTimeout(() => {
+                        document.body.removeChild(confirmDialog);
+                    }, 300);
+                };
+                
+                cancelBtn.addEventListener('click', closeDialog);
+                
+                confirmBtn.addEventListener('click', () => {
+                    this.executeDeleteChat(chatId);
+                    closeDialog();
+                });
+                
+                // Close on backdrop click
+                confirmDialog.addEventListener('click', (e) => {
+                    if (e.target === confirmDialog) {
+                        closeDialog();
+                    }
+                });
+                
+                // Close on Escape key
+                const handleEscape = (e) => {
+                    if (e.key === 'Escape') {
+                        closeDialog();
+                        document.removeEventListener('keydown', handleEscape);
+                    }
+                };
+                document.addEventListener('keydown', handleEscape);
+            }
+            
+            executeDeleteChat(chatId) {
+                // Double check chat exists
+                if (!this.chats[chatId]) {
+                    this.showNotification('Cuộc trò chuyện không tồn tại!', 'error');
+                    return;
+                }
+                
+                // Store chat title for notification
+                const chatTitle = this.chats[chatId].title;
+                
+                // Delete the chat
+                delete this.chats[chatId];
+                
+                // Save to localStorage
+                this.saveChats();
+                
+                // If deleting current chat, go to home screen
+                if (this.currentChatId === chatId) {
+                    this.currentChatId = null;
+                    this.messagesContainer.innerHTML = '';
+                    this.showHomeScreen();
+                }
+                
+                // Re-render chat list
+                this.renderChatList();
+                
+                // Show success notification
+                this.showNotification(`Đã xóa "${chatTitle}"!`, 'success');
+            }
+            
+            togglePinChat(chatId) {
+                // Check if chat exists
+                if (!this.chats[chatId]) {
+                    this.showNotification('Cuộc trò chuyện không tồn tại!', 'error');
+                    this.renderChatList();
+                    return;
+                }
+                
+                // Toggle pin status
+                this.chats[chatId].isPinned = !this.chats[chatId].isPinned;
+                
+                // Save to localStorage
+                this.saveChats();
+                
+                // Re-render chat list to update display
+                this.renderChatList();
+                
+                // Show notification
+                const action = this.chats[chatId].isPinned ? 'Đã ghim' : 'Đã bỏ ghim';
+                this.showNotification(`${action} cuộc trò chuyện!`, 'success');
+            }
+            
+            renderChatList() {
+                const chatArray = Object.values(this.chats).sort((a, b) => {
+                    // Pinned chats first
+                    if (a.isPinned && !b.isPinned) return -1;
+                    if (!a.isPinned && b.isPinned) return 1;
+                    return new Date(b.createdAt) - new Date(a.createdAt);
+                });
+                
+                // Clear existing event listeners by replacing innerHTML
+                this.chatList.innerHTML = '';
+                
+                chatArray.forEach(chat => {
+                    const chatElement = document.createElement('div');
+                    chatElement.className = `chat-item flex items-center justify-between p-3 hover:bg-gray-100 rounded-xl cursor-pointer group border border-transparent hover:border-gray-200 transition-all duration-300 ${chat.isPinned ? 'bg-blue-50 border-blue-200' : ''}`;
+                    chatElement.dataset.chatId = chat.id;
+                    
+                    chatElement.innerHTML = `
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center space-x-2">
+                                ${chat.isPinned ? '<svg class="w-3 h-3 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z"></path><path fill-rule="evenodd" d="M3 8a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path></svg>' : ''}
+                                <div class="text-sm font-medium text-gray-900 truncate">${chat.title}</div>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1">${new Date(chat.createdAt).toLocaleDateString('vi-VN')}</div>
+                        </div>
+                        <div class="flex items-center space-x-1 transition-all duration-300">
+                            <button class="pin-chat-btn text-gray-400 hover:text-blue-500 p-2 rounded-lg hover:bg-blue-50 transition-all duration-300 transform hover:scale-110 hover:rotate-12" title="${chat.isPinned ? 'Bỏ ghim' : 'Ghim cuộc trò chuyện'}">
+                                <svg class="w-4 h-4 transition-all duration-300" fill="${chat.isPinned ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                                </svg>
+                            </button>
+                            <button class="delete-chat-btn ${chat.isPinned ? 'text-gray-300 cursor-not-allowed' : 'text-gray-400 hover:text-red-500 hover:bg-red-50 transform hover:scale-110 hover:rotate-12'} p-2 rounded-lg transition-all duration-300" title="${chat.isPinned ? 'Không thể xóa cuộc trò chuyện đã ghim' : 'Xóa cuộc trò chuyện'}">
+                                <svg class="w-4 h-4 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                    
+                    // Add single click event listener to each chat item
+                    chatElement.addEventListener('click', (e) => this.handleChatItemClick(e));
+                    
+                    this.chatList.appendChild(chatElement);
+                });
+            }
+            
+            searchChats(query) {
+                const chatArray = Object.values(this.chats).filter(chat =>
+                    chat.title.toLowerCase().includes(query.toLowerCase()) ||
+                    chat.messages.some(msg => msg.content.toLowerCase().includes(query.toLowerCase()))
+                ).sort((a, b) => {
+                    // Pinned chats first
+                    if (a.isPinned && !b.isPinned) return -1;
+                    if (!a.isPinned && b.isPinned) return 1;
+                    return new Date(b.createdAt) - new Date(a.createdAt);
+                });
+                
+                // Clear and rebuild with filtered results
+                this.chatList.innerHTML = '';
+                
+                chatArray.forEach(chat => {
+                    const chatElement = document.createElement('div');
+                    chatElement.className = `chat-item flex items-center justify-between p-3 hover:bg-gray-100 rounded-xl cursor-pointer group border border-transparent hover:border-gray-200 transition-all duration-300 ${chat.isPinned ? 'bg-blue-50 border-blue-200' : ''}`;
+                    chatElement.dataset.chatId = chat.id;
+                    
+                    chatElement.innerHTML = `
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center space-x-2">
+                                ${chat.isPinned ? '<svg class="w-3 h-3 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z"></path><path fill-rule="evenodd" d="M3 8a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path></svg>' : ''}
+                                <div class="text-sm font-medium text-gray-900 truncate">${chat.title}</div>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1">${new Date(chat.createdAt).toLocaleDateString('vi-VN')}</div>
+                        </div>
+                        <div class="flex items-center space-x-1 transition-all duration-300">
+                            <button class="pin-chat-btn text-gray-400 hover:text-blue-500 p-2 rounded-lg hover:bg-blue-50 transition-all duration-300 transform hover:scale-110 hover:rotate-12" title="${chat.isPinned ? 'Bỏ ghim' : 'Ghim cuộc trò chuyện'}">
+                                <svg class="w-4 h-4 transition-all duration-300" fill="${chat.isPinned ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                                </svg>
+                            </button>
+                            <button class="delete-chat-btn ${chat.isPinned ? 'text-gray-300 cursor-not-allowed' : 'text-gray-400 hover:text-red-500 hover:bg-red-50 transform hover:scale-110 hover:rotate-12'} p-2 rounded-lg transition-all duration-300" title="${chat.isPinned ? 'Không thể xóa cuộc trò chuyện đã ghim' : 'Xóa cuộc trò chuyện'}">
+                                <svg class="w-4 h-4 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                    
+                    // Add click event listener
+                    chatElement.addEventListener('click', (e) => this.handleChatItemClick(e));
+                    
+                    this.chatList.appendChild(chatElement);
+                });
+            }
+            
+            toggleTheme() {
+                this.isDarkMode = !this.isDarkMode;
+                this.loadTheme();
+                localStorage.setItem('novax_dark_mode', this.isDarkMode);
+            }
+            
+            loadTheme() {
+                if (this.isDarkMode) {
+                    document.body.classList.add('dark');
+                    this.themeToggle.innerHTML = `
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                        </svg>
+                        <span>Light Mode</span>
+                    `;
+                } else {
+                    document.body.classList.remove('dark');
+                    this.themeToggle.innerHTML = `
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                        </svg>
+                        <span>Dark Mode</span>
+                    `;
+                }
+            }
+            
+            showSettings() {
+                this.settingsModal.classList.remove('hidden');
+                setTimeout(() => {
+                    const content = document.getElementById('settingsContent');
+                    content.classList.remove('scale-95', 'opacity-0');
+                    content.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            }
+            
+            hideSettings() {
+                const content = document.getElementById('settingsContent');
+                content.classList.remove('scale-100', 'opacity-100');
+                content.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    this.settingsModal.classList.add('hidden');
+                }, 300);
+                // Don't close sidebar when hiding settings - keep sidebar open
+            }
+            
+            showAbout() {
+                this.hideSettings();
+                this.aboutModal.classList.remove('hidden');
+                setTimeout(() => {
+                    const content = document.getElementById('aboutContent');
+                    content.classList.remove('scale-95', 'opacity-0');
+                    content.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            }
+            
+            hideAbout() {
+                const content = document.getElementById('aboutContent');
+                content.classList.remove('scale-100', 'opacity-100');
+                content.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    this.aboutModal.classList.add('hidden');
+                }, 300);
+            }
+            
+            showClearAllConfirmation() {
+                this.hideSettings();
+                this.clearAllModal.classList.remove('hidden');
+                setTimeout(() => {
+                    const content = document.getElementById('clearAllContent');
+                    content.classList.remove('scale-95', 'opacity-0');
+                    content.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            }
+            
+            hideClearAllConfirmation() {
+                const content = document.getElementById('clearAllContent');
+                content.classList.remove('scale-100', 'opacity-100');
+                content.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    this.clearAllModal.classList.add('hidden');
+                }, 300);
+            }
+            
+            clearAllChats() {
+                this.chats = {};
+                this.currentChatId = null;
+                this.saveChats();
+                this.renderChatList();
+                this.showHomeScreen();
+                this.hideClearAllConfirmation();
+                
+                // Show success message
+                this.showNotification('Đã xóa tất cả cuộc trò chuyện!', 'success');
+            }
+            
+            showFeedback() {
+                this.hideSettings();
+                this.currentRating = 0;
+                this.resetStarHighlight();
+                document.getElementById('feedbackText').value = '';
+                document.getElementById('ratingText').textContent = 'Nhấn vào sao để đánh giá';
+                
+                this.feedbackModal.classList.remove('hidden');
+                setTimeout(() => {
+                    const content = document.getElementById('feedbackContent');
+                    content.classList.remove('scale-95', 'opacity-0');
+                    content.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            }
+            
+            hideFeedback() {
+                const content = document.getElementById('feedbackContent');
+                content.classList.remove('scale-100', 'opacity-100');
+                content.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    this.feedbackModal.classList.add('hidden');
+                }, 300);
+            }
+            
+            setRating(rating) {
+                this.currentRating = rating;
+                this.updateStarDisplay(rating);
+                
+                const ratingTexts = {
+                    1: 'Rất tệ 😞',
+                    2: 'Tệ 😕',
+                    3: 'Bình thường 😐',
+                    4: 'Tốt 😊',
+                    5: 'Xuất sắc 🤩'
+                };
+                
+                document.getElementById('ratingText').textContent = ratingTexts[rating];
+            }
+            
+            highlightStars(rating) {
+                this.updateStarDisplay(rating);
+            }
+            
+            resetStarHighlight() {
+                this.updateStarDisplay(this.currentRating);
+            }
+            
+            updateStarDisplay(rating) {
+                document.querySelectorAll('.star').forEach((star, index) => {
+                    if (index < rating) {
+                        star.classList.remove('text-gray-300');
+                        star.classList.add('text-yellow-400');
+                    } else {
+                        star.classList.remove('text-yellow-400');
+                        star.classList.add('text-gray-300');
+                    }
+                });
+            }
+            
+            submitFeedback() {
+                const feedbackText = document.getElementById('feedbackText').value.trim();
+                
+                if (this.currentRating === 0) {
+                    this.showNotification('Vui lòng chọn số sao đánh giá!', 'error');
+                    return;
+                }
+                
+                // Save feedback to localStorage
+                const feedback = {
+                    rating: this.currentRating,
+                    comment: feedbackText,
+                    timestamp: new Date().toISOString()
+                };
+                
+                const feedbacks = JSON.parse(localStorage.getItem('novax_feedbacks') || '[]');
+                feedbacks.push(feedback);
+                localStorage.setItem('novax_feedbacks', JSON.stringify(feedbacks));
+                
+                this.hideFeedback();
+                this.showNotification('Cảm ơn bạn đã đánh giá! 🙏', 'success');
+            }
+            
+
+            
+            showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = `fixed top-4 right-4 z-[110] px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full ${
+                    type === 'success' ? 'bg-green-500 text-white' : 
+                    type === 'error' ? 'bg-red-500 text-white' : 
+                    'bg-blue-500 text-white'
+                }`;
+                notification.textContent = message;
+                
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.classList.remove('translate-x-full');
+                }, 100);
+                
+                setTimeout(() => {
+                    notification.classList.add('translate-x-full');
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 300);
+                }, 3000);
+            }
+            
+            toggleModelOptions() {
+                const modelOptions = document.getElementById('modelOptions');
+                const toggleIcon = document.getElementById('modelToggleIcon');
+                
+                if (modelOptions.classList.contains('hidden')) {
+                    // Show options
+                    modelOptions.classList.remove('hidden');
+                    toggleIcon.style.transform = 'rotate(180deg)';
+                } else {
+                    // Hide options
+                    modelOptions.classList.add('hidden');
+                    toggleIcon.style.transform = 'rotate(0deg)';
+                }
+            }
+            
+            changeModel(modelType) {
+                this.selectedModel = modelType;
+                localStorage.setItem('novax_selected_model', modelType);
+                
+                const modelNames = {
+                    'gemini': 'NovaX (v1.0) - Gemini Flash 2.0',
+                    'llama': 'NovaX (v2.0) - Llama 3.1 8B Instant'
+                };
+                
+                // Update current model text
+                document.getElementById('currentModelText').textContent = modelNames[modelType];
+                
+                // Hide options after selection
+                document.getElementById('modelOptions').classList.add('hidden');
+                document.getElementById('modelToggleIcon').style.transform = 'rotate(0deg)';
+                
+                this.showNotification(`Đã chuyển sang ${modelNames[modelType]}!`, 'success');
+            }
+            
+            loadModelSelection() {
+                const modelRadio = document.querySelector(`input[name="aiModel"][value="${this.selectedModel}"]`);
+                if (modelRadio) {
+                    modelRadio.checked = true;
+                }
+                
+                // Update current model text
+                const modelNames = {
+                    'gemini': 'NovaX (v1.0) - Gemini Flash 2.0',
+                    'llama': 'NovaX (v2.0) - Llama 3.1 8B Instant'
+                };
+                
+                const currentModelText = document.getElementById('currentModelText');
+                if (currentModelText) {
+                    currentModelText.textContent = modelNames[this.selectedModel];
+                }
+            }
+            
+            autoResizeTextarea(textarea) {
+                // Reset height to auto to get the correct scrollHeight
+                textarea.style.height = 'auto';
+                
+                // Set height based on scrollHeight, but respect min and max heights
+                const minHeight = parseInt(getComputedStyle(textarea).minHeight);
+                const maxHeight = parseInt(getComputedStyle(textarea).maxHeight);
+                const newHeight = Math.min(Math.max(textarea.scrollHeight, minHeight), maxHeight);
+                
+                textarea.style.height = newHeight + 'px';
+            }
+            
+            saveChats() {
+                localStorage.setItem('novax_chats', JSON.stringify(this.chats));
+            }
+        }
+        
+        // Initialize the app
+        const app = new NovaXChat();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'976480332377fe8f',t:'MTc1NjM5MTM2Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
