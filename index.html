@@ -580,7 +580,7 @@
                     <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">NovaX AI</h1>
                     <!-- Thay "NovaX" bằng tên bạn muốn -->
                 </div>
-                <svg id="closeSidebar" class="lg:hidden w-10 h-10 text-gray-500 hover:text-red-500 drop-shadow-2xl hover:scale-125 cursor-pointer transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg id="closeSidebar" class="w-10 h-10 text-gray-500 hover:text-red-500 drop-shadow-2xl hover:scale-125 cursor-pointer transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
             </div>
@@ -635,13 +635,8 @@
     </svg>
     
     <!-- Sidebar Toggle Button - Desktop -->
-    <svg id="desktopSidebarToggle" class="fixed top-4 left-4 z-[60] hidden lg:block w-8 h-8 text-gray-700 dark:text-gray-300 drop-shadow-lg hover:scale-110 cursor-pointer transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="opacity: 0; pointer-events: none;">
+    <svg id="desktopSidebarToggle" class="fixed top-4 left-4 z-[60] hidden lg:block w-8 h-8 text-gray-700 dark:text-gray-300 drop-shadow-lg hover:scale-110 cursor-pointer transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="opacity: 1; pointer-events: auto;">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-    </svg>
-    
-    <!-- Desktop Close Sidebar Button -->
-    <svg id="desktopCloseSidebar" class="fixed top-4 right-4 z-[60] hidden lg:block w-8 h-8 text-gray-700 dark:text-gray-300 drop-shadow-lg hover:scale-110 cursor-pointer transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="opacity: 0; pointer-events: none;">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
     </svg>
     
 
@@ -976,8 +971,6 @@
                 // Close sidebar button
                 document.getElementById('closeSidebar').addEventListener('click', () => this.closeSidebar());
                 
-                // Desktop close sidebar button
-                document.getElementById('desktopCloseSidebar').addEventListener('click', () => this.closeDesktopSidebar());
                 
                 // Home input
                 this.homeInput.addEventListener('keypress', (e) => {
@@ -1099,54 +1092,44 @@
                 this.sidebar.classList.add('-translate-x-full');
                 this.sidebarToggle.style.opacity = '1';
                 this.sidebarToggle.style.pointerEvents = 'auto';
+                
+                // Also update desktop toggle if on desktop
+                const desktopToggle = document.getElementById('desktopSidebarToggle');
+                if (desktopToggle) {
+                    desktopToggle.style.opacity = '1';
+                    desktopToggle.style.pointerEvents = 'auto';
+                }
             }
             
             toggleDesktopSidebar() {
                 const isHidden = this.sidebar.classList.contains('-translate-x-full');
                 const desktopToggle = document.getElementById('desktopSidebarToggle');
-                const desktopClose = document.getElementById('desktopCloseSidebar');
                 
                 if (isHidden) {
                     // Opening sidebar
                     this.sidebar.classList.remove('-translate-x-full');
                     desktopToggle.style.opacity = '0';
                     desktopToggle.style.pointerEvents = 'none';
-                    desktopClose.style.opacity = '1';
-                    desktopClose.style.pointerEvents = 'auto';
                 } else {
                     // Closing sidebar
                     this.sidebar.classList.add('-translate-x-full');
                     desktopToggle.style.opacity = '1';
                     desktopToggle.style.pointerEvents = 'auto';
-                    desktopClose.style.opacity = '0';
-                    desktopClose.style.pointerEvents = 'none';
                 }
             }
             
-            closeDesktopSidebar() {
-                const desktopToggle = document.getElementById('desktopSidebarToggle');
-                const desktopClose = document.getElementById('desktopCloseSidebar');
-                
-                // Closing sidebar
-                this.sidebar.classList.add('-translate-x-full');
-                desktopToggle.style.opacity = '1';
-                desktopToggle.style.pointerEvents = 'auto';
-                desktopClose.style.opacity = '0';
-                desktopClose.style.pointerEvents = 'none';
-            }
             
             initializeDesktopSidebar() {
-                // Desktop sidebar starts closed, show toggle button and hide close button
+                // Desktop sidebar starts closed, show toggle button
                 const desktopToggle = document.getElementById('desktopSidebarToggle');
-                const desktopClose = document.getElementById('desktopCloseSidebar');
                 
                 // Ensure sidebar is closed initially
                 this.sidebar.classList.add('-translate-x-full');
                 
-                desktopToggle.style.opacity = '1';
-                desktopToggle.style.pointerEvents = 'auto';
-                desktopClose.style.opacity = '0';
-                desktopClose.style.pointerEvents = 'none';
+                if (desktopToggle) {
+                    desktopToggle.style.opacity = '1';
+                    desktopToggle.style.pointerEvents = 'auto';
+                }
             }
             
             showHomeScreen() {
