@@ -576,7 +576,7 @@ html, body {
 
 /* Dark mode cho chat input container */
 .dark .bg-white\/95 {
-    background: rgba(52, 53, 65, 1) !important;
+    background: transparent !important;
     border: none !important;
 }
 
