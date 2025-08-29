@@ -117,6 +117,22 @@ class NovaXChat {
         // Search
         this.searchInput.addEventListener('input', (e) => this.searchChats(e.target.value));
         
+        // Quick suggestions
+        document.querySelectorAll('.quick-suggestion').forEach(suggestion => {
+            suggestion.addEventListener('click', (e) => {
+                const text = e.currentTarget.querySelector('span').textContent;
+                if (text === 'Hỏi về kiến thức') {
+                    this.homeInput.value = 'Bạn có thể giải thích cho tôi về ';
+                } else if (text === 'Hỗ trợ lập trình') {
+                    this.homeInput.value = 'Giúp tôi viết code ';
+                }
+                this.homeInput.focus();
+                // Move cursor to end
+                const len = this.homeInput.value.length;
+                this.homeInput.setSelectionRange(len, len);
+            });
+        });
+        
         // Close sidebar when clicking outside on mobile
         document.addEventListener('click', (e) => {
             if (window.innerWidth < 1024 && 

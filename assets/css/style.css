@@ -1,3 +1,23 @@
+/* Quick suggestion animations and styles */
+.quick-suggestion {
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transform: translateY(0);
+}
+
+.quick-suggestion:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.quick-suggestion:active {
+    transform: translateY(0);
+}
+
+/* Enhanced input area styles */
+.home-input-area {
+    backdrop-filter: blur(20px);
+}
+
 .message-bubble {
     animation: slideInUp 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     margin-bottom: 16px;
