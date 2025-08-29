@@ -116,20 +116,27 @@
                 <!-- Input Area -->
                 <div class="max-w-2xl mx-auto">
                     <div class="relative">
-                        <div class="bg-white rounded-2xl shadow-lg border border-gray-200/50 overflow-hidden scale-in backdrop-blur-sm">
-                            <div class="relative">
+                        <div class="gradient-input-container scale-in">
+                            <div class="input-stars-container">
+                                <div class="input-stars"></div>
+                            </div>
+                            <div class="input-glow">
+                                <div class="circle"></div>
+                                <div class="circle"></div>
+                            </div>
+                            <div class="relative w-full">
                                 <textarea 
                                     id="homeInput" 
                                     placeholder="Hãy hỏi tôi bất cứ điều gì..." 
-                                    class="w-full px-4 py-3 pr-20 text-base text-gray-900 placeholder-gray-400 border-none outline-none resize-none bg-transparent min-h-[48px]" 
+                                    class="gradient-input min-h-[48px]" 
                                     rows="1"
                                 ></textarea>
-                                <button id="homeFileUploadBtn" class="absolute right-12 top-1/2 transform -translate-y-1/2 p-2 text-gray-500 hover:text-blue-600 transition-colors">
+                                <button id="homeFileUploadBtn" class="absolute right-12 top-1/2 transform -translate-y-1/2 p-2 text-white hover:text-yellow-300 transition-colors z-10">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
                                     </svg>
                                 </button>
-                                <button id="homeSendBtn" class="absolute right-2 top-1/2 transform -translate-y-1/2 gradient-bg text-white p-2 rounded-full hover:shadow-lg transition-all duration-300 transform hover:scale-110 group">
+                                <button id="homeSendBtn" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-yellow-400 to-pink-500 text-white p-2 rounded-full hover:shadow-lg transition-all duration-300 transform hover:scale-110 group z-10">
                                     <svg class="w-4 h-4 group-hover:rotate-12 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                                     </svg>
@@ -210,21 +217,30 @@
             <div class="fixed bottom-0 left-0 right-0 p-4 z-10">
                 <div class="max-w-4xl mx-auto">
                     <div class="flex items-end space-x-3">
-                        <div class="relative flex-1">
-                            <textarea
-                                id="chatInput"
-                                placeholder="Nhập tin nhắn..."
-                                class="w-full px-4 py-3 pr-12 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-2xl outline-none resize-none bg-white"
-                                rows="1"
-                            ></textarea>
-                            <button id="fileUploadBtn" class="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 text-gray-500 hover:text-blue-600 transition-colors">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
-                                </svg>
-                            </button>
-                            <input type="file" id="fileInput" class="hidden" multiple accept="image/*,.pdf,.doc,.docx,.txt">
+                        <div class="gradient-input-container flex-1">
+                            <div class="input-stars-container">
+                                <div class="input-stars"></div>
+                            </div>
+                            <div class="input-glow">
+                                <div class="circle"></div>
+                                <div class="circle"></div>
+                            </div>
+                            <div class="relative w-full">
+                                <textarea
+                                    id="chatInput"
+                                    placeholder="Nhập tin nhắn..."
+                                    class="gradient-input"
+                                    rows="1"
+                                ></textarea>
+                                <button id="fileUploadBtn" class="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 text-white hover:text-yellow-300 transition-colors z-10">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
+                                    </svg>
+                                </button>
+                                <input type="file" id="fileInput" class="hidden" multiple accept="image/*,.pdf,.doc,.docx,.txt">
+                            </div>
                         </div>
-                        <button id="sendBtn" class="gradient-bg text-white p-3 rounded-2xl">
+                        <button id="sendBtn" class="bg-gradient-to-r from-yellow-400 to-pink-500 text-white p-3 rounded-2xl hover:shadow-lg transition-all duration-300 transform hover:scale-110">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                             </svg>
