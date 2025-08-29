@@ -6,6 +6,7 @@ class NovaXChat {
         this.isDarkMode = localStorage.getItem('novax_dark_mode') === 'true';
         this.currentRating = 0;
         this.selectedModel = localStorage.getItem('novax_selected_model') || 'gemini';
+        this.selectedFiles = new Map(); // Store selected files with their data
         
         this.initializeElements();
         this.setupEventListeners();
@@ -30,6 +31,12 @@ class NovaXChat {
         this.clearAllModal = document.getElementById('clearAllModal');
         this.feedbackModal = document.getElementById('feedbackModal');
         this.searchInput = document.getElementById('searchInput');
+        
+        // File upload elements
+        this.filePreviewModal = document.getElementById('filePreviewModal');
+        this.filePreviewList = document.getElementById('filePreviewList');
+        this.homeFileInput = document.getElementById('homeFileInput');
+        this.chatFileInput = document.getElementById('fileInput');
     }
     
     setupEventListeners() {
@@ -51,7 +58,7 @@ class NovaXChat {
         });
         
         document.getElementById('homeSendBtn').addEventListener('click', () => {
-            if (this.homeInput.value.trim()) {
+            if (this.homeInput.value.trim() || this.selectedFiles.size > 0) {
                 this.startNewChat(this.homeInput.value.trim());
             }
         });
@@ -65,7 +72,7 @@ class NovaXChat {
         });
         
         document.getElementById('sendBtn').addEventListener('click', () => {
-            if (this.chatInput.value.trim()) {
+            if (this.chatInput.value.trim() || this.selectedFiles.size > 0) {
                 this.sendMessage(this.chatInput.value.trim());
             }
         });
@@ -121,6 +128,9 @@ class NovaXChat {
         // Search
         this.searchInput.addEventListener('input', (e) => this.searchChats(e.target.value));
         
+        // File upload event listeners
+        this.setupFileUploadListeners();
+        
         // Quick suggestions
         document.querySelectorAll('.quick-suggestion').forEach(suggestion => {
             suggestion.addEventListener('click', (e) => {
@@ -145,10 +155,222 @@ class NovaXChat {
                 !this.settingsModal.contains(e.target) &&
                 !this.aboutModal.contains(e.target) &&
                 !this.clearAllModal.contains(e.target) &&
-                !this.feedbackModal.contains(e.target)) {
+                !this.feedbackModal.contains(e.target) &&
+                !this.filePreviewModal.contains(e.target)) {
                 this.closeSidebar();
             }
         });
+    }
+    
+    setupFileUploadListeners() {
+        // Home file upload button
+        document.getElementById('homeFileUploadBtn').addEventListener('click', () => {
+            this.homeFileInput.click();
+        });
+        
+        // Chat file upload button
+        document.getElementById('fileUploadBtn').addEventListener('click', () => {
+            this.chatFileInput.click();
+        });
+        
+        // File input change handlers
+        this.homeFileInput.addEventListener('change', (e) => {
+            this.handleFileSelection(e.target.files);
+        });
+        
+        this.chatFileInput.addEventListener('change', (e) => {
+            this.handleFileSelection(e.target.files);
+        });
+        
+        // File preview modal events
+        document.getElementById('closeFilePreview').addEventListener('click', () => {
+            this.hideFilePreview();
+        });
+        
+        document.getElementById('clearFiles').addEventListener('click', () => {
+            this.clearSelectedFiles();
+        });
+        
+        document.getElementById('confirmFiles').addEventListener('click', () => {
+            this.hideFilePreview();
+        });
+        
+        // Image modal events
+        document.getElementById('closeImageModal').addEventListener('click', () => {
+            this.closeImageModal();
+        });
+        
+        document.getElementById('imageModal').addEventListener('click', (e) => {
+            if (e.target.id === 'imageModal') {
+                this.closeImageModal();
+            }
+        });
+    }
+    
+    openImageModal(imageSrc, imageTitle) {
+        const modal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('modalImage');
+        const modalTitle = document.getElementById('modalImageTitle');
+        
+        modalImage.src = imageSrc;
+        modalImage.alt = imageTitle;
+        modalTitle.textContent = imageTitle;
+        
+        modal.classList.remove('hidden');
+    }
+    
+    closeImageModal() {
+        const modal = document.getElementById('imageModal');
+        modal.classList.add('hidden');
+        
+        // Clear image source to free memory
+        const modalImage = document.getElementById('modalImage');
+        modalImage.src = '';
+    }
+    
+    async handleFileSelection(files) {
+        if (!files || files.length === 0) return;
+        
+        const maxSize = 10 * 1024 * 1024; // 10MB per file
+        const maxFiles = 5;
+        
+        if (this.selectedFiles.size + files.length > maxFiles) {
+            this.showNotification('Chỉ có thể chọn tối đa 5 files', 'error');
+            return;
+        }
+        
+        for (let file of files) {
+            if (file.size > maxSize) {
+                this.showNotification(`File "${file.name}" quá lớn (tối đa 10MB)`, 'error');
+                continue;
+            }
+            
+            const fileId = Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            
+            // Create file data object
+            const fileData = {
+                id: fileId,
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                file: file,
+                preview: null,
+                base64: null
+            };
+            
+            // Generate preview for images
+            if (file.type.startsWith('image/')) {
+                try {
+                    fileData.preview = await this.createImagePreview(file);
+                    fileData.base64 = await this.fileToBase64(file);
+                } catch (error) {
+                    console.error('Error creating image preview:', error);
+                }
+            } else {
+                // For non-images, convert to base64 for AI processing
+                try {
+                    fileData.base64 = await this.fileToBase64(file);
+                } catch (error) {
+                    console.error('Error converting file to base64:', error);
+                }
+            }
+            
+            this.selectedFiles.set(fileId, fileData);
+        }
+        
+        // Show file preview modal if files were added
+        if (this.selectedFiles.size > 0) {
+            this.showFilePreview();
+        }
+        
+        // Reset file inputs
+        this.homeFileInput.value = '';
+        this.chatFileInput.value = '';
+    }
+    
+    createImagePreview(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+    
+    fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const base64 = e.target.result.split(',')[1]; // Remove data:*/*;base64, prefix
+                resolve(base64);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+    
+    showFilePreview() {
+        this.updateFilePreviewList();
+        this.filePreviewModal.classList.remove('hidden');
+    }
+    
+    hideFilePreview() {
+        this.filePreviewModal.classList.add('hidden');
+    }
+    
+    updateFilePreviewList() {
+        const fileArray = Array.from(this.selectedFiles.values());
+        
+        this.filePreviewList.innerHTML = fileArray.map(fileData => {
+            const sizeText = this.formatFileSize(fileData.size);
+            const isImage = fileData.type.startsWith('image/');
+            
+            return `
+                <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                    <div class="flex-shrink-0">
+                        ${isImage && fileData.preview ? 
+                            `<img src="${fileData.preview}" alt="Preview" class="w-12 h-12 object-cover rounded">` : 
+                            `<div class="w-12 h-12 bg-blue-100 rounded flex items-center justify-center">
+                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>`
+                        }
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-900 truncate">${fileData.name}</p>
+                        <p class="text-xs text-gray-500">${sizeText}</p>
+                    </div>
+                    <button onclick="app.removeFile('${fileData.id}')" class="p-1 hover:bg-red-100 rounded text-red-500">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    removeFile(fileId) {
+        this.selectedFiles.delete(fileId);
+        this.updateFilePreviewList();
+        
+        if (this.selectedFiles.size === 0) {
+            this.hideFilePreview();
+        }
+    }
+    
+    clearSelectedFiles() {
+        this.selectedFiles.clear();
+        this.hideFilePreview();
+    }
+    
+    formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
     
     toggleSidebar() {
@@ -239,9 +461,12 @@ class NovaXChat {
         const chatId = Date.now().toString() + '_' + Math.random().toString(36).substr(2, 9);
         this.currentChatId = chatId;
         
+        const title = message ? message.substring(0, 30) + (message.length > 30 ? '...' : '') : 
+                     (this.selectedFiles.size > 0 ? `File: ${Array.from(this.selectedFiles.values())[0].name}` : 'New Chat');
+        
         this.chats[chatId] = {
             id: chatId,
-            title: message.substring(0, 30) + (message.length > 30 ? '...' : ''),
+            title: title,
             messages: [],
             createdAt: new Date().toISOString(),
             isPinned: false
@@ -254,23 +479,28 @@ class NovaXChat {
     }
     
     async sendMessage(message) {
-        if (!this.currentChatId || !message || !message.trim()) return;
+        if (!this.currentChatId || (!message?.trim() && this.selectedFiles.size === 0)) return;
         
         const chat = this.chats[this.currentChatId];
         if (!chat) return;
         
-        const trimmedMessage = message.trim();
+        const trimmedMessage = message?.trim() || '';
+        const attachedFiles = this.selectedFiles.size > 0 ? Array.from(this.selectedFiles.values()) : null;
         
         const userMessage = {
             id: Date.now(),
             role: 'user',
             content: trimmedMessage,
+            files: attachedFiles,
             timestamp: new Date().toISOString()
         };
         
         chat.messages.push(userMessage);
         this.renderMessage(userMessage);
         this.chatInput.value = '';
+        
+        // Clear selected files after sending
+        this.clearSelectedFiles();
         
         const aiMessage = {
             id: Date.now() + 1,
@@ -284,7 +514,7 @@ class NovaXChat {
         this.renderMessage(aiMessage);
         
         try {
-            await this.getAIResponse(trimmedMessage, aiMessage);
+            await this.getAIResponse(trimmedMessage, aiMessage, attachedFiles);
         } catch (error) {
             console.error('Error getting AI response:', error);
             aiMessage.content = "Xin lỗi, đã có lỗi xảy ra. Vui lòng thử lại.";
@@ -295,12 +525,12 @@ class NovaXChat {
         }
     }
     
-    async getAIResponse(message, aiMessage) {
+    async getAIResponse(message, aiMessage, files = null) {
         try {
             if (this.selectedModel === 'gemini') {
-                await this.getGeminiResponse(message, aiMessage);
+                await this.getGeminiResponse(message, aiMessage, files);
             } else if (this.selectedModel === 'llama') {
-                await this.getMixtralResponse(message, aiMessage);
+                await this.getMixtralResponse(message, aiMessage, files);
             }
         } catch (error) {
             console.error('AI API Error:', error);
@@ -310,15 +540,22 @@ class NovaXChat {
         }
     }
     
-    async getGeminiResponse(message, aiMessage) {
+    async getGeminiResponse(message, aiMessage, files = null) {
         try {
             const apiKey = this.apiKey || 'AIzaSyBh1t_Ab1C3t53nka9Lt2gbtzrFxP6SZWM';
             const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + apiKey;
             
+            // Enhance message with file context if files are provided
+            let enhancedMessage = message;
+            if (files && files.length > 0) {
+                const fileDescriptions = files.map(file => `File: ${file.name} (${file.type})`).join(', ');
+                enhancedMessage = `Tôi đã đính kèm ${files.length} file(s): ${fileDescriptions}. ${message || 'Hãy phân tích các file này.'}`;
+            }
+            
             const requestBody = {
                 contents: [{
                     parts: [{
-                        text: message
+                        text: enhancedMessage
                     }]
                 }],
                 generationConfig: {
@@ -378,12 +615,19 @@ class NovaXChat {
         }
     }
     
-    async getMixtralResponse(message, aiMessage) {
+    async getMixtralResponse(message, aiMessage, files = null) {
         try {
             const API_TOKEN = "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";
             const API_URL = "https://api.groq.com/openai/v1/chat/completions";
             
-            console.log('NovaX 2.0 using Groq Llama 3.1 8B Instant for message: ' + message.substring(0, 50) + '...');
+            // Enhance message with file context if files are provided
+            let enhancedMessage = message;
+            if (files && files.length > 0) {
+                const fileDescriptions = files.map(file => `File: ${file.name} (${file.type}, ${this.formatFileSize(file.size)})`).join(', ');
+                enhancedMessage = `Tôi đã đính kèm ${files.length} file(s): ${fileDescriptions}. ${message || 'Hãy phân tích các file này và cho tôi biết nội dung.'}`;
+            }
+            
+            console.log('NovaX 2.0 using Groq Llama 3.1 8B Instant for message: ' + enhancedMessage.substring(0, 50) + '...');
             
             const response = await fetch(API_URL, {
                 method: "POST",
@@ -396,11 +640,11 @@ class NovaXChat {
                     messages: [
                         {
                             role: "system",
-                            content: "Bạn là NovaX v2.0 được hỗ trợ bởi Llama 3.1 8B Instant trên Groq - một trí tuệ nhân tạo siêu nhanh và thông minh. Hãy trả lời bằng tiếng Việt một cách tự nhiên, thân thiện và chính xác."
+                            content: "Bạn là NovaX v2.0 được hỗ trợ bởi Llama 3.1 8B Instant trên Groq - một trí tuệ nhân tạo siêu nhanh và thông minh. Hãy trả lời bằng tiếng Việt một cách tự nhiên, thân thiện và chính xác. Khi người dùng gửi file, hãy phản hồi một cách hữu ích về việc bạn đã nhận được file và có thể hỗ trợ họ như thế nào với những file đó."
                         },
                         {
                             role: "user",
-                            content: message
+                            content: enhancedMessage
                         }
                     ],
                     temperature: 0.7,
@@ -462,15 +706,57 @@ class NovaXChat {
         const fallbackAvatar = message.role === 'user' ? 
             'U' : '<div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg" style="display: none;"><svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg></div>';
         
+        // Generate files display HTML
+        const filesHtml = message.files && message.files.length > 0 ? this.renderFilesInMessage(message.files) : '';
+        
         messageDiv.innerHTML = '<div class="message-wrapper"><div class="avatar ' + (message.role === 'user' ? 'user-avatar' : 'ai-avatar') + '">' +
             (message.role === 'user' ? 'U' : avatarImg + fallbackAvatar) +
             '</div><div class="message-bubble-content ' + (message.role === 'user' ? 'user-bubble' : 'ai-bubble') + 
-            '"><div class="message-content">' +
+            '">' + filesHtml + '<div class="message-content">' +
             (message.isTyping ? '<div class="ai-loading"><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div></div>' : this.formatMessage(message.content)) +
             '</div></div></div>';
         
         this.messagesContainer.appendChild(messageDiv);
         this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+    }
+    
+    renderFilesInMessage(files) {
+        if (!files || files.length === 0) return '';
+        
+        return '<div class="message-files mb-2">' +
+            files.map(file => {
+                const isImage = file.type.startsWith('image/');
+                const sizeText = this.formatFileSize(file.size);
+                
+                if (isImage && file.preview) {
+                    return `
+                        <div class="inline-block mr-2 mb-2">
+                            <div class="relative group">
+                                <img src="${file.preview}" alt="${file.name}" class="max-w-60 max-h-40 rounded-lg shadow-md cursor-pointer" onclick="app.openImageModal('${file.preview}', '${file.name}')">
+                                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all duration-200"></div>
+                                <div class="absolute bottom-2 left-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                                    ${file.name} (${sizeText})
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="inline-flex items-center space-x-2 bg-gray-100 rounded-lg p-2 mr-2 mb-2 max-w-xs">
+                            <div class="w-8 h-8 bg-blue-100 rounded flex items-center justify-center flex-shrink-0">
+                                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-900 truncate">${file.name}</p>
+                                <p class="text-xs text-gray-500">${sizeText}</p>
+                            </div>
+                        </div>
+                    `;
+                }
+            }).join('') +
+            '</div>';
     }
     
     updateMessage(message) {
