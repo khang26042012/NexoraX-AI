@@ -32,6 +32,63 @@
     }
 }
 
+/* Sidebar toggle button animations */
+.sidebar-toggle-btn {
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.sidebar-toggle-btn:hover {
+    transform: scale(1.1) rotate(5deg);
+    filter: brightness(1.1);
+}
+
+.sidebar-toggle-btn.opening {
+    animation: openingSpin 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.sidebar-toggle-btn.closing {
+    animation: closingSpin 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.close-sidebar-btn {
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.close-sidebar-btn:hover {
+    transform: scale(1.25) rotate(180deg);
+    filter: brightness(1.2);
+}
+
+@keyframes openingSpin {
+    0% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.3) rotate(180deg);
+        opacity: 0.7;
+    }
+    100% {
+        transform: scale(1.1) rotate(360deg);
+        opacity: 0.3;
+    }
+}
+
+@keyframes closingSpin {
+    0% {
+        transform: scale(1.1) rotate(0deg);
+        opacity: 0.3;
+    }
+    50% {
+        transform: scale(1.3) rotate(-180deg);
+        opacity: 0.7;
+    }
+    100% {
+        transform: scale(1) rotate(-360deg);
+        opacity: 1;
+    }
+}
+
 /* Quick suggestion animations and styles */
 .quick-suggestion {
     transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);

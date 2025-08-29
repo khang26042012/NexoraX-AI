@@ -155,10 +155,18 @@ class NovaXChat {
         const isHidden = this.sidebar.classList.contains('-translate-x-full');
         
         if (isHidden) {
+            // Opening animation
+            this.sidebarToggle.classList.add('opening');
+            setTimeout(() => this.sidebarToggle.classList.remove('opening'), 600);
+            
             this.sidebar.classList.remove('-translate-x-full');
             this.sidebarToggle.style.opacity = '0';
             this.sidebarToggle.style.pointerEvents = 'none';
         } else {
+            // Closing animation
+            this.sidebarToggle.classList.add('closing');
+            setTimeout(() => this.sidebarToggle.classList.remove('closing'), 600);
+            
             this.sidebar.classList.add('-translate-x-full');
             this.sidebarToggle.style.opacity = '1';
             this.sidebarToggle.style.pointerEvents = 'auto';
@@ -182,10 +190,18 @@ class NovaXChat {
         const desktopToggle = document.getElementById('desktopSidebarToggle');
         
         if (isHidden) {
+            // Opening animation
+            desktopToggle.classList.add('opening');
+            setTimeout(() => desktopToggle.classList.remove('opening'), 600);
+            
             this.sidebar.classList.remove('-translate-x-full');
             desktopToggle.style.opacity = '0';
             desktopToggle.style.pointerEvents = 'none';
         } else {
+            // Closing animation
+            desktopToggle.classList.add('closing');
+            setTimeout(() => desktopToggle.classList.remove('closing'), 600);
+            
             this.sidebar.classList.add('-translate-x-full');
             desktopToggle.style.opacity = '1';
             desktopToggle.style.pointerEvents = 'auto';
