@@ -1,0 +1,548 @@
+.message-bubble {
+    animation: slideInUp 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    margin-bottom: 16px;
+}
+
+.message-content {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    line-height: 1.5;
+}
+
+.message-content p {
+    margin-bottom: 0.5rem;
+    text-indent: 0;
+}
+
+.message-content p:last-child {
+    margin-bottom: 0;
+}
+
+/* ChatGPT-style message styling */
+.user-message {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 16px;
+}
+
+.user-message .message-wrapper {
+    margin-right: 8px;
+}
+
+.ai-message {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 16px;
+}
+
+.message-wrapper {
+    display: flex;
+    align-items: flex-start;
+    max-width: 80%;
+}
+
+.avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    margin: 0 8px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.user-avatar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    order: 2;
+}
+
+.ai-avatar {
+    background: #8B4513;
+    border: 2px solid #654321;
+    order: 1;
+    overflow: hidden;
+}
+
+.message-bubble-content {
+    padding: 12px 16px;
+    border-radius: 18px;
+    max-width: 100%;
+    word-wrap: break-word;
+}
+
+.user-bubble {
+    background: #0084ff;
+    color: white;
+    border-bottom-right-radius: 4px;
+    order: 1;
+}
+
+.ai-bubble {
+    background: #f1f3f4;
+    color: #202124;
+    border-bottom-left-radius: 4px;
+    order: 2;
+}
+
+/* Markdown styling */
+.message-content h1, .message-content h2, .message-content h3, 
+.message-content h4, .message-content h5, .message-content h6 {
+    font-weight: bold;
+    margin: 0.5rem 0;
+}
+
+.message-content h1 { font-size: 1.5rem; }
+.message-content h2 { font-size: 1.3rem; }
+.message-content h3 { font-size: 1.1rem; }
+
+.message-content strong, .message-content b {
+    font-weight: bold;
+}
+
+.message-content em, .message-content i {
+    font-style: italic;
+}
+
+.message-content ul, .message-content ol {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+}
+
+.message-content li {
+    margin: 0.25rem 0;
+}
+
+.message-content code {
+    background-color: rgba(0, 0, 0, 0.1);
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+}
+
+.message-content pre {
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin: 0.5rem 0;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.message-content pre code {
+    background-color: transparent;
+    padding: 0;
+}
+
+.message-content blockquote {
+    border-left: 4px solid #3b82f6;
+    padding-left: 1rem;
+    margin: 0.5rem 0;
+    font-style: italic;
+    color: #6b7280;
+}
+
+/* Dark mode cho Markdown */
+.dark .message-content code {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #f1f5f9;
+}
+
+.dark .message-content pre {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .message-content blockquote {
+    color: #9ca3af;
+}
+
+@keyframes slideInUp {
+    from { 
+        opacity: 0; 
+        transform: translateY(30px) scale(0.9) rotateX(10deg); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0) scale(1) rotateX(0deg); 
+    }
+}
+
+.typing-indicator {
+    animation: typingPulse 1.5s infinite;
+}
+
+@keyframes typingPulse {
+    0%, 100% { opacity: 0.3; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.1); }
+}
+
+/* .message-bubble:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+} */
+
+.sidebar-transition {
+    transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.chat-item {
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+    transform-origin: left center;
+}
+
+.chat-item:hover {
+    transform: translateX(8px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.chat-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.2), transparent);
+    transition: left 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.chat-item:hover::before {
+    left: 100%;
+}
+
+.chat-item::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 3px;
+    background: linear-gradient(to bottom, #3b82f6, #8b5cf6);
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+}
+
+.chat-item:hover::after {
+    transform: scaleY(1);
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.scale-in {
+    animation: scaleIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes scaleIn {
+    from { 
+        opacity: 0; 
+        transform: scale(0.9); 
+    }
+    to { 
+        opacity: 1; 
+        transform: scale(1); 
+    }
+}
+
+.bounce-in {
+    animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3) rotate(-180deg);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.1) rotate(-90deg);
+    }
+    70% {
+        transform: scale(0.9) rotate(-45deg);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+.float {
+    /* Removed annoying float animation */
+}
+
+.glow {
+    /* Removed annoying glow animation */
+}
+
+.pulse-ring {
+    /* Removed annoying pulse animation */
+}
+
+.wiggle {
+    animation: wiggle 0.5s ease-in-out;
+}
+
+@keyframes wiggle {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-3deg); }
+    75% { transform: rotate(3deg); }
+}
+
+.heartbeat {
+    /* Removed annoying heartbeat animation */
+}
+
+.slide-in-left {
+    animation: slideInLeft 0.5s ease-out;
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.slide-in-right {
+    animation: slideInRight 0.5s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.rotate-in {
+    animation: rotateIn 0.5s ease-out;
+}
+
+@keyframes rotateIn {
+    from {
+        opacity: 0;
+        transform: rotate(-180deg) scale(0.5);
+    }
+    to {
+        opacity: 1;
+        transform: rotate(0deg) scale(1);
+    }
+}
+
+.gradient-bg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.glass-effect {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e0 transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #cbd5e0, #a0aec0);
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(to bottom, #a0aec0, #718096);
+    transform: scaleX(1.2);
+}
+
+/* Performance optimizations */
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.chat-container {
+    height: 100vh;   /* full chiều cao màn hình */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.input-area {
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.chat-container > .border-t {
+    margin-top: auto;
+}
+
+.home-container {
+    height: 100vh;
+}
+
+.dark { 
+    background-color: #0f0f23; 
+    color: #f8fafc;
+}
+
+/* Dark mode cho tất cả elements */
+.dark .bg-white { background-color: #1a1a2e !important; }
+.dark .bg-gray-50 { background-color: #0f0f23 !important; }
+.dark .bg-gray-100 { background-color: #16213e !important; }
+.dark .bg-gray-200 { background-color: #1a1a2e !important; }
+.dark .text-gray-900 { color: #f8fafc !important; }
+.dark .text-gray-700 { color: #e2e8f0 !important; }
+.dark .text-gray-600 { color: #cbd5e1 !important; }
+.dark .text-gray-500 { color: #94a3b8 !important; }
+.dark .text-gray-400 { color: #64748b !important; }
+.dark .text-gray-800 { color: #f1f5f9 !important; }
+.dark .border-gray-300 { border-color: #334155 !important; }
+.dark .border-gray-200 { border-color: #1e293b !important; }
+
+/* ChatGPT-style backgrounds */
+#chatScreen { 
+    background-color: #ffffff !important; 
+}
+#messagesContainer { 
+    background-color: #ffffff !important; 
+}
+.chat-container { 
+    background-color: #ffffff !important; 
+}
+
+/* Dark mode cho chat screen background */
+.dark #chatScreen { background-color: #212121 !important; }
+.dark #messagesContainer { background-color: #212121 !important; }
+.dark .chat-container { background-color: #212121 !important; }
+
+/* Dark mode cho home screen */
+.dark .bg-gradient-to-br { 
+    background: linear-gradient(to bottom right, #0f172a, #1e293b) !important; 
+}
+
+/* Dark mode cho message bubbles */
+.dark .ai-bubble {
+    background: #2f2f2f !important;
+    color: #ffffff !important;
+}
+
+/* Dark mode cho chat messages */
+.dark .bg-blue-600 { background-color: #2563eb !important; }
+.dark .border-gray-200 { border-color: #374151 !important; }
+
+/* Dark mode cho glass effect */
+.dark .glass-effect { 
+    backdrop-filter: blur(10px);
+    background: rgba(26, 26, 46, 0.9) !important;
+}
+
+/* Dark mode cho hover effects */
+.dark .hover\:bg-gray-100:hover { background-color: #334155 !important; }
+.dark .hover\:bg-gray-50:hover { background-color: #1e293b !important; }
+.dark .hover\:text-red-500:hover { color: #ef4444 !important; }
+.dark .hover\:text-blue-500:hover { color: #3b82f6 !important; }
+
+/* Dark mode cho input fields */
+.dark input[type="text"], .dark textarea {
+    background-color: #1e293b !important;
+    border-color: #374151 !important;
+    color: #f1f5f9 !important;
+}
+
+.dark input[type="text"]:focus, .dark textarea:focus {
+    border-color: #3b82f6 !important;
+    background-color: #1e293b !important;
+}
+
+.dark input[type="text"]::placeholder, .dark textarea::placeholder {
+    color: #9ca3af !important;
+}
+
+/* Dark mode cho chat input container */
+.dark .bg-white\/95 {
+    background: rgba(30, 41, 59, 0.95) !important;
+}
+
+.dark .backdrop-blur-sm {
+    backdrop-filter: blur(8px);
+}
+
+.dark .border-gray-200\/50 {
+    border-color: rgba(55, 65, 81, 0.5) !important;
+}
+
+/* Dark mode cho modals */
+.dark #settingsContent, .dark #aboutContent, .dark #clearAllContent, .dark #feedbackContent {
+    background-color: #1a1a2e !important;
+    color: #f1f5f9 !important;
+}
+
+/* Dark mode cho dynamic modals */
+.dark .bg-white {
+    background-color: #1a1a2e !important;
+}
+
+.dark .text-gray-900 {
+    color: #f1f5f9 !important;
+}
+
+.dark .text-gray-600 {
+    color: #cbd5e1 !important;
+}
+
+/* Dark mode cho message bubbles */
+.dark .message-bubble .bg-white {
+    background-color: #1e293b !important;
+    color: #f1f5f9 !important;
+    border-color: #374151 !important;
+}
+
+/* Nút sidebar toggle mobile và desktop */
+#sidebarToggle:hover {
+    transform: scale(1.05);
+}
+
+#desktopSidebarToggle:hover {
+    transform: scale(1.05);
+}
+
+/* Nút đóng sidebar */
+#closeSidebar:hover {
+    transform: scale(1.05);
+}
