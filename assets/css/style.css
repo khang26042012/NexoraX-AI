@@ -1,3 +1,37 @@
+/* AI Loading Animation */
+.ai-loading {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.ai-loading-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #6b7280;
+    animation: aiTyping 1.4s infinite ease-in-out;
+}
+
+.ai-loading-dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.ai-loading-dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes aiTyping {
+    0%, 20%, 80%, 100% {
+        transform: scale(1);
+        opacity: 0.5;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+}
+
 /* Quick suggestion animations and styles */
 .quick-suggestion {
     transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);

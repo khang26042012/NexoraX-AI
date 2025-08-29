@@ -478,7 +478,7 @@ class NovaXChat {
             (message.role === 'user' ? 'U' : avatarImg + fallbackAvatar) +
             '</div><div class="message-bubble-content ' + (message.role === 'user' ? 'user-bubble' : 'ai-bubble') + 
             '"><div class="message-content">' +
-            (message.isTyping ? '<span class="typing-indicator">Đang soạn tin...</span>' : this.formatMessage(message.content)) +
+            (message.isTyping ? '<div class="ai-loading"><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div></div>' : this.formatMessage(message.content)) +
             '</div></div></div>';
         
         this.messagesContainer.appendChild(messageDiv);
@@ -490,7 +490,7 @@ class NovaXChat {
         if (messageElement) {
             const contentElement = messageElement.querySelector('.message-content');
             if (message.isTyping) {
-                contentElement.innerHTML = '<span class="typing-indicator">Đang soạn tin...</span>';
+                contentElement.innerHTML = '<div class="ai-loading"><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div></div>';
             } else {
                 contentElement.innerHTML = this.formatMessage(message.content);
             }
@@ -544,7 +544,18 @@ class NovaXChat {
     }
     
     deleteChat(chatId) {
-        if (confirm('Bạn có chắc muốn xóa cuộc trò chuyện này?')) {
+        const chat = this.chats[chatId];
+        if (chat && chat.isPinned) {
+            if (confirm('Cuộc trò chuyện này đã được ghim. Bạn có chắc muốn bỏ ghim và xóa?')) {
+                delete this.chats[chatId];
+                this.saveChats();
+                this.renderChatList();
+                
+                if (this.currentChatId === chatId) {
+                    this.showHomeScreen();
+                }
+            }
+        } else if (confirm('Bạn có chắc muốn xóa cuộc trò chuyện này?')) {
             delete this.chats[chatId];
             this.saveChats();
             this.renderChatList();
