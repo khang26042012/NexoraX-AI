@@ -520,14 +520,14 @@ class NovaXChat {
         });
         
         this.chatList.innerHTML = chatArray.map(chat => 
-            '<div class="chat-item p-3 hover:bg-gray-100 rounded-xl cursor-pointer transition-all duration-300 ' + 
-            (this.currentChatId === chat.id ? 'bg-blue-50 border-l-4 border-blue-500' : '') + 
+            '<div class="chat-item p-3 rounded-xl cursor-pointer ' + 
+            (this.currentChatId === chat.id ? 'bg-blue-50 border-l-4 border-blue-500' : 'hover:bg-gray-50') + 
             '" onclick="app.loadChat(\'' + chat.id + '\')"><div class="flex items-center justify-between"><div class="flex-1"><div class="font-medium text-sm truncate mb-1">' +
-            (chat.isPinned ? '📌 ' : '') + chat.title + 
+            (chat.isPinned ? '<svg class="w-3 h-3 text-blue-600 inline mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path></svg>' : '') + chat.title + 
             '</div><div class="text-xs text-gray-500">' + new Date(chat.createdAt).toLocaleDateString('vi-VN') + 
-            '</div></div><div class="flex items-center space-x-1"><button class="p-1 hover:bg-gray-200 rounded" onclick="event.stopPropagation(); app.togglePin(\'' + chat.id + '\')" title="' + 
-            (chat.isPinned ? 'Bỏ ghim' : 'Ghim cuộc trò chuyện') + '">' + (chat.isPinned ? '📌' : '📍') + 
-            '</button><button class="p-1 hover:bg-red-200 rounded text-red-500" onclick="event.stopPropagation(); app.deleteChat(\'' + chat.id + '\')" title="Xóa cuộc trò chuyện">🗑️</button></div></div></div>'
+            '</div></div><div class="flex items-center space-x-1"><button class="p-2 hover:bg-blue-100 rounded-lg transition-colors" onclick="event.stopPropagation(); app.togglePin(\'' + chat.id + '\')" title="' + 
+            (chat.isPinned ? 'Bỏ ghim' : 'Ghim cuộc trò chuyện') + '"><svg class="w-4 h-4 ' + (chat.isPinned ? 'text-blue-600' : 'text-gray-400') + '" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path></svg>' + 
+            '</button><button class="p-2 hover:bg-red-100 rounded-lg transition-colors" onclick="event.stopPropagation(); app.deleteChat(\'' + chat.id + '\')" title="Xóa cuộc trò chuyện"><svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></div></div></div>'
         ).join('');
     }
     
