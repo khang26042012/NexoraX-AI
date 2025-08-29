@@ -98,7 +98,6 @@ class NovaXChat {
         
         // Feedback
         document.getElementById('feedbackBtn').addEventListener('click', () => this.showFeedback());
-        document.getElementById('closeFeedback').addEventListener('click', () => this.hideFeedback());
         document.getElementById('cancelFeedback').addEventListener('click', () => this.hideFeedback());
         document.getElementById('submitFeedback').addEventListener('click', () => this.submitFeedback());
         
@@ -114,9 +113,6 @@ class NovaXChat {
         document.querySelectorAll('input[name="aiModel"]').forEach(radio => {
             radio.addEventListener('change', (e) => this.changeModel(e.target.value));
         });
-        
-        // Model toggle
-        document.getElementById('modelToggleBtn').addEventListener('click', () => this.toggleModelOptions());
         
         // Search
         this.searchInput.addEventListener('input', (e) => this.searchChats(e.target.value));
@@ -744,18 +740,6 @@ class NovaXChat {
         }, 3000);
     }
     
-    toggleModelOptions() {
-        const modelOptions = document.getElementById('modelOptions');
-        const toggleIcon = document.getElementById('modelToggleIcon');
-        
-        if (modelOptions.classList.contains('hidden')) {
-            modelOptions.classList.remove('hidden');
-            toggleIcon.style.transform = 'rotate(180deg)';
-        } else {
-            modelOptions.classList.add('hidden');
-            toggleIcon.style.transform = 'rotate(0deg)';
-        }
-    }
     
     changeModel(modelType) {
         this.selectedModel = modelType;
@@ -766,9 +750,6 @@ class NovaXChat {
             'llama': 'NovaX (v2.0) - Llama 3.1 8B Instant'
         };
         
-        document.getElementById('currentModelText').textContent = modelNames[modelType];
-        document.getElementById('modelOptions').classList.add('hidden');
-        document.getElementById('modelToggleIcon').style.transform = 'rotate(0deg)';
         
         this.showNotification('Đã chuyển sang ' + modelNames[modelType] + '!', 'success');
     }
@@ -784,10 +765,6 @@ class NovaXChat {
             'llama': 'NovaX (v2.0) - Llama 3.1 8B Instant'
         };
         
-        const currentModelText = document.getElementById('currentModelText');
-        if (currentModelText) {
-            currentModelText.textContent = modelNames[this.selectedModel];
-        }
     }
     
     saveChats() {
