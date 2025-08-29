@@ -9,21 +9,92 @@
     <style>
         .message-bubble {
             animation: slideInUp 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            margin-bottom: 16px;
         }
         
         .message-content {
-            white-space: pre-wrap;      /* Giữ xuống dòng và khoảng trắng */
-            word-wrap: break-word;      /* Tự xuống dòng khi quá dài */
-            line-height: 1.5;          /* Khoảng cách dòng đẹp hơn */
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            line-height: 1.5;
         }
         
         .message-content p {
-            margin-bottom: 0.5rem;     /* Khoảng cách giữa các đoạn */
-            text-indent: 0;            /* Không thụt vào đầu dòng */
+            margin-bottom: 0.5rem;
+            text-indent: 0;
         }
         
         .message-content p:last-child {
-            margin-bottom: 0;          /* Bỏ margin cuối cùng */
+            margin-bottom: 0;
+        }
+        
+        /* ChatGPT-style message styling */
+        .user-message {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 16px;
+        }
+        
+        .user-message .message-wrapper {
+            margin-right: 8px;
+        }
+        
+        .ai-message {
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 16px;
+        }
+        
+        .message-wrapper {
+            display: flex;
+            align-items: flex-start;
+            max-width: 80%;
+        }
+        
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin: 0 8px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .user-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            order: 2;
+        }
+        
+        .ai-avatar {
+            background: #8B4513;
+            border: 2px solid #654321;
+            order: 1;
+            overflow: hidden;
+        }
+        
+        .message-bubble-content {
+            padding: 12px 16px;
+            border-radius: 18px;
+            max-width: 100%;
+            word-wrap: break-word;
+        }
+        
+        .user-bubble {
+            background: #0084ff;
+            color: white;
+            border-bottom-right-radius: 4px;
+            order: 1;
+        }
+        
+        .ai-bubble {
+            background: #f1f3f4;
+            color: #202124;
+            border-bottom-left-radius: 4px;
+            order: 2;
         }
         
         /* Markdown styling */
@@ -373,14 +444,31 @@
         .dark .border-gray-300 { border-color: #334155 !important; }
         .dark .border-gray-200 { border-color: #1e293b !important; }
         
+        /* ChatGPT-style backgrounds */
+        #chatScreen { 
+            background-color: #ffffff !important; 
+        }
+        #messagesContainer { 
+            background-color: #ffffff !important; 
+        }
+        .chat-container { 
+            background-color: #ffffff !important; 
+        }
+        
         /* Dark mode cho chat screen background */
-        .dark #chatScreen { background-color: #0f0f23 !important; }
-        .dark #messagesContainer { background-color: #0f0f23 !important; }
-        .dark .chat-container { background-color: #0f0f23 !important; }
+        .dark #chatScreen { background-color: #212121 !important; }
+        .dark #messagesContainer { background-color: #212121 !important; }
+        .dark .chat-container { background-color: #212121 !important; }
         
         /* Dark mode cho home screen */
         .dark .bg-gradient-to-br { 
             background: linear-gradient(to bottom right, #0f172a, #1e293b) !important; 
+        }
+        
+        /* Dark mode cho message bubbles */
+        .dark .ai-bubble {
+            background: #2f2f2f !important;
+            color: #ffffff !important;
         }
         
         /* Dark mode cho chat messages */
@@ -413,6 +501,19 @@
         
         .dark input[type="text"]::placeholder, .dark textarea::placeholder {
             color: #9ca3af !important;
+        }
+        
+        /* Dark mode cho chat input container */
+        .dark .bg-white\/95 {
+            background: rgba(30, 41, 59, 0.95) !important;
+        }
+        
+        .dark .backdrop-blur-sm {
+            backdrop-filter: blur(8px);
+        }
+        
+        .dark .border-gray-200\/50 {
+            border-color: rgba(55, 65, 81, 0.5) !important;
         }
         
         /* Dark mode cho modals */
@@ -573,7 +674,7 @@
                         <div class="absolute -inset-1 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-3xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
                         <div class="relative bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-600/50 shadow-2xl">
                             <textarea id="homeInput" placeholder="Nhập tin nhắn của bạn để bắt đầu cuộc trò chuyện..." 
-                                   class="w-full px-10 py-7 pr-20 text-xl bg-transparent border-none rounded-2xl focus:outline-none focus:ring-0 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 resize-none min-h-[80px] max-h-[200px]" rows="2"></textarea>
+                                   class="w-full px-10 py-7 pr-20 text-xl bg-transparent border-none rounded-2xl focus:outline-none focus:ring-0 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 resize-none overflow-hidden" rows="2"></textarea>
                             <button id="homeSendBtn" class="absolute right-5 bottom-5 text-blue-600 hover:text-blue-700 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 hover:scale-110 hover:rotate-3">
                                 <svg class="w-7 h-7 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
@@ -615,7 +716,7 @@
                             <div class="absolute -inset-1 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
                             <div class="relative bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-gray-600/50 shadow-lg">
                                 <textarea id="chatInput" placeholder="Nhập tin nhắn của bạn…" 
-                                       class="w-full px-8 py-5 pr-18 text-lg bg-transparent border-none rounded-xl focus:outline-none focus:ring-0 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 resize-none min-h-[60px] max-h-[150px]" rows="1"></textarea>
+                                       class="w-full px-8 py-5 pr-18 text-lg bg-transparent border-none rounded-xl focus:outline-none focus:ring-0 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 resize-none overflow-hidden" rows="1"></textarea>
                                 <button id="sendBtn" class="absolute right-5 bottom-5 text-blue-600 hover:text-blue-700 p-3 rounded-lg hover:bg-blue-50 transition-all duration-300 hover:scale-110 hover:rotate-3">
                                     <svg class="w-6 h-6 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
@@ -886,10 +987,7 @@
                     }
                 });
                 
-                // Auto-resize home input
-                this.homeInput.addEventListener('input', () => {
-                    this.autoResizeTextarea(this.homeInput);
-                });
+                // Removed auto-resize for home input
                 
                 document.getElementById('homeSendBtn').addEventListener('click', () => {
                     if (this.homeInput.value.trim()) {
@@ -905,10 +1003,7 @@
                     }
                 });
                 
-                // Auto-resize chat input
-                this.chatInput.addEventListener('input', () => {
-                    this.autoResizeTextarea(this.chatInput);
-                });
+                // Removed auto-resize for chat input
                 
                 document.getElementById('sendBtn').addEventListener('click', () => {
                     if (this.chatInput.value.trim()) {
@@ -1016,9 +1111,6 @@
                     this.sidebar.classList.remove('-translate-x-full');
                     desktopToggle.style.opacity = '0';
                     desktopToggle.style.pointerEvents = 'none';
-                    // Position close button at top-right of sidebar (320px from left + 16px padding)
-                    desktopClose.style.left = '336px';
-                    desktopClose.style.right = 'auto';
                     desktopClose.style.opacity = '1';
                     desktopClose.style.pointerEvents = 'auto';
                 } else {
@@ -1062,7 +1154,6 @@
                 this.chatScreen.classList.add('hidden');
                 this.currentChatId = null;
                 this.homeInput.value = '';
-                this.homeInput.style.height = 'auto'; // Reset textarea height
                 this.homeInput.focus();
             }
             
@@ -1116,7 +1207,6 @@
                 chat.messages.push(userMessage);
                 this.renderMessage(userMessage);
                 this.chatInput.value = '';
-                this.chatInput.style.height = 'auto'; // Reset textarea height
                 
                 // Add AI response placeholder
                 const aiMessage = {
@@ -1389,15 +1479,27 @@ Câu hỏi: "${message.substring(0, 35)}${message.length > 35 ? '...' : ''}"
             
             renderMessage(message) {
                 const messageDiv = document.createElement('div');
-                messageDiv.className = `message-bubble flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`;
+                messageDiv.className = message.role === 'user' ? 'user-message' : 'ai-message';
                 messageDiv.id = `message-${message.id}`;
                 
-                const bubbleClass = message.role === 'user' 
-                    ? 'bg-blue-600 text-white shadow-lg' 
-                    : 'bg-white border border-gray-200 text-gray-900 shadow-md';
+                const messageWrapper = document.createElement('div');
+                messageWrapper.className = 'message-wrapper';
                 
-                const messageContent = document.createElement('div');
-                messageContent.className = `max-w-xs lg:max-w-md px-4 py-3 rounded-lg ${bubbleClass}`;
+                // Avatar
+                const avatar = document.createElement('div');
+                avatar.className = `avatar ${message.role === 'user' ? 'user-avatar' : 'ai-avatar'}`;
+                
+                if (message.role === 'user') {
+                    // Không hiển thị avatar cho user
+                    avatar.style.display = 'none';
+                } else {
+                    // Avatar Minecraft cho AI
+                    avatar.innerHTML = `<img src="https://i.postimg.cc/Jyz7fhf8/image.png" alt="AI" class="w-full h-full object-cover rounded-full" onerror="this.style.display='none'; this.parentElement.style.background='linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'; this.parentElement.textContent='AI';">`;
+                }
+                
+                // Message bubble
+                const messageBubble = document.createElement('div');
+                messageBubble.className = `message-bubble-content ${message.role === 'user' ? 'user-bubble' : 'ai-bubble'}`;
                 
                 const contentDiv = document.createElement('div');
                 contentDiv.className = 'message-content';
@@ -1414,16 +1516,18 @@ Câu hỏi: "${message.substring(0, 35)}${message.length > 35 ? '...' : ''}"
                     contentDiv.textContent = message.content || '';
                 }
                 
-                messageContent.appendChild(contentDiv);
+                messageBubble.appendChild(contentDiv);
                 
                 if (message.isTyping) {
                     const typingDiv = document.createElement('div');
                     typingDiv.className = 'typing-indicator mt-2 text-center';
                     typingDiv.innerHTML = '<span class="inline-block w-2 h-2 bg-current rounded-full animate-pulse mx-1"></span><span class="inline-block w-2 h-2 bg-current rounded-full animate-pulse mx-1" style="animation-delay: 0.2s"></span><span class="inline-block w-2 h-2 bg-current rounded-full animate-pulse mx-1" style="animation-delay: 0.4s"></span>';
-                    messageContent.appendChild(typingDiv);
+                    messageBubble.appendChild(typingDiv);
                 }
                 
-                messageDiv.appendChild(messageContent);
+                messageWrapper.appendChild(avatar);
+                messageWrapper.appendChild(messageBubble);
+                messageDiv.appendChild(messageWrapper);
                 this.messagesContainer.appendChild(messageDiv);
                 
                 this.scrollToBottom();
@@ -2003,17 +2107,7 @@ Câu hỏi: "${message.substring(0, 35)}${message.length > 35 ? '...' : ''}"
                 }
             }
             
-            autoResizeTextarea(textarea) {
-                // Reset height to auto to get the correct scrollHeight
-                textarea.style.height = 'auto';
-                
-                // Set height based on scrollHeight, but respect min and max heights
-                const minHeight = parseInt(getComputedStyle(textarea).minHeight);
-                const maxHeight = parseInt(getComputedStyle(textarea).maxHeight);
-                const newHeight = Math.min(Math.max(textarea.scrollHeight, minHeight), maxHeight);
-                
-                textarea.style.height = newHeight + 'px';
-            }
+            // Removed autoResizeTextarea function
             
             saveChats() {
                 localStorage.setItem('novax_chats', JSON.stringify(this.chats));
@@ -2023,5 +2117,5 @@ Câu hỏi: "${message.substring(0, 35)}${message.length > 35 ? '...' : ''}"
         // Initialize the app
         const app = new NovaXChat();
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'976480332377fe8f',t:'MTc1NjM5MTM2Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9769f15181e12d50',t:'MTc1NjQ0ODQyOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
