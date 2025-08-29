@@ -32,6 +32,23 @@
     }
 }
 
+/* Typing Animation Cursor */
+.typing-cursor::after {
+    content: '|';
+    animation: cursorBlink 1s infinite;
+    color: #3b82f6;
+    font-weight: bold;
+}
+
+@keyframes cursorBlink {
+    0%, 50% {
+        opacity: 1;
+    }
+    51%, 100% {
+        opacity: 0;
+    }
+}
+
 
 /* Quick suggestion animations and styles */
 .quick-suggestion {

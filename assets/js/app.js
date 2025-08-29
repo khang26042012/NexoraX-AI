@@ -350,17 +350,9 @@ class NovaXChat {
                 const aiResponse = data.candidates[0].content.parts[0].text.trim();
                 
                 if (aiResponse) {
-                    const words = aiResponse.split(' ');
-                    let currentText = '';
-                    
-                    for (let i = 0; i < words.length; i++) {
-                        currentText += (i > 0 ? ' ' : '') + words[i];
-                        aiMessage.content = currentText;
-                        this.updateMessage(aiMessage);
-                        await new Promise(resolve => setTimeout(resolve, 50));
-                    }
-                    
+                    aiMessage.content = aiResponse;
                     aiMessage.isTyping = false;
+                    aiMessage.isFinalized = false; // Trigger typing animation
                     this.updateMessage(aiMessage);
                     return;
                 }
@@ -379,17 +371,9 @@ class NovaXChat {
             
             const randomResponse = demoResponses[Math.floor(Math.random() * demoResponses.length)];
             
-            const words = randomResponse.split(' ');
-            let currentText = '';
-            
-            for (let i = 0; i < words.length; i++) {
-                currentText += (i > 0 ? ' ' : '') + words[i];
-                aiMessage.content = currentText;
-                this.updateMessage(aiMessage);
-                await new Promise(resolve => setTimeout(resolve, 50));
-            }
-            
+            aiMessage.content = randomResponse;
             aiMessage.isTyping = false;
+            aiMessage.isFinalized = false; // Trigger typing animation
             this.updateMessage(aiMessage);
         }
     }
@@ -441,17 +425,9 @@ class NovaXChat {
                 if (aiResponse && aiResponse.length > 0) {
                     console.log('Successfully got NovaX 2.0 response from Groq Llama 3.1');
                     
-                    const words = aiResponse.split(' ');
-                    let currentText = '';
-                    
-                    for (let i = 0; i < words.length; i++) {
-                        currentText += (i > 0 ? ' ' : '') + words[i];
-                        aiMessage.content = currentText;
-                        this.updateMessage(aiMessage);
-                        await new Promise(resolve => setTimeout(resolve, 25));
-                    }
-                    
+                    aiMessage.content = aiResponse;
                     aiMessage.isTyping = false;
+                    aiMessage.isFinalized = false; // Trigger typing animation
                     this.updateMessage(aiMessage);
                     return;
                 }
@@ -469,17 +445,9 @@ class NovaXChat {
             
             const randomResponse = smartResponses[Math.floor(Math.random() * smartResponses.length)];
             
-            const words = randomResponse.split(' ');
-            let currentText = '';
-            
-            for (let i = 0; i < words.length; i++) {
-                currentText += (i > 0 ? ' ' : '') + words[i];
-                aiMessage.content = currentText;
-                this.updateMessage(aiMessage);
-                await new Promise(resolve => setTimeout(resolve, 30));
-            }
-            
+            aiMessage.content = randomResponse;
             aiMessage.isTyping = false;
+            aiMessage.isFinalized = false; // Trigger typing animation
             this.updateMessage(aiMessage);
         }
     }
@@ -512,10 +480,47 @@ class NovaXChat {
             if (message.isTyping) {
                 contentElement.innerHTML = '<div class="ai-loading"><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div></div>';
             } else {
-                contentElement.innerHTML = this.formatMessage(message.content);
+                // If this is an AI message and has content, use typing animation
+                if (message.role === 'ai' && message.content && !message.isFinalized) {
+                    this.typewriterEffect(contentElement, message.content, () => {
+                        message.isFinalized = true;
+                    });
+                } else {
+                    contentElement.innerHTML = this.formatMessage(message.content);
+                }
             }
             this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
         }
+    }
+    
+    async typewriterEffect(element, text, onComplete = null) {
+        const words = text.split(' ');
+        let currentText = '';
+        
+        // Add typing cursor
+        element.classList.add('typing-cursor');
+        element.innerHTML = '';
+        
+        for (let i = 0; i < words.length; i++) {
+            currentText += (i > 0 ? ' ' : '') + words[i];
+            element.innerHTML = this.formatMessage(currentText);
+            this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+            
+            // Adjust speed based on word length and punctuation
+            let delay = 50; // Base delay
+            const word = words[i];
+            if (word.includes('.') || word.includes('!') || word.includes('?')) {
+                delay = 200; // Longer pause after sentences
+            } else if (word.includes(',') || word.includes(';')) {
+                delay = 100; // Medium pause after commas
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+        
+        // Remove typing cursor when done
+        element.classList.remove('typing-cursor');
+        if (onComplete) onComplete();
     }
     
     formatMessage(content) {
