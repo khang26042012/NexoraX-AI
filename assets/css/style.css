@@ -477,7 +477,7 @@ html, body {
 }
 
 /* Dark mode cho tất cả elements */
-.dark .bg-white { background-color: #2d3748 !important; }
+.dark .bg-white { background-color: #40414f !important; }
 .dark .bg-gray-50 { background-color: #0f0f23 !important; }
 .dark .bg-gray-100 { background-color: #16213e !important; }
 .dark .bg-gray-200 { background-color: #1a1a2e !important; }
@@ -536,33 +536,33 @@ html, body {
 /* Dark mode cho input fields */
 .dark input[type="text"], .dark textarea {
     background-color: transparent !important;
-    border-color: #4a5568 !important;
-    color: #f7fafc !important;
+    border-color: rgba(86, 88, 105, 0.5) !important;
+    color: #ececf1 !important;
 }
 
 .dark input[type="text"]:focus, .dark textarea:focus {
-    border-color: #667eea !important;
+    border-color: rgba(86, 88, 105, 0.8) !important;
     background-color: transparent !important;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+    box-shadow: none !important;
 }
 
 .dark input[type="text"]::placeholder, .dark textarea::placeholder {
-    color: #a0aec0 !important;
+    color: #8e8ea0 !important;
 }
 
 /* Dark mode cho chat input container cụ thể */
 .dark #chatInput {
     background-color: transparent !important;
-    color: #f7fafc !important;
+    color: #ececf1 !important;
 }
 
 .dark #chatInput::placeholder {
-    color: #a0aec0 !important;
+    color: #8e8ea0 !important;
 }
 
 /* Dark mode cho chat input container */
 .dark .bg-white\/95 {
-    background: rgba(45, 55, 72, 0.95) !important;
+    background: rgba(52, 53, 65, 0.95) !important;
 }
 
 .dark .backdrop-blur-sm {
