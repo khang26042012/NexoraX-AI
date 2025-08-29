@@ -535,18 +535,19 @@ html, body {
 
 /* Dark mode cho input fields */
 .dark input[type="text"], .dark textarea {
-    background-color: #1e293b !important;
-    border-color: #374151 !important;
-    color: #f1f5f9 !important;
+    background-color: #2d3748 !important;
+    border-color: #4a5568 !important;
+    color: #f7fafc !important;
 }
 
 .dark input[type="text"]:focus, .dark textarea:focus {
-    border-color: #3b82f6 !important;
-    background-color: #1e293b !important;
+    border-color: #667eea !important;
+    background-color: #2d3748 !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
 }
 
 .dark input[type="text"]::placeholder, .dark textarea::placeholder {
-    color: #9ca3af !important;
+    color: #a0aec0 !important;
 }
 
 /* Dark mode cho chat input container */
