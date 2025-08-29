@@ -90,6 +90,10 @@ class NovaXChat {
         // About
         document.getElementById('aboutBtn').addEventListener('click', () => this.showAbout());
         document.getElementById('closeAbout').addEventListener('click', () => this.hideAbout());
+        document.getElementById('goToSettingsBtn').addEventListener('click', () => {
+            this.hideAbout();
+            setTimeout(() => this.showSettings(), 300);
+        });
         
         // Clear All
         document.getElementById('clearAllBtn').addEventListener('click', () => this.showClearAllConfirmation());
