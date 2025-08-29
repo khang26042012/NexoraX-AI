@@ -1,4 +1,4 @@
-modules = ["web", "python-3.11"]
+modules = ["nodejs-20", "web", "python-3.12"]
 [agent]
 expertMode = true
 
@@ -35,4 +35,4 @@ externalPort = 80
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["python", "-m", "http.server", "5000"]
+run = ["python", "server.py"]
