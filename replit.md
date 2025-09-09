@@ -29,6 +29,7 @@ Preferred communication style: Simple, everyday language.
   - Simplified sidebar layout with clean white background
   - Added "No chat history" placeholder with proper show/hide logic
   - Fixed settings button with proper name display and click functionality
+  - **Integrated custom New chat button design**: Applied user-provided HTML/CSS code for professional rounded button with custom plus icon created using CSS pseudo-elements
 
 ## Previous Changes (Aug 29, 2025)
 
