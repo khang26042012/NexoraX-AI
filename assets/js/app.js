@@ -179,14 +179,20 @@ class NovaXChat {
     
     setupFileUploadListeners() {
         // Home file upload button
-        document.getElementById('homeFileUploadBtn').addEventListener('click', () => {
-            this.homeFileInput.click();
-        });
+        const homeFileUploadBtn = document.getElementById('homeFileUploadBtn');
+        if (homeFileUploadBtn) {
+            homeFileUploadBtn.addEventListener('click', () => {
+                this.homeFileInput.click();
+            });
+        }
         
-        // Chat file upload button
-        document.getElementById('fileUploadBtn').addEventListener('click', () => {
-            this.chatFileInput.click();
-        });
+        // Chat file upload button (removed from new design)
+        const fileUploadBtn = document.getElementById('fileUploadBtn');
+        if (fileUploadBtn) {
+            fileUploadBtn.addEventListener('click', () => {
+                this.chatFileInput.click();
+            });
+        }
         
         // File input change handlers
         this.homeFileInput.addEventListener('change', (e) => {

@@ -30,6 +30,7 @@ Preferred communication style: Simple, everyday language.
   - Added "No chat history" placeholder with proper show/hide logic
   - Fixed settings button with proper name display and click functionality
   - **Integrated custom New chat button design**: Applied user-provided HTML/CSS code for professional rounded button with custom plus icon created using CSS pseudo-elements
+  - **Updated message input bar design**: Redesigned chat input to match deepseek.com style with rounded corners, "Message NovaX - AI" placeholder, microphone button, and purple send button
 
 ## Previous Changes (Aug 29, 2025)
 
