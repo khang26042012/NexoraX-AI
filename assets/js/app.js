@@ -29,6 +29,7 @@ class NovaXChat {
         this.settingsModal = document.getElementById('settingsModal');
         this.aboutModal = document.getElementById('aboutModal');
         this.clearAllModal = document.getElementById('clearAllModal');
+        this.feedbackModal = document.getElementById('feedbackModal');
         this.searchInput = document.getElementById('searchInput');
         
         // Scroll buttons
@@ -111,9 +112,18 @@ class NovaXChat {
         document.getElementById('confirmClearAll').addEventListener('click', () => this.clearAllChats());
         
         // Feedback
-        document.getElementById('feedbackBtn').addEventListener('click', () => this.showFeedback());
-        document.getElementById('cancelFeedback').addEventListener('click', () => this.hideFeedback());
-        document.getElementById('submitFeedback').addEventListener('click', () => this.submitFeedback());
+        const feedbackBtn = document.getElementById('feedbackBtn');
+        if (feedbackBtn) {
+            feedbackBtn.addEventListener('click', () => this.showFeedback());
+        }
+        const cancelFeedback = document.getElementById('cancelFeedback');
+        if (cancelFeedback) {
+            cancelFeedback.addEventListener('click', () => this.hideFeedback());
+        }
+        const submitFeedback = document.getElementById('submitFeedback');
+        if (submitFeedback) {
+            submitFeedback.addEventListener('click', () => this.submitFeedback());
+        }
         
         // Star rating
         document.querySelectorAll('.star').forEach(star => {
@@ -121,7 +131,10 @@ class NovaXChat {
             star.addEventListener('mouseenter', (e) => this.highlightStars(parseInt(e.target.dataset.rating)));
         });
         
-        document.getElementById('starRating').addEventListener('mouseleave', () => this.resetStarHighlight());
+        const starRating = document.getElementById('starRating');
+        if (starRating) {
+            starRating.addEventListener('mouseleave', () => this.resetStarHighlight());
+        }
         
         // Model selection
         document.querySelectorAll('input[name="aiModel"]').forEach(radio => {
@@ -157,13 +170,13 @@ class NovaXChat {
         // Close sidebar when clicking outside on mobile
         document.addEventListener('click', (e) => {
             if (window.innerWidth < 1024 && 
-                !this.sidebar.contains(e.target) && 
-                !this.sidebarToggle.contains(e.target) &&
-                !this.settingsModal.contains(e.target) &&
-                !this.aboutModal.contains(e.target) &&
-                !this.clearAllModal.contains(e.target) &&
-                !this.feedbackModal.contains(e.target) &&
-                !this.filePreviewModal.contains(e.target)) {
+                this.sidebar && !this.sidebar.contains(e.target) && 
+                this.sidebarToggle && !this.sidebarToggle.contains(e.target) &&
+                (!this.settingsModal || !this.settingsModal.contains(e.target)) &&
+                (!this.aboutModal || !this.aboutModal.contains(e.target)) &&
+                (!this.clearAllModal || !this.clearAllModal.contains(e.target)) &&
+                (!this.feedbackModal || !this.feedbackModal.contains(e.target)) &&
+                (!this.filePreviewModal || !this.filePreviewModal.contains(e.target))) {
                 this.closeSidebar();
             }
         });
