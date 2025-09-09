@@ -772,3 +772,88 @@ html, body {
 .dark .glow-input::placeholder {
     color: #bdbdbd !important;
 }
+
+/* New Chat Button Styles */
+.new-chat-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 280px;
+    height: 44px;
+    background-color: #ffffff;
+    border: 1px solid #dadce0;
+    border-radius: 22px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    position: relative;
+    margin-bottom: 16px;
+}
+
+.new-chat-button:hover {
+    background-color: #f8f9fa;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+}
+
+.plus-icon {
+    width: 18px;
+    height: 18px;
+    border: 1.2px solid #5f6368;
+    border-radius: 50%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.plus-icon::before {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 1.2px;
+    background-color: #5f6368;
+    border-radius: 0.6px;
+}
+
+.plus-icon::after {
+    content: '';
+    position: absolute;
+    width: 1.2px;
+    height: 8px;
+    background-color: #5f6368;
+    border-radius: 0.6px;
+}
+
+.button-text {
+    font-size: 14px;
+    color: #3c4043;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    user-select: none;
+}
+
+/* Dark mode support for new chat button */
+.dark .new-chat-button {
+    background-color: #1f2937;
+    border-color: #374151;
+}
+
+.dark .new-chat-button:hover {
+    background-color: #374151;
+}
+
+.dark .plus-icon {
+    border-color: #9ca3af;
+}
+
+.dark .plus-icon::before,
+.dark .plus-icon::after {
+    background-color: #9ca3af;
+}
+
+.dark .button-text {
+    color: #f3f4f6;
+}
