@@ -835,6 +835,22 @@ class NovaXChat {
     
     renderChatList() {
         const chatArray = Object.values(this.chats);
+        const noChatHistoryElement = document.getElementById('noChatHistory');
+        
+        if (chatArray.length === 0) {
+            // Show "No chat history" message
+            this.chatList.innerHTML = '';
+            if (noChatHistoryElement) {
+                noChatHistoryElement.style.display = 'flex';
+            }
+            return;
+        }
+        
+        // Hide "No chat history" message
+        if (noChatHistoryElement) {
+            noChatHistoryElement.style.display = 'none';
+        }
+        
         chatArray.sort((a, b) => {
             if (a.isPinned && !b.isPinned) return -1;
             if (!a.isPinned && b.isPinned) return 1;
