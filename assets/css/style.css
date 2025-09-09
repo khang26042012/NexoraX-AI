@@ -454,6 +454,17 @@ html, body {
     margin: 0;
     padding: 0;
     overflow-x: hidden;
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Mobile-first responsive design */
+@media (max-width: 768px) {
+    .text-6xl { font-size: 2.5rem !important; }
+    .text-xl { font-size: 1.1rem !important; }
+    .w-80 { width: 16rem !important; }
+    .p-6 { padding: 1rem !important; }
+    .mb-12 { margin-bottom: 1.5rem !important; }
+    .mb-8 { margin-bottom: 1rem !important; }
 }
 
 .chat-container {
@@ -641,7 +652,57 @@ html, body {
     transform: scale(1.05);
 }
 
-/* Material UI Inspired Input Styles */
+/* Material UI Inspired Styles */
+
+/* Button styles */
+.btn-material {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+    cursor: pointer;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    text-decoration: none;
+    user-select: none;
+}
+
+.btn-material:hover {
+    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+    transform: translateY(-1px);
+}
+
+.btn-material:active {
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    transform: translateY(0);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+}
+
+.btn-secondary {
+    background: #f5f5f5;
+    color: #424242;
+    border: 1px solid #e0e0e0;
+}
+
+.btn-secondary:hover {
+    background: #eeeeee;
+    border-color: #bdbdbd;
+}
+
+/* Input styles */
 .glow-input-container {
     display: flex;
     align-items: center;
