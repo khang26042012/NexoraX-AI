@@ -16,7 +16,12 @@ NovaX AI is a web-based AI chat assistant application that provides an interacti
 
 Preferred communication style: Simple, everyday language.
 
-## Recent Changes (Aug 29, 2025)
+## Recent Changes (Sep 9, 2025)
+
+- **Removed sidebar scroll functionality**: Eliminated scroll up/down buttons from sidebar and related JavaScript methods for cleaner UI
+- **Settings and theme functionality verified**: Confirmed that settings modal and dark/light mode toggle are working properly with smooth animations
+
+## Previous Changes (Aug 29, 2025)
 
 - **Successfully restructured monolithic application**: Split single index.html file into organized components
 - **Created structured file organization**: HTML (index.html), CSS (assets/css/style.css), JavaScript (assets/js/app.js)

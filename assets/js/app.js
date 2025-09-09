@@ -32,9 +32,7 @@ class NovaXChat {
         this.feedbackModal = document.getElementById('feedbackModal');
         this.searchInput = document.getElementById('searchInput');
         
-        // Scroll buttons
-        this.scrollUpBtn = document.getElementById('scrollUpBtn');
-        this.scrollDownBtn = document.getElementById('scrollDownBtn');
+        // Scroll buttons removed
         
         // File upload elements
         this.filePreviewModal = document.getElementById('filePreviewModal');
@@ -144,9 +142,7 @@ class NovaXChat {
         // Search
         this.searchInput.addEventListener('input', (e) => this.searchChats(e.target.value));
         
-        // Scroll buttons
-        this.scrollUpBtn.addEventListener('click', () => this.scrollChatList('up'));
-        this.scrollDownBtn.addEventListener('click', () => this.scrollChatList('down'));
+        // Scroll buttons removed
         
         // File upload event listeners
         this.setupFileUploadListeners();
@@ -906,16 +902,6 @@ class NovaXChat {
         }
     }
     
-    scrollChatList(direction) {
-        const chatList = document.getElementById('chatList');
-        const scrollAmount = 100; // pixels to scroll
-        
-        if (direction === 'up') {
-            chatList.scrollTop -= scrollAmount;
-        } else {
-            chatList.scrollTop += scrollAmount;
-        }
-    }
     
     searchChats(query) {
         const chatItems = this.chatList.querySelectorAll('.chat-item');
