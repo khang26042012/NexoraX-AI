@@ -30,7 +30,7 @@ class NovaXChat {
         this.aboutModal = document.getElementById('aboutModal');
         this.clearAllModal = document.getElementById('clearAllModal');
         this.feedbackModal = document.getElementById('feedbackModal');
-        this.searchInput = document.getElementById('searchInput');
+        // Search removed
         
         // Scroll buttons removed
         
@@ -139,8 +139,7 @@ class NovaXChat {
             radio.addEventListener('change', (e) => this.changeModel(e.target.value));
         });
         
-        // Search
-        this.searchInput.addEventListener('input', (e) => this.searchChats(e.target.value));
+        // Search removed
         
         // Scroll buttons removed
         
