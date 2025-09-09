@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
-<body class="bg-gray-50 text-gray-900 transition-colors duration-300">
+<body class="bg-gray-50 text-gray-900">
 
     <!-- Sidebar -->
     <div id="sidebar" class="fixed left-0 top-0 h-full w-80 glass-effect border-r border-gray-200 z-50 sidebar-transition transform -translate-x-full shadow-xl">
@@ -90,9 +90,9 @@
         <!-- Home Screen -->
         <div id="homeScreen" class="home-container bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
             <div class="w-full max-w-4xl">
-                <div class="text-center mb-12 fade-in">
+                <div class="text-center mb-8 fade-in">
                     <!-- Logo container -->
-                    <div class="mb-6 bounce-in">
+                    <div class="mb-8 bounce-in">
                         <div class="w-24 h-24 mx-auto mb-4 flex items-center justify-center">
                             <img src="https://i.postimg.cc/Jyz7fhf8/image.png" alt="NovaX AI Logo" class="w-24 h-24 object-contain drop-shadow-xl" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                             <div class="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-2xl scale-in" style="display: none;">
@@ -136,30 +136,6 @@
                             <input type="file" id="homeFileInput" class="hidden" multiple accept="image/*,.pdf,.doc,.docx,.txt">
                         </div>
                         
-                        <!-- Quick suggestions -->
-                        <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl mx-auto">
-                            <button class="quick-suggestion p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-gray-200/50 hover:bg-white/90 hover:shadow-md transition-all duration-300 text-left group">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                                        </svg>
-                                    </div>
-                                    <span class="text-gray-700 font-medium">Hỏi về kiến thức</span>
-                                </div>
-                            </button>
-                            
-                            <button class="quick-suggestion p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-gray-200/50 hover:bg-white/90 hover:shadow-md transition-all duration-300 text-left group">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors">
-                                        <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
-                                        </svg>
-                                    </div>
-                                    <span class="text-gray-700 font-medium">Hỗ trợ lập trình</span>
-                                </div>
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>

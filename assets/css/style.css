@@ -50,20 +50,7 @@
 }
 
 
-/* Quick suggestion animations and styles */
-.quick-suggestion {
-    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    transform: translateY(0);
-}
-
-.quick-suggestion:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1);
-}
-
-.quick-suggestion:active {
-    transform: translateY(0);
-}
+/* Removed quick suggestion styles */
 
 /* Enhanced input area styles */
 .home-input-area {
@@ -497,11 +484,12 @@ html, body {
 }
 
 .dark { 
-    background-color: #0f0f23; 
-    color: #f8fafc;
+    background-color: #0f0f23 !important; 
+    color: #f8fafc !important;
+    transition: none !important;
 }
 
-/* Dark mode cho tất cả elements */
+/* Dark mode cho tất cả elements - No transitions for instant dark mode */
 .dark .bg-white { background-color: transparent !important; }
 .dark .bg-gray-50 { background-color: #0f0f23 !important; }
 .dark .bg-gray-100 { background-color: #16213e !important; }
