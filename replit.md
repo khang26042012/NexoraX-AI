@@ -5,9 +5,11 @@ NovaX AI is a modern web-based chat application that integrates with AI models (
 
 ## Project Architecture
 - **Frontend**: HTML5, CSS3, JavaScript (ES6+) with Tailwind CSS
-- **Backend**: Python 3.11 HTTP server for serving static files
+- **Backend**: Python 3.11 HTTP server with API proxy endpoints
 - **Language**: Vietnamese (with English fallback)
-- **AI Integration**: Google Gemini API for chat responses
+- **AI Integration**: 
+  - Google Gemini Flash 2.5 (via Gemini API)
+  - Google DeepMind Gemma (via Groq API)
 
 ## Key Features
 - Real-time AI chat with streaming responses
@@ -16,7 +18,7 @@ NovaX AI is a modern web-based chat application that integrates with AI models (
 - Dark/light theme toggle
 - Responsive design (mobile-friendly)
 - Sidebar navigation with chat management
-- Settings modal with model selection
+- Settings modal with dual AI model selection
 
 ## Technical Setup
 - Server runs on port 5000 with proper cache control headers
@@ -42,10 +44,12 @@ NovaX AI is a modern web-based chat application that integrates with AI models (
 - The application is ready for production deployment
 
 ## Recent Changes
-- Set up Python 3.11 environment
-- Configured workflow for development server
-- Verified application functionality
-- Set up deployment configuration for autoscale
+- **September 2025**: Replaced Gemini Pro with Gemma (Google DeepMind)
+- Added Groq API integration for Gemma model access  
+- Implemented secure server-side proxy for both Gemini and Groq APIs
+- Updated model migration logic for existing users
+- Enhanced error handling and routing between AI models
+- Maintained security with API keys in Replit Secrets
 
 ## User Preferences
 - Application interface is in Vietnamese
