@@ -43,41 +43,59 @@ class NovaXChat {
     
     setupEventListeners() {
         // Sidebar toggle mobile
-        this.sidebarToggle.addEventListener('click', () => this.toggleSidebar());
+        if (this.sidebarToggle) {
+            this.sidebarToggle.addEventListener('click', () => this.toggleSidebar());
+        }
         
         // Sidebar toggle desktop
-        document.getElementById('desktopSidebarToggle').addEventListener('click', () => this.toggleDesktopSidebar());
+        const desktopToggle = document.getElementById('desktopSidebarToggle');
+        if (desktopToggle) {
+            desktopToggle.addEventListener('click', () => this.toggleDesktopSidebar());
+        }
         
         // Close sidebar button (works for both mobile and desktop)
-        document.getElementById('closeSidebar').addEventListener('click', () => this.closeSidebar());
+        const closeSidebar = document.getElementById('closeSidebar');
+        if (closeSidebar) {
+            closeSidebar.addEventListener('click', () => this.closeSidebar());
+        }
         
         // Home input
-        this.homeInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey && this.homeInput.value.trim()) {
-                e.preventDefault();
-                this.startNewChat(this.homeInput.value.trim());
-            }
-        });
+        if (this.homeInput) {
+            this.homeInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey && this.homeInput.value.trim()) {
+                    e.preventDefault();
+                    this.startNewChat(this.homeInput.value.trim());
+                }
+            });
+        }
         
-        document.getElementById('homeSendBtn').addEventListener('click', () => {
-            if (this.homeInput.value.trim() || this.selectedFiles.size > 0) {
-                this.startNewChat(this.homeInput.value.trim());
-            }
-        });
+        const homeSendBtn = document.getElementById('homeSendBtn');
+        if (homeSendBtn) {
+            homeSendBtn.addEventListener('click', () => {
+                if (this.homeInput && (this.homeInput.value.trim() || this.selectedFiles.size > 0)) {
+                    this.startNewChat(this.homeInput.value.trim());
+                }
+            });
+        }
         
         // Chat input
-        this.chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey && this.chatInput.value.trim()) {
-                e.preventDefault();
-                this.sendMessage(this.chatInput.value.trim());
-            }
-        });
+        if (this.chatInput) {
+            this.chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey && this.chatInput.value.trim()) {
+                    e.preventDefault();
+                    this.sendMessage(this.chatInput.value.trim());
+                }
+            });
+        }
         
-        document.getElementById('sendBtn').addEventListener('click', () => {
-            if (this.chatInput.value.trim() || this.selectedFiles.size > 0) {
-                this.sendMessage(this.chatInput.value.trim());
-            }
-        });
+        const sendBtn = document.getElementById('sendBtn');
+        if (sendBtn) {
+            sendBtn.addEventListener('click', () => {
+                if (this.chatInput && (this.chatInput.value.trim() || this.selectedFiles.size > 0)) {
+                    this.sendMessage(this.chatInput.value.trim());
+                }
+            });
+        }
         
         // New chat button
         document.getElementById('newChatBtn').addEventListener('click', () => {
