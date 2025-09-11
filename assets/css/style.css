@@ -560,77 +560,78 @@ html, body {
 
 /* Dark mode cho input fields */
 .dark input[type="text"], .dark textarea {
-    background-color: rgba(71, 85, 105, 0.8) !important;
-    border-color: rgba(100, 116, 139, 0.6) !important;
-    color: #f8fafc !important;
+    background-color: #2f3349 !important;
+    border-color: #404356 !important;
+    color: #dcddde !important;
 }
 
 .dark input[type="text"]:focus, .dark textarea:focus {
-    border-color: #60a5fa !important;
-    background-color: rgba(82, 82, 91, 0.9) !important;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.35) !important;
+    border-color: #5865f2 !important;
+    background-color: #363a4f !important;
+    box-shadow: 0 0 0 1px rgba(88, 101, 242, 0.4) !important;
 }
 
 .dark input[type="text"]::placeholder, .dark textarea::placeholder {
-    color: #cbd5e1 !important;
+    color: #72767d !important;
 }
 
-/* Dark mode for sidebar and chat history */
+/* Dark mode for sidebar and chat history - Professional theme */
 .dark .sidebar {
-    background-color: #1e293b !important;
-    border-color: #334155 !important;
+    background-color: #2b2d42 !important;
+    border-color: #404356 !important;
 }
 
 /* Dark mode for chat history items */
 .dark .chat-item {
-    background-color: #334155 !important;
-    border-color: #475569 !important;
-    color: #f8fafc !important;
+    background-color: #363a4f !important;
+    border-color: #404356 !important;
+    color: #dcddde !important;
 }
 
 .dark .chat-item:hover {
-    background-color: #475569 !important;
+    background-color: #484c64 !important;
 }
 
 .dark .chat-item h3, .dark .chat-item .chat-title {
-    color: #f8fafc !important;
+    color: #dcddde !important;
 }
 
 .dark .chat-item p, .dark .chat-item .chat-date {
-    color: #cbd5e1 !important;
+    color: #8e9297 !important;
 }
 
 /* Dark mode for sidebar header */
 .dark .sidebar h2, .dark .sidebar h3 {
-    color: #f8fafc !important;
+    color: #dcddde !important;
 }
 
 /* Dark mode for new chat button */
 .dark .new-chat-button {
-    background-color: #475569 !important;
-    color: #f8fafc !important;
-    border-color: #64748b !important;
+    background-color: #404356 !important;
+    color: #dcddde !important;
+    border-color: #484c64 !important;
 }
 
 .dark .new-chat-button:hover {
-    background-color: #64748b !important;
+    background-color: #484c64 !important;
 }
 
 /* Dark mode cho chat input container cụ thể - ChatGPT style */
 .dark #chatInput {
-    background-color: rgba(71, 85, 105, 0.8) !important;
-    color: #f8fafc !important;
-    border: 1px solid rgba(100, 116, 139, 0.6) !important;
+    background-color: #2f3349 !important;
+    color: #dcddde !important;
+    border: 1px solid #404356 !important;
 }
 
 .dark #chatInput:focus {
-    border-color: #60a5fa !important;
+    border-color: #5865f2 !important;
     outline: none !important;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.35) !important;
+    background-color: #363a4f !important;
+    box-shadow: 0 0 0 1px rgba(88, 101, 242, 0.4) !important;
 }
 
 .dark #chatInput::placeholder {
-    color: #cbd5e1 !important;
+    color: #72767d !important;
 }
 
 /* Dark mode cho chat input wrapper */
@@ -980,27 +981,27 @@ html, body {
     color: white;
 }
 
-/* Dark mode for NovaX message input */
+/* Dark mode for NovaX message input - Updated to match new theme */
 .dark .novax-message-input-wrapper {
-    background-color: #374151;
-    border-color: #4b5563;
+    background-color: #2f3349;
+    border-color: #404356;
 }
 
 .dark .novax-message-input-wrapper:focus-within {
-    border-color: #60a5fa;
-    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+    border-color: #5865f2;
+    box-shadow: 0 0 0 1px rgba(88, 101, 242, 0.4);
 }
 
 .dark .novax-message-input {
-    color: #f9fafb;
+    color: #dcddde;
 }
 
 .dark .novax-message-input::placeholder {
-    color: #9ca3af;
+    color: #72767d;
 }
 
 .dark .novax-mic-button:hover {
-    background-color: #4b5563;
+    background-color: #404356;
 }
 
 .dark .novax-mic-button svg {
@@ -1064,9 +1065,9 @@ html, body {
 }
 
 .replit-send-btn:hover {
-    background-color: #2563eb;
+    background-color: #4752c4;
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 4px 8px rgba(88, 101, 242, 0.3);
 }
 
 .replit-send-btn:active {
@@ -1078,33 +1079,34 @@ html, body {
     color: white;
 }
 
-/* Dark mode for Replit-style input - Fixed brighter colors */
+/* Dark mode for Replit-style input - Professional dark theme */
 .dark .replit-input-container {
-    background-color: #475569;
-    border-color: #64748b;
+    background-color: #2f3349;
+    border-color: #404356;
+    border-width: 1px;
 }
 
 .dark .replit-input-container:focus-within {
-    border-color: #60a5fa;
-    background-color: #52525b;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.35);
+    border-color: #5865f2;
+    background-color: #363a4f;
+    box-shadow: 0 0 0 1px rgba(88, 101, 242, 0.4);
 }
 
 .dark .replit-input {
-    color: #f8fafc;
+    color: #dcddde;
     background-color: transparent;
 }
 
 .dark .replit-input::placeholder {
-    color: #cbd5e1;
+    color: #72767d;
 }
 
 .dark .replit-send-btn {
-    background-color: #3b82f6;
+    background-color: #5865f2;
 }
 
 .dark .replit-send-btn:hover {
-    background-color: #2563eb;
+    background-color: #4752c4;
 }
 
 /* Chat input area improvements */
@@ -1115,9 +1117,9 @@ html, body {
 }
 
 .dark .chat-container .fixed {
-    background: rgba(71, 85, 105, 0.95);
+    background: rgba(47, 51, 73, 0.98);
     backdrop-filter: blur(20px);
-    border-top-color: #64748b;
+    border-top-color: #404356;
 }
 
 /* Improve messages container for better scrolling */
