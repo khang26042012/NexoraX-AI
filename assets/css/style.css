@@ -616,30 +616,7 @@ html, body {
     background-color: #484c64 !important;
 }
 
-/* Dark mode cho chat input container cụ thể - ChatGPT style */
-.dark #chatInput {
-    background-color: #2f3349 !important;
-    color: #dcddde !important;
-    border: 1px solid #404356 !important;
-}
-
-.dark #chatInput:focus {
-    border-color: #5865f2 !important;
-    outline: none !important;
-    background-color: #363a4f !important;
-    box-shadow: 0 0 0 1px rgba(88, 101, 242, 0.4) !important;
-}
-
-.dark #chatInput::placeholder {
-    color: #72767d !important;
-}
-
-/* Dark mode cho chat input wrapper */
-.dark .flex-1 {
-    background-color: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-}
+/* Chat input now uses same styling as home input - no specific rules needed */
 
 /* Dark mode cho chat input container */
 .dark .bg-white\/95 {
@@ -1114,15 +1091,11 @@ html, body {
 
 /* Chat input area improvements */
 .chat-container .fixed {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-top: 1px solid #e5e7eb;
+    background: transparent;
 }
 
 .dark .chat-container .fixed {
-    background: rgba(47, 51, 73, 0.98);
-    backdrop-filter: blur(20px);
-    border-top-color: #404356;
+    background: transparent;
 }
 
 /* Improve messages container for better scrolling */
