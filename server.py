@@ -11,6 +11,9 @@ import os
 import mimetypes
 from urllib.parse import unquote
 import logging
+import json
+import urllib.request
+import urllib.parse
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -22,6 +25,69 @@ class NovaXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=os.getcwd(), **kwargs)
     
+    def do_POST(self):
+        """Handle POST requests for API proxy"""
+        if self.path == '/api/gemini':
+            self.handle_gemini_proxy()
+        else:
+            self.send_error(404)
+
+    def handle_gemini_proxy(self):
+        """Proxy requests to Gemini API using server-side API key"""
+        try:
+            # Get API key from environment (Replit Secrets)
+            api_key = os.getenv('GEMINI_API_KEY')
+            if not api_key:
+                self.send_error(500, "API key not configured")
+                return
+            
+            # Read request body
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            request_data = json.loads(post_data.decode('utf-8'))
+            
+            # Extract model from request
+            model = request_data.get('model', 'gemini-1.5-flash')
+            
+            # Build Gemini API URL
+            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+            
+            # Prepare request for Gemini API
+            gemini_request = urllib.request.Request(
+                gemini_url,
+                data=json.dumps(request_data.get('payload', {})).encode('utf-8'),
+                headers={'Content-Type': 'application/json'}
+            )
+            
+            # Make request to Gemini API
+            with urllib.request.urlopen(gemini_request) as response:
+                gemini_response = response.read()
+                
+            # Return response to client
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            # Only allow same-origin requests for security
+            origin = self.headers.get('Origin', '')
+            if origin.startswith('http://localhost') or origin.startswith('https://') and 'replit' in origin:
+                self.send_header('Access-Control-Allow-Origin', origin)
+            self.end_headers()
+            self.wfile.write(gemini_response)
+            
+        except Exception as e:
+            logger.error(f"Gemini proxy error: {e}")
+            self.send_error(500, f"Proxy error: {str(e)}")
+
+    def do_OPTIONS(self):
+        """Handle CORS preflight requests"""
+        self.send_response(200)
+        # Only allow same-origin requests for security
+        origin = self.headers.get('Origin', '')
+        if origin.startswith('http://localhost') or origin.startswith('https://') and 'replit' in origin:
+            self.send_header('Access-Control-Allow-Origin', origin)
+        self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers()
+
     def do_GET(self):
         """Handle GET requests with proper MIME types and caching"""
         # Log all requests

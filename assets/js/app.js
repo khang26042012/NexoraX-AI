@@ -2,10 +2,16 @@ class NovaXChat {
     constructor() {
         this.currentChatId = null;
         this.chats = JSON.parse(localStorage.getItem('novax_chats') || '{}');
-        this.apiKey = localStorage.getItem('novax_api_key') || 'AIzaSyBh1t_Ab1C3t53nka9Lt2gbtzrFxP6SZWM';
+        // API calls now go through server-side proxy - no client-side key needed
         this.isDarkMode = localStorage.getItem('novax_dark_mode') === 'true';
         this.currentRating = 0;
-        this.selectedModel = localStorage.getItem('novax_selected_model') || 'gemini';
+        // Model migration for existing users
+        let savedModel = localStorage.getItem('novax_selected_model');
+        if (!savedModel || !['gemini-flash', 'gemini-pro'].includes(savedModel)) {
+            savedModel = 'gemini-flash'; // Default for new users or migrate old models
+            localStorage.setItem('novax_selected_model', savedModel);
+        }
+        this.selectedModel = savedModel;
         this.selectedFiles = new Map(); // Store selected files with their data
         
         this.initializeElements();
@@ -587,10 +593,8 @@ class NovaXChat {
     
     async getAIResponse(message, aiMessage, files = null) {
         try {
-            if (this.selectedModel === 'gemini') {
+            if (this.selectedModel === 'gemini-flash' || this.selectedModel === 'gemini-pro') {
                 await this.getGeminiResponse(message, aiMessage, files);
-            } else if (this.selectedModel === 'llama') {
-                await this.getMixtralResponse(message, aiMessage, files);
             }
         } catch (error) {
             console.error('AI API Error:', error);
@@ -602,8 +606,9 @@ class NovaXChat {
     
     async getGeminiResponse(message, aiMessage, files = null) {
         try {
-            const apiKey = this.apiKey || 'AIzaSyBh1t_Ab1C3t53nka9Lt2gbtzrFxP6SZWM';
-            const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + apiKey;
+            // Use server-side proxy instead of direct API calls
+            const modelEndpoint = this.selectedModel === 'gemini-pro' ? 'gemini-1.5-pro' : 'gemini-1.5-flash';
+            const url = '/api/gemini';
             
             // Enhance message with file context if files are provided
             let enhancedMessage = message;
@@ -631,7 +636,10 @@ class NovaXChat {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(requestBody)
+                body: JSON.stringify({
+                    model: modelEndpoint,
+                    payload: requestBody
+                })
             });
             
             if (!response.ok) {
@@ -661,8 +669,8 @@ class NovaXChat {
             console.error('Gemini API Error:', error);
             
             const demoResponses = [
-                "Xin chào! Tôi là NovaX v1.0 sử dụng Google Gemini Flash 2.0. Tôi có thể giúp bạn trả lời câu hỏi, giải thích khái niệm, và hỗ trợ học tập.",
-                "Đây là phản hồi từ Google Gemini Flash 2.0 - model AI tiên tiến với khả năng hiểu ngôn ngữ tự nhiên và cung cấp thông tin chính xác.",
+                "Xin chào! Tôi là NovaX AI với Google Gemini. Tôi có thể giúp bạn trả lời câu hỏi, giải thích khái niệm, và hỗ trợ học tập.",
+                "Đây là phản hồi từ Google Gemini - model AI tiên tiến với khả năng hiểu ngôn ngữ tự nhiên và cung cấp thông tin chính xác.",
                 "Tôi có thể giúp bạn với nhiều chủ đề khác nhau như học tập, giải bài tập, tìm hiểu kiến thức, và trò chuyện thông thường. Hãy hỏi tôi bất cứ điều gì!"
             ];
             
@@ -675,86 +683,6 @@ class NovaXChat {
         }
     }
     
-    async getMixtralResponse(message, aiMessage, files = null) {
-        try {
-            const API_TOKEN = "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";
-            const API_URL = "https://api.groq.com/openai/v1/chat/completions";
-            
-            // Enhance message with file context if files are provided
-            let enhancedMessage = message;
-            if (files && files.length > 0) {
-                const fileDescriptions = files.map(file => `File: ${file.name} (${file.type}, ${this.formatFileSize(file.size)})`).join(', ');
-                enhancedMessage = `Tôi đã đính kèm ${files.length} file(s): ${fileDescriptions}. ${message || 'Hãy phân tích các file này và cho tôi biết nội dung.'}`;
-            }
-            
-            console.log('NovaX 2.0 using Groq Llama 3.1 8B Instant for message: ' + enhancedMessage.substring(0, 50) + '...');
-            
-            const response = await fetch(API_URL, {
-                method: "POST",
-                headers: {
-                    "Authorization": "Bearer " + API_TOKEN,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    model: "llama-3.1-8b-instant",
-                    messages: [
-                        {
-                            role: "system",
-                            content: "Bạn là NovaX v2.0 được hỗ trợ bởi Llama 3.1 8B Instant trên Groq - một trí tuệ nhân tạo siêu nhanh và thông minh. Hãy trả lời bằng tiếng Việt một cách tự nhiên, thân thiện và chính xác. Khi người dùng gửi file, hãy phản hồi một cách hữu ích về việc bạn đã nhận được file và có thể hỗ trợ họ như thế nào với những file đó."
-                        },
-                        {
-                            role: "user",
-                            content: enhancedMessage
-                        }
-                    ],
-                    temperature: 0.7,
-                    max_tokens: 1024,
-                    top_p: 0.95,
-                    stream: false
-                })
-            });
-            
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('Groq Llama 3.1 API Error:', response.status, errorText);
-                throw new Error('HTTP ' + response.status + ': ' + errorText);
-            }
-            
-            const data = await response.json();
-            console.log('NovaX 2.0 Groq Llama 3.1 response:', data);
-            
-            if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
-                const aiResponse = data.choices[0].message.content.trim();
-                
-                if (aiResponse && aiResponse.length > 0) {
-                    console.log('Successfully got NovaX 2.0 response from Groq Llama 3.1');
-                    
-                    aiMessage.content = aiResponse;
-                    aiMessage.isTyping = false;
-                    aiMessage.isFinalized = false; // Trigger typing animation
-                    this.updateMessage(aiMessage);
-                    return;
-                }
-            }
-            
-            throw new Error('Invalid or empty response from Groq Llama 3.1');
-            
-        } catch (error) {
-            console.error('NovaX 2.0 Groq Llama 3.1 API Error:', error);
-            
-            const smartResponses = [
-                "Xin chào! Tôi là NovaX v2.0 được hỗ trợ bởi Llama 3.1 8B Instant trên Groq - AI siêu nhanh từ Meta!\n\nVề câu hỏi \"" + message.substring(0, 50) + (message.length > 50 ? '...' : '') + "\", đây là một chủ đề thú vị! Tôi có khả năng mạnh mẽ trong cả trò chuyện thông thường và hỗ trợ lập trình.",
-                "Chào bạn! NovaX v2.0 với Llama 3.1 8B Instant trên Groq đang xử lý câu hỏi của bạn. Với Groq LPU (Language Processing Unit), tôi có thể phản hồi siêu nhanh và chính xác!"
-            ];
-            
-            const randomResponse = smartResponses[Math.floor(Math.random() * smartResponses.length)];
-            
-            aiMessage.content = randomResponse;
-            aiMessage.isTyping = false;
-            aiMessage.isFinalized = false; // Trigger typing animation
-            this.updateMessage(aiMessage);
-        }
-    }
     
     scrollToBottom() {
         if (this.messagesContainer) {
@@ -1169,8 +1097,8 @@ class NovaXChat {
         localStorage.setItem('novax_selected_model', modelType);
         
         const modelNames = {
-            'gemini': 'NovaX (v1.0) - Gemini Flash 2.0',
-            'llama': 'NovaX (v2.0) - Llama 3.1 8B Instant'
+            'gemini-flash': 'NovaX (v1.0) - Gemini Flash 2.5',
+            'gemini-pro': 'NovaX (v2.0) - Gemini Pro'
         };
         
         
@@ -1184,8 +1112,8 @@ class NovaXChat {
         }
         
         const modelNames = {
-            'gemini': 'NovaX (v1.0) - Gemini Flash 2.0',
-            'llama': 'NovaX (v2.0) - Llama 3.1 8B Instant'
+            'gemini-flash': 'NovaX (v1.0) - Gemini Flash 2.5',
+            'gemini-pro': 'NovaX (v2.0) - Gemini Pro'
         };
         
     }
