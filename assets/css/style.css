@@ -475,6 +475,7 @@ html, body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    position: relative;
 }
 
 .input-area {
@@ -1071,6 +1072,30 @@ html, body {
     background-color: #2563eb;
 }
 
+/* Chat input area improvements */
+.chat-container .fixed {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid #e5e7eb;
+}
+
+.dark .chat-container .fixed {
+    background: rgba(55, 65, 81, 0.95);
+    border-top-color: #4b5563;
+}
+
+/* Improve messages container for better scrolling */
+#messagesContainer {
+    padding-bottom: 120px !important; /* Increase bottom padding */
+    margin-bottom: 0;
+    scroll-behavior: smooth;
+}
+
+/* Auto scroll to bottom when new messages appear */
+.message-bubble:last-child {
+    margin-bottom: 20px;
+}
+
 /* Responsive adjustments for Replit input */
 @media (max-width: 640px) {
     .replit-input-container {
@@ -1090,5 +1115,14 @@ html, body {
     .replit-send-btn svg {
         width: 14px;
         height: 14px;
+    }
+    
+    /* Mobile-specific fixes */
+    #messagesContainer {
+        padding-bottom: 140px !important; /* More padding on mobile */
+    }
+    
+    .chat-container .fixed {
+        padding: 12px 16px;
     }
 }

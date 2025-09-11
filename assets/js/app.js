@@ -213,37 +213,56 @@ class NovaXChat {
         }
         
         // File input change handlers
-        this.homeFileInput.addEventListener('change', (e) => {
-            this.handleFileSelection(e.target.files);
-        });
+        if (this.homeFileInput) {
+            this.homeFileInput.addEventListener('change', (e) => {
+                this.handleFileSelection(e.target.files);
+            });
+        }
         
-        this.chatFileInput.addEventListener('change', (e) => {
-            this.handleFileSelection(e.target.files);
-        });
+        if (this.chatFileInput) {
+            this.chatFileInput.addEventListener('change', (e) => {
+                this.handleFileSelection(e.target.files);
+            });
+        }
         
         // File preview modal events
-        document.getElementById('closeFilePreview').addEventListener('click', () => {
-            this.hideFilePreview();
-        });
+        const closeFilePreview = document.getElementById('closeFilePreview');
+        if (closeFilePreview) {
+            closeFilePreview.addEventListener('click', () => {
+                this.hideFilePreview();
+            });
+        }
         
-        document.getElementById('clearFiles').addEventListener('click', () => {
-            this.clearSelectedFiles();
-        });
+        const clearFiles = document.getElementById('clearFiles');
+        if (clearFiles) {
+            clearFiles.addEventListener('click', () => {
+                this.clearSelectedFiles();
+            });
+        }
         
-        document.getElementById('confirmFiles').addEventListener('click', () => {
-            this.hideFilePreview();
-        });
+        const confirmFiles = document.getElementById('confirmFiles');
+        if (confirmFiles) {
+            confirmFiles.addEventListener('click', () => {
+                this.hideFilePreview();
+            });
+        }
         
         // Image modal events
-        document.getElementById('closeImageModal').addEventListener('click', () => {
-            this.closeImageModal();
-        });
-        
-        document.getElementById('imageModal').addEventListener('click', (e) => {
-            if (e.target.id === 'imageModal') {
+        const closeImageModal = document.getElementById('closeImageModal');
+        if (closeImageModal) {
+            closeImageModal.addEventListener('click', () => {
                 this.closeImageModal();
-            }
-        });
+            });
+        }
+        
+        const imageModal = document.getElementById('imageModal');
+        if (imageModal) {
+            imageModal.addEventListener('click', (e) => {
+                if (e.target.id === 'imageModal') {
+                    this.closeImageModal();
+                }
+            });
+        }
     }
     
     openImageModal(imageSrc, imageTitle) {
@@ -536,6 +555,7 @@ class NovaXChat {
         
         chat.messages.push(userMessage);
         this.renderMessage(userMessage);
+        this.scrollToBottom();
         this.chatInput.value = '';
         
         // Clear selected files after sending
@@ -551,6 +571,7 @@ class NovaXChat {
         
         chat.messages.push(aiMessage);
         this.renderMessage(aiMessage);
+        this.scrollToBottom();
         
         try {
             await this.getAIResponse(trimmedMessage, aiMessage, attachedFiles);
@@ -732,6 +753,14 @@ class NovaXChat {
             aiMessage.isTyping = false;
             aiMessage.isFinalized = false; // Trigger typing animation
             this.updateMessage(aiMessage);
+        }
+    }
+    
+    scrollToBottom() {
+        if (this.messagesContainer) {
+            setTimeout(() => {
+                this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+            }, 100);
         }
     }
     
