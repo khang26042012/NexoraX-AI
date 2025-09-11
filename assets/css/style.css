@@ -560,36 +560,77 @@ html, body {
 
 /* Dark mode cho input fields */
 .dark input[type="text"], .dark textarea {
-    background-color: transparent !important;
-    border-color: rgba(86, 88, 105, 0.5) !important;
-    color: #ececf1 !important;
+    background-color: rgba(71, 85, 105, 0.8) !important;
+    border-color: rgba(100, 116, 139, 0.6) !important;
+    color: #f8fafc !important;
 }
 
 .dark input[type="text"]:focus, .dark textarea:focus {
-    border-color: rgba(86, 88, 105, 0.8) !important;
-    background-color: transparent !important;
-    box-shadow: none !important;
+    border-color: #60a5fa !important;
+    background-color: rgba(82, 82, 91, 0.9) !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.35) !important;
 }
 
 .dark input[type="text"]::placeholder, .dark textarea::placeholder {
-    color: #8e8ea0 !important;
+    color: #cbd5e1 !important;
+}
+
+/* Dark mode for sidebar and chat history */
+.dark .sidebar {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+/* Dark mode for chat history items */
+.dark .chat-item {
+    background-color: #334155 !important;
+    border-color: #475569 !important;
+    color: #f8fafc !important;
+}
+
+.dark .chat-item:hover {
+    background-color: #475569 !important;
+}
+
+.dark .chat-item h3, .dark .chat-item .chat-title {
+    color: #f8fafc !important;
+}
+
+.dark .chat-item p, .dark .chat-item .chat-date {
+    color: #cbd5e1 !important;
+}
+
+/* Dark mode for sidebar header */
+.dark .sidebar h2, .dark .sidebar h3 {
+    color: #f8fafc !important;
+}
+
+/* Dark mode for new chat button */
+.dark .new-chat-button {
+    background-color: #475569 !important;
+    color: #f8fafc !important;
+    border-color: #64748b !important;
+}
+
+.dark .new-chat-button:hover {
+    background-color: #64748b !important;
 }
 
 /* Dark mode cho chat input container cụ thể - ChatGPT style */
 .dark #chatInput {
-    background-color: #40414f !important;
-    color: #ececf1 !important;
-    border: 1px solid #565869 !important;
+    background-color: rgba(71, 85, 105, 0.8) !important;
+    color: #f8fafc !important;
+    border: 1px solid rgba(100, 116, 139, 0.6) !important;
 }
 
 .dark #chatInput:focus {
-    border-color: #565869 !important;
+    border-color: #60a5fa !important;
     outline: none !important;
-    box-shadow: none !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.35) !important;
 }
 
 .dark #chatInput::placeholder {
-    color: #8e8ea0 !important;
+    color: #cbd5e1 !important;
 }
 
 /* Dark mode cho chat input wrapper */
@@ -836,15 +877,7 @@ html, body {
     user-select: none;
 }
 
-/* Dark mode support for new chat button */
-.dark .new-chat-button {
-    background-color: #1f2937;
-    border-color: #374151;
-}
-
-.dark .new-chat-button:hover {
-    background-color: #374151;
-}
+/* Removed duplicate - using earlier definition with better colors */
 
 .dark .plus-icon {
     border-color: #9ca3af;
@@ -1045,23 +1078,25 @@ html, body {
     color: white;
 }
 
-/* Dark mode for Replit-style input */
+/* Dark mode for Replit-style input - Fixed brighter colors */
 .dark .replit-input-container {
-    background-color: #374151;
-    border-color: #4b5563;
+    background-color: #475569;
+    border-color: #64748b;
 }
 
 .dark .replit-input-container:focus-within {
     border-color: #60a5fa;
-    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+    background-color: #52525b;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.35);
 }
 
 .dark .replit-input {
-    color: #f9fafb;
+    color: #f8fafc;
+    background-color: transparent;
 }
 
 .dark .replit-input::placeholder {
-    color: #9ca3af;
+    color: #cbd5e1;
 }
 
 .dark .replit-send-btn {
@@ -1080,8 +1115,9 @@ html, body {
 }
 
 .dark .chat-container .fixed {
-    background: rgba(55, 65, 81, 0.95);
-    border-top-color: #4b5563;
+    background: rgba(71, 85, 105, 0.95);
+    backdrop-filter: blur(20px);
+    border-top-color: #64748b;
 }
 
 /* Improve messages container for better scrolling */

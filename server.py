@@ -85,8 +85,11 @@ def run_server(port=5000):
     """Run the NovaX AI server"""
     handler = NovaXHTTPRequestHandler
     
+    # Allow reuse of socket address to prevent "Address already in use" errors
+    socketserver.TCPServer.allow_reuse_address = True
+    
     try:
-        with socketserver.TCPServer(("", port), handler) as httpd:
+        with socketserver.TCPServer(("0.0.0.0", port), handler) as httpd:
             logger.info(f"NovaX AI Server running on http://0.0.0.0:{port}/")
             logger.info("Press Ctrl+C to stop the server")
             
