@@ -631,13 +631,20 @@ class NovaXChat {
                 }
             };
             
+            // Map client model names to actual Google API model IDs
+            const modelMapping = {
+                'gemini-flash': 'gemini-1.5-flash',
+                'gemini-pro': 'gemini-1.5-pro'
+            };
+            const apiModelId = modelMapping[this.selectedModel] || 'gemini-1.5-flash';
+            
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    model: modelEndpoint,
+                    model: apiModelId,
                     payload: requestBody
                 })
             });

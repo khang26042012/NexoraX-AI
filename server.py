@@ -68,7 +68,7 @@ class NovaXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header('Content-Type', 'application/json')
             # Only allow same-origin requests for security
             origin = self.headers.get('Origin', '')
-            if origin.startswith('http://localhost') or origin.startswith('https://') and 'replit' in origin:
+            if (origin.startswith('http://localhost')) or ((origin.startswith('https://')) and ('replit' in origin)):
                 self.send_header('Access-Control-Allow-Origin', origin)
             self.end_headers()
             self.wfile.write(gemini_response)
@@ -82,7 +82,7 @@ class NovaXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.send_response(200)
         # Only allow same-origin requests for security
         origin = self.headers.get('Origin', '')
-        if origin.startswith('http://localhost') or origin.startswith('https://') and 'replit' in origin:
+        if (origin.startswith('http://localhost')) or ((origin.startswith('https://')) and ('replit' in origin)):
             self.send_header('Access-Control-Allow-Origin', origin)
         self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
