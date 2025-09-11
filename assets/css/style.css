@@ -1026,6 +1026,9 @@ html, body {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     transition: all 0.2s ease;
     position: relative;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .replit-input-container:focus-within {
@@ -1137,21 +1140,26 @@ html, body {
 /* Responsive adjustments for Replit input */
 @media (max-width: 640px) {
     .replit-input-container {
-        padding: 10px 14px;
+        padding: 10px 12px;
+        margin: 0;
+        width: 100%;
+        max-width: 100%;
     }
     
     .replit-input {
         font-size: 16px; /* Prevent zoom on iOS */
+        min-width: 0; /* Allow flex shrinking */
     }
     
     .replit-send-btn {
-        width: 28px;
-        height: 28px;
+        width: 32px;
+        height: 32px;
         margin-left: 8px;
+        flex-shrink: 0;
     }
     
     .replit-send-btn svg {
-        width: 14px;
+        width: 16px;
         height: 14px;
     }
     
