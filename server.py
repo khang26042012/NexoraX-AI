@@ -29,6 +29,8 @@ class NovaXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         """Handle POST requests for API proxy"""
         if self.path == '/api/gemini':
             self.handle_gemini_proxy()
+        elif self.path == '/api/groq':
+            self.handle_groq_proxy()
         else:
             self.send_error(404)
 
@@ -75,6 +77,65 @@ class NovaXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             
         except Exception as e:
             logger.error(f"Gemini proxy error: {e}")
+            self.send_error(500, f"Proxy error: {str(e)}")
+
+    def handle_groq_proxy(self):
+        """Proxy requests to Groq API using server-side API key"""
+        try:
+            # Get API key from environment (Replit Secrets)
+            api_key = os.getenv('GROQ_API_KEY')
+            if not api_key:
+                self.send_error(500, "Groq API key not configured")
+                return
+            
+            # Read request body
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            request_data = json.loads(post_data.decode('utf-8'))
+            
+            # Extract model from request (default to gemma-7b-it)
+            model = request_data.get('model', 'gemma-7b-it')
+            
+            # Build Groq API request payload
+            groq_payload = {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": request_data.get('message', '')
+                    }
+                ],
+                "model": model,
+                "temperature": request_data.get('temperature', 0.7),
+                "max_tokens": request_data.get('max_tokens', 1024),
+                "top_p": request_data.get('top_p', 0.95)
+            }
+            
+            # Prepare request for Groq API
+            groq_request = urllib.request.Request(
+                "https://api.groq.com/openai/v1/chat/completions",
+                data=json.dumps(groq_payload).encode('utf-8'),
+                headers={
+                    'Content-Type': 'application/json',
+                    'Authorization': f'Bearer {api_key}'
+                }
+            )
+            
+            # Make request to Groq API
+            with urllib.request.urlopen(groq_request) as response:
+                groq_response = response.read()
+                
+            # Return response to client
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            # Only allow same-origin requests for security
+            origin = self.headers.get('Origin', '')
+            if (origin.startswith('http://localhost')) or ((origin.startswith('https://')) and ('replit' in origin)):
+                self.send_header('Access-Control-Allow-Origin', origin)
+            self.end_headers()
+            self.wfile.write(groq_response)
+            
+        except Exception as e:
+            logger.error(f"Groq proxy error: {e}")
             self.send_error(500, f"Proxy error: {str(e)}")
 
     def do_OPTIONS(self):

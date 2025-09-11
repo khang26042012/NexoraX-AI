@@ -7,8 +7,9 @@ class NovaXChat {
         this.currentRating = 0;
         // Model migration for existing users
         let savedModel = localStorage.getItem('novax_selected_model');
-        if (!savedModel || !['gemini-flash', 'gemini-pro'].includes(savedModel)) {
-            savedModel = 'gemini-flash'; // Default for new users or migrate old models
+        if (!savedModel || !['gemini-flash', 'gemma'].includes(savedModel)) {
+            // Migrate gemini-pro to gemma, others default to gemini-flash
+            savedModel = savedModel === 'gemini-pro' ? 'gemma' : 'gemini-flash';
             localStorage.setItem('novax_selected_model', savedModel);
         }
         this.selectedModel = savedModel;
@@ -593,21 +594,22 @@ class NovaXChat {
     
     async getAIResponse(message, aiMessage, files = null) {
         try {
-            if (this.selectedModel === 'gemini-flash' || this.selectedModel === 'gemini-pro') {
-                await this.getGeminiResponse(message, aiMessage, files);
+            // Route to appropriate API based on selected model
+            if (this.selectedModel === 'gemma') {
+                return await this.getGroqResponse(message, aiMessage, files);
+            } else {
+                return await this.getGeminiResponse(message, aiMessage, files);
             }
         } catch (error) {
-            console.error('AI API Error:', error);
-            aiMessage.content = "Xin lỗi, hiện tại tôi không thể trả lời. Vui lòng kiểm tra kết nối mạng hoặc thử lại sau.";
-            aiMessage.isTyping = false;
-            this.updateMessage(aiMessage);
+            console.error('AI Response Error:', error);
+            this.handleAIError(aiMessage);
         }
     }
-    
+
     async getGeminiResponse(message, aiMessage, files = null) {
         try {
             // Use server-side proxy instead of direct API calls
-            const modelEndpoint = this.selectedModel === 'gemini-pro' ? 'gemini-1.5-pro' : 'gemini-1.5-flash';
+            const modelEndpoint = 'gemini-1.5-flash';
             const url = '/api/gemini';
             
             // Enhance message with file context if files are provided
@@ -678,6 +680,67 @@ class NovaXChat {
             const demoResponses = [
                 "Xin chào! Tôi là NovaX AI với Google Gemini. Tôi có thể giúp bạn trả lời câu hỏi, giải thích khái niệm, và hỗ trợ học tập.",
                 "Đây là phản hồi từ Google Gemini - model AI tiên tiến với khả năng hiểu ngôn ngữ tự nhiên và cung cấp thông tin chính xác.",
+                "Tôi có thể giúp bạn với nhiều chủ đề khác nhau như học tập, giải bài tập, tìm hiểu kiến thức, và trò chuyện thông thường. Hãy hỏi tôi bất cứ điều gì!"
+            ];
+            
+            const randomResponse = demoResponses[Math.floor(Math.random() * demoResponses.length)];
+            
+            aiMessage.content = randomResponse;
+            aiMessage.isTyping = false;
+            aiMessage.isFinalized = false; // Trigger typing animation
+            this.updateMessage(aiMessage);
+        }
+    }
+
+    async getGroqResponse(message, aiMessage, files = null) {
+        try {
+            // Enhance message with file context if files are provided
+            let enhancedMessage = message;
+            if (files && files.length > 0) {
+                const fileDescriptions = files.map(file => `File: ${file.name} (${file.type})`).join(', ');
+                enhancedMessage = `Tôi đã đính kèm ${files.length} file(s): ${fileDescriptions}. ${message || 'Hãy phân tích các file này.'}`;
+            }
+
+            const response = await fetch('/api/groq', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    model: 'gemma-7b-it',
+                    message: enhancedMessage,
+                    temperature: 0.7,
+                    max_tokens: 1024,
+                    top_p: 0.95
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('HTTP error! status: ' + response.status);
+            }
+
+            const data = await response.json();
+            
+            if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
+                const aiResponse = data.choices[0].message.content.trim();
+                
+                if (aiResponse) {
+                    aiMessage.content = aiResponse;
+                    aiMessage.isTyping = false;
+                    aiMessage.isFinalized = false; // Trigger typing animation
+                    this.updateMessage(aiMessage);
+                    return;
+                }
+            }
+            
+            throw new Error('Invalid Groq response format or empty content');
+            
+        } catch (error) {
+            console.error('Groq API Error:', error);
+            
+            const demoResponses = [
+                "Xin chào! Tôi là NovaX AI với Gemma (Google DeepMind). Tôi có thể giúp bạn trả lời câu hỏi, giải thích khái niệm, và hỗ trợ học tập.",
+                "Đây là phản hồi từ Gemma - model AI mạnh mẽ của Google DeepMind với khả năng hiểu ngôn ngữ tự nhiên và cung cấp thông tin chính xác.",
                 "Tôi có thể giúp bạn với nhiều chủ đề khác nhau như học tập, giải bài tập, tìm hiểu kiến thức, và trò chuyện thông thường. Hãy hỏi tôi bất cứ điều gì!"
             ];
             
