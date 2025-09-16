@@ -231,14 +231,20 @@ def run_server(port=5000):
 if __name__ == "__main__":
     import sys
     
-    # Get port from command line argument or use default
-    port = 5000
-    if len(sys.argv) > 1:
+    # Get port with proper precedence: ENV variable (for deployments) > command line > default
+    env_port = os.getenv('PORT')
+    if env_port:
+        port = int(env_port)
+        if len(sys.argv) > 1:
+            logger.info(f"Using PORT environment variable ({env_port}) instead of command line argument")
+    elif len(sys.argv) > 1:
         try:
             port = int(sys.argv[1])
         except ValueError:
             logger.error("Invalid port number")
             sys.exit(1)
+    else:
+        port = 5000
     
     # Check if files exist
     required_files = ['index.html', 'assets/css/style.css', 'assets/js/app.js']
