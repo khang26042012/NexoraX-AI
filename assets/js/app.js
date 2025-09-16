@@ -5,14 +5,9 @@ class NovaXChat {
         // API calls now go through server-side proxy - no client-side key needed
         this.isDarkMode = localStorage.getItem('novax_dark_mode') === 'true';
         this.currentRating = 0;
-        // Model migration for existing users
-        let savedModel = localStorage.getItem('novax_selected_model');
-        if (!savedModel || !['gemini-flash', 'gemma'].includes(savedModel)) {
-            // Migrate gemini-pro to gemma, others default to gemini-flash
-            savedModel = savedModel === 'gemini-pro' ? 'gemma' : 'gemini-flash';
-            localStorage.setItem('novax_selected_model', savedModel);
-        }
-        this.selectedModel = savedModel;
+        // Only support gemini-flash model now
+        this.selectedModel = 'gemini-flash';
+        localStorage.setItem('novax_selected_model', this.selectedModel);
         this.selectedFiles = new Map(); // Store selected files with their data
         
         this.initializeElements();
@@ -163,6 +158,12 @@ class NovaXChat {
         document.querySelectorAll('input[name="aiModel"]').forEach(radio => {
             radio.addEventListener('change', (e) => this.changeModel(e.target.value));
         });
+        
+        // Model toggle (collapsible)
+        const modelToggle = document.getElementById('modelToggle');
+        if (modelToggle) {
+            modelToggle.addEventListener('click', () => this.toggleModelOptions());
+        }
         
         // Search removed
         
@@ -1167,12 +1168,10 @@ class NovaXChat {
         localStorage.setItem('novax_selected_model', modelType);
         
         const modelNames = {
-            'gemini-flash': 'NovaX (v1.0) - Gemini Flash 2.5',
-            'gemini-pro': 'NovaX (v2.0) - Gemini Pro'
+            'gemini-flash': 'Gemini Flash 1.5'
         };
         
-        
-        this.showNotification('Đã chuyển sang ' + modelNames[modelType] + '!', 'success');
+        this.showNotification('Đã chuyển sang ' + (modelNames[modelType] || modelType) + '!', 'success');
     }
     
     loadModelSelection() {
@@ -1180,12 +1179,21 @@ class NovaXChat {
         if (modelRadio) {
             modelRadio.checked = true;
         }
+    }
+    
+    toggleModelOptions() {
+        const modelOptions = document.getElementById('modelOptions');
+        const modelArrow = document.getElementById('modelArrow');
         
-        const modelNames = {
-            'gemini-flash': 'NovaX (v1.0) - Gemini Flash 2.5',
-            'gemini-pro': 'NovaX (v2.0) - Gemini Pro'
-        };
-        
+        if (modelOptions && modelArrow) {
+            if (modelOptions.classList.contains('hidden')) {
+                modelOptions.classList.remove('hidden');
+                modelArrow.classList.add('rotate-180');
+            } else {
+                modelOptions.classList.add('hidden');
+                modelArrow.classList.remove('rotate-180');
+            }
+        }
     }
     
     saveChats() {
