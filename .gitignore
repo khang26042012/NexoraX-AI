@@ -5,6 +5,9 @@
 .env.test.local
 .env.production.local
 
+# Configuration với API keys thực (uncomment dòng dưới khi đã thêm API keys thật)
+# config.py
+
 # Python
 __pycache__/
 *.py[cod]

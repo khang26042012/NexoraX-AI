@@ -15,6 +15,21 @@ import json
 import urllib.request
 import urllib.parse
 
+# Import configuration
+try:
+    from config import get_api_key, check_config
+except ImportError:
+    # Fallback nếu không có config.py
+    def get_api_key(service):
+        if service.lower() == "gemini":
+            return os.getenv('GEMINI_API_KEY')
+        elif service.lower() == "groq":
+            return os.getenv('GROQ_API_KEY')
+        return None
+    
+    def check_config():
+        return []
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -37,10 +52,10 @@ class NovaXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     def handle_gemini_proxy(self):
         """Proxy requests to Gemini API using server-side API key"""
         try:
-            # Get API key from environment (Replit Secrets)
-            api_key = os.getenv('GEMINI_API_KEY')
-            if not api_key:
-                self.send_error(500, "API key not configured")
+            # Get API key from config hoặc environment
+            api_key = get_api_key('gemini')
+            if not api_key or api_key == "your_gemini_api_key_here":
+                self.send_error(500, "Gemini API key not configured. Please edit config.py file.")
                 return
             
             # Read request body
@@ -82,10 +97,10 @@ class NovaXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     def handle_groq_proxy(self):
         """Proxy requests to Groq API using server-side API key"""
         try:
-            # Get API key from environment (Replit Secrets)
-            api_key = os.getenv('GROQ_API_KEY')
-            if not api_key:
-                self.send_error(500, "Groq API key not configured")
+            # Get API key from config hoặc environment
+            api_key = get_api_key('groq')
+            if not api_key or api_key == "your_groq_api_key_here":
+                self.send_error(500, "Groq API key not configured. Please edit config.py file.")
                 return
             
             # Read request body
