@@ -14,10 +14,11 @@ import logging
 import json
 import urllib.request
 import urllib.parse
+import urllib.error
 
 # Import configuration
 try:
-    from config import get_api_key, check_config
+    from config import get_api_key, check_config, get_allowed_origins, REQUEST_TIMEOUT
 except ImportError:
     # Fallback nếu không có config.py
     def get_api_key(service):
@@ -29,6 +30,11 @@ except ImportError:
     
     def check_config():
         return []
+    
+    def get_allowed_origins():
+        return ['http://localhost:5000']
+    
+    REQUEST_TIMEOUT = 30
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -40,6 +46,32 @@ class NovaXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=os.getcwd(), **kwargs)
     
+    def _is_origin_allowed(self, origin):
+        """Check if origin is in secure allowed list"""
+        if not origin:
+            return False
+        allowed_origins = get_allowed_origins()
+        return origin in allowed_origins
+    
+    def _send_cors_headers(self, origin=None):
+        """Send appropriate CORS headers securely"""
+        origin = origin or self.headers.get('Origin', '')
+        if self._is_origin_allowed(origin):
+            self.send_header('Access-Control-Allow-Origin', origin)
+        self.send_header('Vary', 'Origin')
+    
+    def _send_json_error(self, status_code, error_message, error_code):
+        """Send JSON error response with proper CORS"""
+        self.send_response(status_code)
+        self.send_header('Content-Type', 'application/json')
+        self._send_cors_headers()
+        self.end_headers()
+        error_response = json.dumps({
+            "error": error_message,
+            "code": error_code
+        })
+        self.wfile.write(error_response.encode('utf-8'))
+    
     def do_POST(self):
         """Handle POST requests for API proxy"""
         if self.path == '/api/gemini':
@@ -47,7 +79,7 @@ class NovaXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         elif self.path == '/api/groq':
             self.handle_groq_proxy()
         else:
-            self.send_error(404)
+            self._send_json_error(404, "API endpoint không tồn tại", "NOT_FOUND")
 
     def handle_gemini_proxy(self):
         """Proxy requests to Gemini API using server-side API key"""
@@ -55,7 +87,9 @@ class NovaXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             # Get API key from config hoặc environment
             api_key = get_api_key('gemini')
             if not api_key or api_key == "your_gemini_api_key_here":
-                self.send_error(500, "Gemini API key not configured. Please edit config.py file.")
+                self._send_json_error(500, 
+                    "API key chưa được cấu hình. Vui lòng thêm GEMINI_API_KEY vào environment variables.",
+                    "API_KEY_MISSING")
                 return
             
             # Read request body
@@ -76,23 +110,31 @@ class NovaXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 headers={'Content-Type': 'application/json'}
             )
             
-            # Make request to Gemini API
-            with urllib.request.urlopen(gemini_request) as response:
+            # Make request to Gemini API with timeout
+            with urllib.request.urlopen(gemini_request, timeout=REQUEST_TIMEOUT) as response:
                 gemini_response = response.read()
                 
             # Return response to client
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
-            # Only allow same-origin requests for security
-            origin = self.headers.get('Origin', '')
-            if (origin.startswith('http://localhost')) or ((origin.startswith('https://')) and ('replit' in origin)):
-                self.send_header('Access-Control-Allow-Origin', origin)
+            # Send secure CORS headers
+            self._send_cors_headers()
             self.end_headers()
             self.wfile.write(gemini_response)
             
+        except urllib.error.HTTPError as e:
+            # Forward exact status and error from Gemini API
+            try:
+                error_body = e.read().decode('utf-8')
+                self._send_json_error(e.code, f"Gemini API lỗi: {error_body}", "UPSTREAM_ERROR")
+            except:
+                self._send_json_error(e.code, f"Gemini API lỗi: {e.reason}", "UPSTREAM_ERROR")
+        except urllib.error.URLError as e:
+            logger.error(f"Gemini connection error: {e}")
+            self._send_json_error(502, "Không thể kết nối đến Gemini API", "CONNECTION_ERROR")
         except Exception as e:
             logger.error(f"Gemini proxy error: {e}")
-            self.send_error(500, f"Proxy error: {str(e)}")
+            self._send_json_error(500, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
 
     def handle_groq_proxy(self):
         """Proxy requests to Groq API using server-side API key"""
@@ -100,7 +142,9 @@ class NovaXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             # Get API key from config hoặc environment
             api_key = get_api_key('groq')
             if not api_key or api_key == "your_groq_api_key_here":
-                self.send_error(500, "Groq API key not configured. Please edit config.py file.")
+                self._send_json_error(500, 
+                    "Groq API key chưa được cấu hình. Vui lòng thêm GROQ_API_KEY vào environment variables.",
+                    "API_KEY_MISSING")
                 return
             
             # Read request body
@@ -135,33 +179,40 @@ class NovaXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 }
             )
             
-            # Make request to Groq API
-            with urllib.request.urlopen(groq_request) as response:
+            # Make request to Groq API with timeout
+            with urllib.request.urlopen(groq_request, timeout=REQUEST_TIMEOUT) as response:
                 groq_response = response.read()
                 
             # Return response to client
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
-            # Only allow same-origin requests for security
-            origin = self.headers.get('Origin', '')
-            if (origin.startswith('http://localhost')) or ((origin.startswith('https://')) and ('replit' in origin)):
-                self.send_header('Access-Control-Allow-Origin', origin)
+            # Send secure CORS headers
+            self._send_cors_headers()
             self.end_headers()
             self.wfile.write(groq_response)
             
+        except urllib.error.HTTPError as e:
+            # Forward exact status and error from Groq API
+            try:
+                error_body = e.read().decode('utf-8')
+                self._send_json_error(e.code, f"Groq API lỗi: {error_body}", "UPSTREAM_ERROR")
+            except:
+                self._send_json_error(e.code, f"Groq API lỗi: {e.reason}", "UPSTREAM_ERROR")
+        except urllib.error.URLError as e:
+            logger.error(f"Groq connection error: {e}")
+            self._send_json_error(502, "Không thể kết nối đến Groq API", "CONNECTION_ERROR")
         except Exception as e:
             logger.error(f"Groq proxy error: {e}")
-            self.send_error(500, f"Proxy error: {str(e)}")
+            self._send_json_error(500, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
 
     def do_OPTIONS(self):
         """Handle CORS preflight requests"""
         self.send_response(200)
-        # Only allow same-origin requests for security
-        origin = self.headers.get('Origin', '')
-        if (origin.startswith('http://localhost')) or ((origin.startswith('https://')) and ('replit' in origin)):
-            self.send_header('Access-Control-Allow-Origin', origin)
+        # Use secure CORS headers consistently
+        self._send_cors_headers()
         self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.send_header('Access-Control-Max-Age', '3600')
         self.end_headers()
 
     def do_GET(self):

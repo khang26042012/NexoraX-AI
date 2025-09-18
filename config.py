@@ -35,8 +35,29 @@ SERVER_HOST = "0.0.0.0"
 # ADVANCED SETTINGS
 # ===========================================
 
-# CORS settings
-ALLOWED_ORIGINS = ["localhost", "replit"]
+# CORS settings - Secure origins only
+ALLOWED_ORIGINS = [
+    "http://localhost:5000",
+    "http://127.0.0.1:5000",
+    # Render deployment URL will be auto-detected from environment
+    # Replit domain will be auto-detected from environment
+]
+
+def get_allowed_origins():
+    """Get secure list of allowed origins"""
+    origins = ALLOWED_ORIGINS.copy()
+    
+    # Add Replit domain if available
+    replit_domain = os.getenv('REPLIT_DOMAIN', '')
+    if replit_domain:
+        origins.append(replit_domain.replace('http://', 'https://'))
+    
+    # Add Render domain if available  
+    render_url = os.getenv('RENDER_EXTERNAL_URL', '')
+    if render_url:
+        origins.append(render_url)
+        
+    return [origin for origin in origins if origin]
 
 # Request timeout (seconds)
 REQUEST_TIMEOUT = 30
