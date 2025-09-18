@@ -24,8 +24,6 @@ except ImportError:
     def get_api_key(service):
         if service.lower() == "gemini":
             return os.getenv('GEMINI_API_KEY')
-        elif service.lower() == "groq":
-            return os.getenv('GROQ_API_KEY')
         return None
     
     def check_config():
@@ -76,8 +74,6 @@ class NovaXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         """Handle POST requests for API proxy"""
         if self.path == '/api/gemini':
             self.handle_gemini_proxy()
-        elif self.path == '/api/groq':
-            self.handle_groq_proxy()
         else:
             self._send_json_error(404, "API endpoint không tồn tại", "NOT_FOUND")
 
@@ -136,74 +132,6 @@ class NovaXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             logger.error(f"Gemini proxy error: {e}")
             self._send_json_error(500, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
 
-    def handle_groq_proxy(self):
-        """Proxy requests to Groq API using server-side API key"""
-        try:
-            # Get API key from config hoặc environment
-            api_key = get_api_key('groq')
-            if not api_key or api_key == "your_groq_api_key_here":
-                self._send_json_error(500, 
-                    "Groq API key chưa được cấu hình. Vui lòng thêm GROQ_API_KEY vào environment variables.",
-                    "API_KEY_MISSING")
-                return
-            
-            # Read request body
-            content_length = int(self.headers['Content-Length'])
-            post_data = self.rfile.read(content_length)
-            request_data = json.loads(post_data.decode('utf-8'))
-            
-            # Extract model from request (default to gemma-7b-it)
-            model = request_data.get('model', 'gemma-7b-it')
-            
-            # Build Groq API request payload
-            groq_payload = {
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": request_data.get('message', '')
-                    }
-                ],
-                "model": model,
-                "temperature": request_data.get('temperature', 0.7),
-                "max_tokens": request_data.get('max_tokens', 1024),
-                "top_p": request_data.get('top_p', 0.95)
-            }
-            
-            # Prepare request for Groq API
-            groq_request = urllib.request.Request(
-                "https://api.groq.com/openai/v1/chat/completions",
-                data=json.dumps(groq_payload).encode('utf-8'),
-                headers={
-                    'Content-Type': 'application/json',
-                    'Authorization': f'Bearer {api_key}'
-                }
-            )
-            
-            # Make request to Groq API with timeout
-            with urllib.request.urlopen(groq_request, timeout=REQUEST_TIMEOUT) as response:
-                groq_response = response.read()
-                
-            # Return response to client
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            # Send secure CORS headers
-            self._send_cors_headers()
-            self.end_headers()
-            self.wfile.write(groq_response)
-            
-        except urllib.error.HTTPError as e:
-            # Forward exact status and error from Groq API
-            try:
-                error_body = e.read().decode('utf-8')
-                self._send_json_error(e.code, f"Groq API lỗi: {error_body}", "UPSTREAM_ERROR")
-            except:
-                self._send_json_error(e.code, f"Groq API lỗi: {e.reason}", "UPSTREAM_ERROR")
-        except urllib.error.URLError as e:
-            logger.error(f"Groq connection error: {e}")
-            self._send_json_error(502, "Không thể kết nối đến Groq API", "CONNECTION_ERROR")
-        except Exception as e:
-            logger.error(f"Groq proxy error: {e}")
-            self._send_json_error(500, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
 
     def do_OPTIONS(self):
         """Handle CORS preflight requests"""

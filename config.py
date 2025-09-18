@@ -16,10 +16,6 @@ import os
 # IMPORTANT: Use Replit Secrets instead of hardcoding keys here
 GEMINI_API_KEY = "your_gemini_api_key_here"
 
-# Groq API Key
-# Lấy tại: https://console.groq.com/keys
-# IMPORTANT: Use Replit Secrets instead of hardcoding keys here
-GROQ_API_KEY = "your_groq_api_key_here"
 
 # ===========================================
 # SERVER CONFIGURATION
@@ -72,8 +68,6 @@ def get_api_key(service):
     """
     if service.lower() == "gemini":
         return os.getenv('GEMINI_API_KEY', GEMINI_API_KEY)
-    elif service.lower() == "groq":
-        return os.getenv('GROQ_API_KEY', GROQ_API_KEY)
     else:
         return None
 
@@ -85,13 +79,10 @@ def get_server_port():
 def check_config():
     """Kiểm tra xem API keys đã được cấu hình chưa"""
     gemini_key = get_api_key("gemini")
-    groq_key = get_api_key("groq")
     
     warnings = []
     if gemini_key == "your_gemini_api_key_here":
         warnings.append("⚠️  GEMINI_API_KEY chưa được cấu hình")
-    if groq_key == "your_groq_api_key_here":
-        warnings.append("⚠️  GROQ_API_KEY chưa được cấu hình")
     
     return warnings
 

@@ -1,7 +1,7 @@
 # NovaX AI - Replit Setup
 
 ## Project Overview
-NovaX AI is a modern Vietnamese AI chat application that provides conversations using Google Gemini and Groq language models. Successfully imported and configured for Replit environment on September 18, 2025.
+NovaX AI is a modern Vietnamese AI chat application that provides conversations using Google Gemini language model. Successfully imported and configured for Replit environment on September 18, 2025.
 
 ## Recent Changes
 - **September 18, 2025**: Successfully imported from GitHub and configured for Replit
@@ -9,6 +9,7 @@ NovaX AI is a modern Vietnamese AI chat application that provides conversations 
 - Workflow configured to run on port 5000
 - Deployment settings configured for autoscale
 - Application tested and verified working
+- **Removed Groq API**: Cleaned up codebase to only use Gemini API
 
 ## User Preferences
 - Vietnamese interface (main target audience)
@@ -54,7 +55,6 @@ NovaX AI is a modern Vietnamese AI chat application that provides conversations 
 
 ### API Integration
 - **Gemini API**: Ready for GEMINI_API_KEY secret
-- **Groq API**: Ready for GROQ_API_KEY secret  
 - **Graceful handling**: App works without keys, shows proper error messages
 
 ### Deployment Notes
@@ -64,7 +64,7 @@ NovaX AI is a modern Vietnamese AI chat application that provides conversations 
 - Production-ready CORS and security settings
 
 ## Next Steps for User
-1. **Add API Keys** (optional): Add GEMINI_API_KEY and/or GROQ_API_KEY to Secrets for AI functionality
+1. **Add API Keys** (optional): Add GEMINI_API_KEY to Secrets for AI functionality
 2. **Deploy**: Use Replit's deploy feature (already configured)
 3. **Customize**: Modify branding, colors, or features as needed
 
