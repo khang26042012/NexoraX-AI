@@ -14,7 +14,7 @@ import os
 # Google Gemini API Key
 # Lấy miễn phí tại: https://aistudio.google.com/app/apikey
 # IMPORTANT: Use Replit Secrets instead of hardcoding keys here
-GEMINI_API_KEY = "your_gemini_api_key_here"
+GEMINI_API_KEY = "AIzaSyDhWAco4k7ajmzonA97uoRgVJvxfQblJFI"
 
 
 # ===========================================
