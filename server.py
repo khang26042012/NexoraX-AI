@@ -64,7 +64,7 @@ class NovaXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             request_data = json.loads(post_data.decode('utf-8'))
             
             # Extract model from request
-            model = request_data.get('model', 'gemini-1.5-flash')
+            model = request_data.get('model', 'gemini-2.5-flash')
             
             # Build Gemini API URL
             gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"

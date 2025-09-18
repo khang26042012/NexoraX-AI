@@ -610,7 +610,7 @@ class NovaXChat {
     async getGeminiResponse(message, aiMessage, files = null) {
         try {
             // Use server-side proxy instead of direct API calls
-            const modelEndpoint = 'gemini-1.5-flash';
+            const modelEndpoint = 'gemini-2.5-flash';
             const url = '/api/gemini';
             
             // Enhance message with file context if files are provided
@@ -636,10 +636,9 @@ class NovaXChat {
             
             // Map client model names to actual Google API model IDs
             const modelMapping = {
-                'gemini-flash': 'gemini-1.5-flash',
-                'gemini-pro': 'gemini-1.5-pro'
+                'gemini-flash': 'gemini-2.5-flash'
             };
-            const apiModelId = modelMapping[this.selectedModel] || 'gemini-1.5-flash';
+            const apiModelId = modelMapping[this.selectedModel] || 'gemini-2.5-flash';
             
             const response = await fetch(url, {
                 method: 'POST',
@@ -890,8 +889,11 @@ class NovaXChat {
         const noChatHistoryElement = document.getElementById('noChatHistory');
         
         if (chatArray.length === 0) {
+            // Clear chat items but preserve noChatHistory element
+            const chatItems = this.chatList.querySelectorAll('.chat-item');
+            chatItems.forEach(item => item.remove());
+            
             // Show "No chat history" message
-            this.chatList.innerHTML = '';
             if (noChatHistoryElement) {
                 noChatHistoryElement.style.display = 'flex';
             }
@@ -909,7 +911,12 @@ class NovaXChat {
             return new Date(b.createdAt) - new Date(a.createdAt);
         });
         
-        this.chatList.innerHTML = chatArray.map(chat => 
+        // Clear existing chat items but preserve noChatHistory
+        const chatItems = this.chatList.querySelectorAll('.chat-item');
+        chatItems.forEach(item => item.remove());
+        
+        // Add new chat items
+        const chatHTML = chatArray.map(chat => 
             '<div class="chat-item p-3 rounded-xl cursor-pointer ' + 
             (this.currentChatId === chat.id ? 'bg-blue-50 border-l-4 border-blue-500' : 'hover:bg-gray-50') + 
             '" onclick="app.loadChat(\'' + chat.id + '\')"><div class="flex items-center justify-between"><div class="flex-1"><div class="font-medium text-sm truncate mb-1">' +
@@ -919,6 +926,14 @@ class NovaXChat {
             (chat.isPinned ? 'Bỏ ghim' : 'Ghim cuộc trò chuyện') + '"><svg class="w-4 h-4 ' + (chat.isPinned ? 'text-blue-600' : 'text-gray-400') + '" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path></svg>' + 
             '</button><button class="p-2 hover:bg-red-100 rounded-lg transition-colors" onclick="event.stopPropagation(); app.deleteChat(\'' + chat.id + '\')" title="Xóa cuộc trò chuyện"><svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></div></div></div>'
         ).join('');
+        
+        // Insert chat items before noChatHistory element
+        if (noChatHistoryElement) {
+            noChatHistoryElement.insertAdjacentHTML('beforebegin', chatHTML);
+        } else {
+            // Fallback if noChatHistory element is missing
+            this.chatList.innerHTML = chatHTML;
+        }
     }
     
     loadChat(chatId) {
@@ -1168,7 +1183,7 @@ class NovaXChat {
         localStorage.setItem('novax_selected_model', modelType);
         
         const modelNames = {
-            'gemini-flash': 'Gemini Flash 1.5'
+            'gemini-flash': 'Gemini Flash 2.5'
         };
         
         this.showNotification('Đã chuyển sang ' + (modelNames[modelType] || modelType) + '!', 'success');
