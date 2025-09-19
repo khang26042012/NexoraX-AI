@@ -204,18 +204,30 @@ class NovaXChat {
     }
     
     setupFileUploadListeners() {
-        // Home file upload button
-        const homeFileUploadBtn = document.getElementById('homeFileUploadBtn');
-        if (homeFileUploadBtn) {
-            homeFileUploadBtn.addEventListener('click', () => {
+        // Home page attachment buttons
+        const homeImageBtn = document.getElementById('homeImageBtn');
+        const homeFileBtn = document.getElementById('homeFileBtn');
+        if (homeImageBtn) {
+            homeImageBtn.addEventListener('click', () => {
+                this.homeFileInput.click();
+            });
+        }
+        if (homeFileBtn) {
+            homeFileBtn.addEventListener('click', () => {
                 this.homeFileInput.click();
             });
         }
         
-        // Chat file upload button (removed from new design)
-        const fileUploadBtn = document.getElementById('fileUploadBtn');
-        if (fileUploadBtn) {
-            fileUploadBtn.addEventListener('click', () => {
+        // Chat page attachment buttons
+        const chatImageBtn = document.getElementById('chatImageBtn');
+        const chatFileBtn = document.getElementById('chatFileBtn');
+        if (chatImageBtn) {
+            chatImageBtn.addEventListener('click', () => {
+                this.chatFileInput.click();
+            });
+        }
+        if (chatFileBtn) {
+            chatFileBtn.addEventListener('click', () => {
                 this.chatFileInput.click();
             });
         }
@@ -742,20 +754,33 @@ class NovaXChat {
         messageDiv.className = 'message-bubble ' + (message.role === 'user' ? 'user-message' : 'ai-message');
         messageDiv.setAttribute('data-message-id', message.id);
         
-        const avatarImg = message.role === 'user' ? 
-            '' : '<img src="https://i.postimg.cc/Jyz7fhf8/image.png" alt="AI" class="w-8 h-8 object-contain" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';">';
-        const fallbackAvatar = message.role === 'user' ? 
-            'U' : '<div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg" style="display: none;"><svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg></div>';
-        
         // Generate files display HTML
         const filesHtml = message.files && message.files.length > 0 ? this.renderFilesInMessage(message.files) : '';
         
-        messageDiv.innerHTML = '<div class="message-wrapper"><div class="avatar ' + (message.role === 'user' ? 'user-avatar' : 'ai-avatar') + '">' +
-            (message.role === 'user' ? 'U' : avatarImg + fallbackAvatar) +
-            '</div><div class="message-bubble-content ' + (message.role === 'user' ? 'user-bubble' : 'ai-bubble') + 
-            '">' + filesHtml + '<div class="message-content">' +
-            (message.isTyping ? '<div class="ai-loading"><span class="ai-loading-text">Đang suy nghĩ</span><div class="ai-loading-dots"><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div></div></div>' : this.formatMessage(message.content)) +
-            '</div></div></div>';
+        if (message.role === 'user') {
+            // User message - ChatGPT style with avatar on right
+            messageDiv.innerHTML = '<div class="message-wrapper">' +
+                '<div class="message-content">' +
+                filesHtml +
+                this.formatMessage(message.content) +
+                '</div>' +
+                '<div class="avatar user-avatar">You</div>' +
+                '</div>';
+        } else {
+            // AI message - ChatGPT style with avatar on left, no bubble
+            const aiAvatarContent = '<img src="https://i.postimg.cc/Jyz7fhf8/image.png" alt="AI" class="w-8 h-8 object-contain" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';">' +
+                '<div class="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-lg" style="display: none;">' +
+                '<span class="text-white font-bold text-sm">AI</span>' +
+                '</div>';
+            
+            messageDiv.innerHTML = '<div class="message-wrapper">' +
+                '<div class="avatar ai-avatar">' + aiAvatarContent + '</div>' +
+                '<div class="message-content">' +
+                filesHtml +
+                (message.isTyping ? '<div class="ai-loading"><span class="ai-loading-text">Đang suy nghĩ</span><div class="ai-loading-dots"><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div></div></div>' : this.formatMessage(message.content)) +
+                '</div>' +
+                '</div>';
+        }
         
         this.messagesContainer.appendChild(messageDiv);
         this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;

@@ -241,7 +241,7 @@ if __name__ == "__main__":
             logger.error("Invalid port number")
             sys.exit(1)
     else:
-        port = 5000
+        port = int(os.getenv('PORT', 5000))  # Default to PORT env var or 5000
     
     # Check if files exist
     required_files = ['index.html', 'assets/css/style.css', 'assets/js/app.js']
