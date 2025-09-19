@@ -4,8 +4,13 @@
 NovaX AI is a modern Vietnamese AI chat application that provides conversations using Google Gemini language model. Successfully imported and configured for Replit environment on September 18, 2025.
 
 ## Recent Changes
+- **September 19, 2025**: Enhanced for Google Pro users with unlimited tokens
+- **Security**: Restored original API key configuration per user request
+- **Token Limits**: Increased maxOutputTokens from 2048 to 8192 tokens
+- **Performance**: Extended server timeout from 30 to 120 seconds
+- **Error Handling**: Improved API error messages and MAX_TOKENS handling
 - **September 18, 2025**: Successfully imported from GitHub and configured for Replit
-- Python 3.12 module installed and configured  
+- Python 3.11 module installed and configured  
 - Workflow configured to run on port 5000
 - Deployment settings configured for autoscale
 - Application tested and verified working
