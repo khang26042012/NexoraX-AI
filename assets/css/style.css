@@ -1191,6 +1191,7 @@ html, body {
     max-width: 700px;
     margin: 0 auto;
     gap: 8px;
+    overflow: hidden;
 }
 
 .chatgpt-input-container:focus-within {
@@ -1247,18 +1248,18 @@ html, body {
 
 /* Send button - New Design */
 .chatgpt-send-btn {
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
     background-color: #9ca3af;
     border: none;
-    border-radius: 6px;
+    border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s ease;
     flex-shrink: 0;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: bold;
     color: white;
 }
@@ -1274,7 +1275,7 @@ html, body {
 
 .chatgpt-send-btn:before {
     content: "↑";
-    font-size: 16px;
+    font-size: 18px;
     line-height: 1;
 }
 
@@ -1331,13 +1332,23 @@ body.dark-mode .attachment-btn:hover {
         padding: 10px 0;
     }
     
-    .attachment-btn, .chatgpt-send-btn {
-        width: 32px;
-        height: 32px;
+    .attachment-btn {
+        width: 28px;
+        height: 28px;
         flex-shrink: 0;
     }
     
-    .attachment-btn svg, .chatgpt-send-btn svg {
+    .chatgpt-send-btn {
+        width: 22px;
+        height: 22px;
+        flex-shrink: 0;
+    }
+    
+    .chatgpt-send-btn:before {
+        font-size: 16px;
+    }
+    
+    .attachment-btn svg {
         width: 16px;
         height: 16px;
     }
