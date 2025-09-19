@@ -626,7 +626,7 @@ class NovaXChat {
                     temperature: 0.7,
                     topK: 40,
                     topP: 0.95,
-                    maxOutputTokens: 1024,
+                    maxOutputTokens: 8192,
                 }
             };
             
@@ -653,37 +653,73 @@ class NovaXChat {
             
             const data = await response.json();
             
-            if (data.candidates && data.candidates[0] && data.candidates[0].content && 
-                data.candidates[0].content.parts && data.candidates[0].content.parts[0] && 
-                data.candidates[0].content.parts[0].text) {
+            // Check if we have candidates
+            if (data.candidates && data.candidates[0]) {
+                const candidate = data.candidates[0];
                 
-                const aiResponse = data.candidates[0].content.parts[0].text.trim();
+                // Handle successful responses with text content
+                if (candidate.content && candidate.content.parts && candidate.content.parts[0] && candidate.content.parts[0].text) {
+                    const aiResponse = candidate.content.parts[0].text.trim();
+                    if (aiResponse) {
+                        aiMessage.content = aiResponse;
+                        aiMessage.isTyping = false;
+                        aiMessage.isFinalized = false;
+                        this.updateMessage(aiMessage);
+                        return;
+                    }
+                }
                 
-                if (aiResponse) {
-                    aiMessage.content = aiResponse;
+                // Handle MAX_TOKENS and other finish reasons
+                if (candidate.finishReason) {
+                    let errorMessage = '';
+                    switch (candidate.finishReason) {
+                        case 'MAX_TOKENS':
+                            errorMessage = '⚠️ Câu trả lời đã đạt giới hạn tối đa (8192 tokens). Nếu cần phản hồi dài hơn, vui lòng chia nhỏ câu hỏi.';
+                            break;
+                        case 'SAFETY':
+                            errorMessage = '⚠️ Nội dung không phù hợp với chính sách an toàn. Vui lòng thử lại với câu hỏi khác.';
+                            break;
+                        case 'RECITATION':
+                            errorMessage = '⚠️ Nội dung có thể vi phạm bản quyền. Vui lòng thử lại với câu hỏi khác.';
+                            break;
+                        default:
+                            errorMessage = `⚠️ API dừng với lý do: ${candidate.finishReason}. Vui lòng thử lại.`;
+                    }
+                    
+                    aiMessage.content = errorMessage;
                     aiMessage.isTyping = false;
-                    aiMessage.isFinalized = false; // Trigger typing animation
+                    aiMessage.isFinalized = false;
                     this.updateMessage(aiMessage);
                     return;
                 }
             }
             
-            throw new Error('Invalid Gemini response format or empty content');
+            throw new Error('Không nhận được phản hồi hợp lệ từ AI');
             
         } catch (error) {
             console.error('Gemini API Error:', error);
             
-            const demoResponses = [
-                "Xin chào! Tôi là NovaX AI với Google Gemini. Tôi có thể giúp bạn trả lời câu hỏi, giải thích khái niệm, và hỗ trợ học tập.",
-                "Đây là phản hồi từ Google Gemini - model AI tiên tiến với khả năng hiểu ngôn ngữ tự nhiên và cung cấp thông tin chính xác.",
-                "Tôi có thể giúp bạn với nhiều chủ đề khác nhau như học tập, giải bài tập, tìm hiểu kiến thức, và trò chuyện thông thường. Hãy hỏi tôi bất cứ điều gì!"
-            ];
+            // Provide specific error messages based on error type
+            let errorMessage = '';
+            if (error.message.includes('HTTP error! status: 400')) {
+                errorMessage = '❌ Yêu cầu không hợp lệ. Vui lòng thử lại với câu hỏi khác.';
+            } else if (error.message.includes('HTTP error! status: 401')) {
+                errorMessage = '🔑 API key không hợp lệ. Vui lòng kiểm tra cấu hình.';
+            } else if (error.message.includes('HTTP error! status: 403')) {
+                errorMessage = '🚫 Không có quyền truy cập API. Vui lòng kiểm tra API key.';
+            } else if (error.message.includes('HTTP error! status: 429')) {
+                errorMessage = '⏰ API đã đạt giới hạn sử dụng. Vui lòng thử lại sau vài phút.';
+            } else if (error.message.includes('HTTP error! status: 500')) {
+                errorMessage = '🔧 Lỗi server. Vui lòng thử lại sau.';
+            } else if (error.name === 'TypeError' || error.message.includes('Failed to fetch')) {
+                errorMessage = '🌐 Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+            } else {
+                errorMessage = `❌ Đã xảy ra lỗi: ${error.message}. Vui lòng thử lại.`;
+            }
             
-            const randomResponse = demoResponses[Math.floor(Math.random() * demoResponses.length)];
-            
-            aiMessage.content = randomResponse;
+            aiMessage.content = errorMessage;
             aiMessage.isTyping = false;
-            aiMessage.isFinalized = false; // Trigger typing animation
+            aiMessage.isFinalized = false;
             this.updateMessage(aiMessage);
         }
     }
