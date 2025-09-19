@@ -204,28 +204,16 @@ class NovaXChat {
     }
     
     setupFileUploadListeners() {
-        // Home page attachment buttons
-        const homeImageBtn = document.getElementById('homeImageBtn');
+        // Home page attachment button (combined image and file)
         const homeFileBtn = document.getElementById('homeFileBtn');
-        if (homeImageBtn) {
-            homeImageBtn.addEventListener('click', () => {
-                this.homeFileInput.click();
-            });
-        }
         if (homeFileBtn) {
             homeFileBtn.addEventListener('click', () => {
                 this.homeFileInput.click();
             });
         }
         
-        // Chat page attachment buttons
-        const chatImageBtn = document.getElementById('chatImageBtn');
+        // Chat page attachment button (combined image and file)
         const chatFileBtn = document.getElementById('chatFileBtn');
-        if (chatImageBtn) {
-            chatImageBtn.addEventListener('click', () => {
-                this.chatFileInput.click();
-            });
-        }
         if (chatFileBtn) {
             chatFileBtn.addEventListener('click', () => {
                 this.chatFileInput.click();
@@ -664,7 +652,17 @@ class NovaXChat {
                 throw new Error('HTTP error! status: ' + response.status);
             }
             
-            const data = await response.json();
+            let data;
+            try {
+                const responseText = await response.text();
+                if (!responseText.trim()) {
+                    throw new Error('Empty response from server');
+                }
+                data = JSON.parse(responseText);
+            } catch (jsonError) {
+                console.error('JSON parsing error:', jsonError);
+                throw new Error('Dữ liệu trả về không hợp lệ. Vui lòng thử lại.');
+            }
             
             // Check if we have candidates
             if (data.candidates && data.candidates[0]) {
