@@ -82,7 +82,7 @@ class NovaXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         try:
             # Get API key from config hoặc environment
             api_key = get_api_key('gemini')
-            logger.info(f"API Key status: {api_key[:10]}..." if api_key else "No API key found")
+            logger.info(f"API Key configured: {'Yes' if api_key and api_key != 'your_gemini_api_key_here' else 'No'}")
             if not api_key or api_key == "your_gemini_api_key_here":
                 self._send_json_error(500, 
                     "API key chưa được cấu hình. Vui lòng thêm GEMINI_API_KEY vào environment variables.",

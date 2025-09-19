@@ -626,7 +626,7 @@ class NovaXChat {
                     temperature: 0.7,
                     topK: 40,
                     topP: 0.95,
-                    maxOutputTokens: 8192,
+                    maxOutputTokens: 3000,
                 }
             };
             
@@ -644,7 +644,8 @@ class NovaXChat {
                 body: JSON.stringify({
                     model: apiModelId,
                     payload: requestBody
-                })
+                }),
+                signal: AbortSignal.timeout(60000) // 60 second timeout
             });
             
             if (!response.ok) {
@@ -713,6 +714,8 @@ class NovaXChat {
                 errorMessage = '🔧 Lỗi server. Vui lòng thử lại sau.';
             } else if (error.name === 'TypeError' || error.message.includes('Failed to fetch')) {
                 errorMessage = '🌐 Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+            } else if (error.name === 'AbortError' || error.message.includes('timeout')) {
+                errorMessage = '⏱️ Yêu cầu quá lâu. Vui lòng thử lại với câu hỏi ngắn hơn.';
             } else {
                 errorMessage = `❌ Đã xảy ra lỗi: ${error.message}. Vui lòng thử lại.`;
             }
@@ -751,7 +754,7 @@ class NovaXChat {
             (message.role === 'user' ? 'U' : avatarImg + fallbackAvatar) +
             '</div><div class="message-bubble-content ' + (message.role === 'user' ? 'user-bubble' : 'ai-bubble') + 
             '">' + filesHtml + '<div class="message-content">' +
-            (message.isTyping ? '<div class="ai-loading"><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div></div>' : this.formatMessage(message.content)) +
+            (message.isTyping ? '<div class="ai-loading"><span class="ai-loading-text">Đang suy nghĩ</span><div class="ai-loading-dots"><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div></div></div>' : this.formatMessage(message.content)) +
             '</div></div></div>';
         
         this.messagesContainer.appendChild(messageDiv);
@@ -802,7 +805,7 @@ class NovaXChat {
         if (messageElement) {
             const contentElement = messageElement.querySelector('.message-content');
             if (message.isTyping) {
-                contentElement.innerHTML = '<div class="ai-loading"><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div></div>';
+                contentElement.innerHTML = '<div class="ai-loading"><span class="ai-loading-text">Đang suy nghĩ</span><div class="ai-loading-dots"><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div></div></div>';
             } else {
                 // If this is an AI message and has content, use typing animation
                 if (message.role === 'ai' && message.content && !message.isFinalized) {
@@ -818,32 +821,53 @@ class NovaXChat {
     }
     
     async typewriterEffect(element, text, onComplete = null) {
-        const words = text.split(' ');
+        // Cancel any existing typewriter effect
+        if (element.dataset.typewriterActive) {
+            element.dataset.cancelled = 'true';
+            return;
+        }
+        
         let currentText = '';
+        element.dataset.typewriterActive = 'true';
+        element.dataset.cancelled = 'false';
         
         // Add typing cursor
         element.classList.add('typing-cursor');
         element.innerHTML = '';
         
-        for (let i = 0; i < words.length; i++) {
-            currentText += (i > 0 ? ' ' : '') + words[i];
+        // Type character by character like Replit
+        for (let i = 0; i < text.length; i++) {
+            // Check if cancelled
+            if (element.dataset.cancelled === 'true') {
+                break;
+            }
+            
+            currentText += text[i];
             element.innerHTML = this.formatMessage(currentText);
             this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
             
-            // Adjust speed based on word length and punctuation
-            let delay = 50; // Base delay
-            const word = words[i];
-            if (word.includes('.') || word.includes('!') || word.includes('?')) {
-                delay = 200; // Longer pause after sentences
-            } else if (word.includes(',') || word.includes(';')) {
-                delay = 100; // Medium pause after commas
+            // Adjust speed based on character type
+            let delay = 15; // Base delay for smooth typing
+            const char = text[i];
+            
+            if (char === '.' || char === '!' || char === '?') {
+                delay = 300; // Longer pause after sentences
+            } else if (char === ',' || char === ';' || char === ':') {
+                delay = 100; // Medium pause after punctuation
+            } else if (char === ' ') {
+                delay = 30; // Quick for spaces
+            } else if (char === '\n') {
+                delay = 200; // Pause for new lines
             }
             
             await new Promise(resolve => setTimeout(resolve, delay));
         }
         
-        // Remove typing cursor when done
+        // Clean up
         element.classList.remove('typing-cursor');
+        element.dataset.typewriterActive = 'false';
+        element.dataset.cancelled = 'false';
+        
         if (onComplete) onComplete();
     }
     
