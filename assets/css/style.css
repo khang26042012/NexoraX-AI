@@ -1248,11 +1248,11 @@ html, body {
 
 /* Send button - New Design */
 .chatgpt-send-btn {
-    width: 24px;
-    height: 24px;
-    background-color: #9ca3af;
+    width: 32px;
+    height: 32px;
+    background-color: #3b82f6;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1262,10 +1262,11 @@ html, body {
     font-size: 18px;
     font-weight: bold;
     color: white;
+    position: relative;
 }
 
 .chatgpt-send-btn:hover {
-    background-color: #6b7280;
+    background-color: #2563eb;
     transform: scale(1.05);
 }
 
@@ -1275,8 +1276,10 @@ html, body {
 
 .chatgpt-send-btn:before {
     content: "↑";
-    font-size: 18px;
+    font-size: 16px;
     line-height: 1;
+    color: white;
+    display: block;
 }
 
 /* Dark mode for ChatGPT input */
