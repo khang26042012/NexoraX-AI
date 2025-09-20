@@ -61,41 +61,83 @@ class NovaXChat {
             closeSidebar.addEventListener('click', () => this.closeSidebar());
         }
         
-        // Home input
+        // Home input with better mobile support
         if (this.homeInput) {
+            // Handle Enter key
             this.homeInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter' && !e.shiftKey && this.homeInput.value.trim()) {
                     e.preventDefault();
                     this.startNewChat(this.homeInput.value.trim());
                 }
             });
+            
+            // Improve mobile keyboard behavior
+            this.homeInput.addEventListener('focus', () => {
+                // Small delay to ensure keyboard is shown
+                setTimeout(() => {
+                    this.homeInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            });
         }
         
         const homeSendBtn = document.getElementById('homeSendBtn');
         if (homeSendBtn) {
-            homeSendBtn.addEventListener('click', () => {
+            // Add both click and touch events for better mobile support
+            const handleHomeSend = () => {
                 if (this.homeInput && (this.homeInput.value.trim() || this.selectedFiles.size > 0)) {
                     this.startNewChat(this.homeInput.value.trim());
                 }
+            };
+            
+            homeSendBtn.addEventListener('click', handleHomeSend);
+            homeSendBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                handleHomeSend();
             });
         }
         
-        // Chat input
+        // Chat input with better mobile support
         if (this.chatInput) {
+            // Handle Enter key
             this.chatInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter' && !e.shiftKey && this.chatInput.value.trim()) {
                     e.preventDefault();
                     this.sendMessage(this.chatInput.value.trim());
                 }
             });
+            
+            // Improve mobile keyboard behavior
+            this.chatInput.addEventListener('focus', () => {
+                // Small delay to ensure keyboard is shown
+                setTimeout(() => {
+                    this.chatInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            });
+            
+            // Handle mobile keyboard hide/show
+            this.chatInput.addEventListener('blur', () => {
+                // Restore scroll position when keyboard hides
+                setTimeout(() => {
+                    if (this.messagesContainer) {
+                        this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+                    }
+                }, 100);
+            });
         }
         
         const sendBtn = document.getElementById('sendBtn');
         if (sendBtn) {
-            sendBtn.addEventListener('click', () => {
+            // Add both click and touch events for better mobile support
+            const handleSend = () => {
                 if (this.chatInput && (this.chatInput.value.trim() || this.selectedFiles.size > 0)) {
                     this.sendMessage(this.chatInput.value.trim());
                 }
+            };
+            
+            sendBtn.addEventListener('click', handleSend);
+            sendBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                handleSend();
             });
         }
         

@@ -1321,31 +1321,45 @@ body.dark-mode .attachment-btn:hover {
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .chatgpt-input-container {
-        max-width: calc(100% - 32px);
-        margin: 0 16px;
-        padding: 8px 16px;
-        min-height: 48px;
+        max-width: calc(100% - 24px);
+        margin: 0 12px;
+        padding: 12px 16px;
+        min-height: 56px;
+        gap: 12px;
     }
     
     .chatgpt-input {
         font-size: 16px; /* Prevent zoom on iOS */
-        padding: 10px 0;
+        padding: 14px 0;
+        min-height: 20px;
+        line-height: 1.4;
+        -webkit-appearance: none;
+        -webkit-border-radius: 0;
+        border-radius: 0;
     }
     
     .attachment-btn {
-        width: 28px;
-        height: 28px;
+        width: 40px;
+        height: 40px;
         flex-shrink: 0;
+        min-width: 40px;
+        min-height: 40px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
     }
     
     .chatgpt-send-btn {
-        width: 22px;
-        height: 22px;
+        width: 40px;
+        height: 40px;
         flex-shrink: 0;
+        min-width: 40px;
+        min-height: 40px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
     }
     
     .chatgpt-send-btn:before {
-        font-size: 16px;
+        font-size: 18px;
     }
     
     .attachment-btn svg {
@@ -1360,6 +1374,34 @@ body.dark-mode .attachment-btn:hover {
     /* Mobile-specific fixes */
     #messagesContainer {
         padding-bottom: 140px !important;
+    }
+    
+    /* Better mobile input focus */
+    .chatgpt-input-container:focus-within {
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+        border-color: #3b82f6;
+    }
+    
+    /* Prevent mobile safari zoom and improve typing */
+    .chatgpt-input {
+        -webkit-user-select: text;
+        -webkit-touch-callout: default;
+        user-select: text;
+    }
+    
+    /* Better mobile button interactions */
+    .chatgpt-send-btn {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+    
+    .attachment-btn {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
     }
 }
 
