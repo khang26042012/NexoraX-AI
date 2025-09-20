@@ -9,6 +9,7 @@ NovaX AI is a modern Vietnamese AI chat application that provides conversations 
   - **Input Bar Mobile Fix**: Enhanced mobile keyboard behavior with better focus/blur handling
   - **Touch Events**: Added touchend event handling alongside click events for improved mobile responsiveness
   - **Mobile Layout**: Improved mobile styling with better spacing and touch-action optimization
+  - **Send Button Visibility Fix**: Fixed missing send button by increasing size from 24px to 32px on desktop and changing color from gray to blue for better visibility
 - **September 19, 2025**: Enhanced for Google Pro users with unlimited tokens
 - **Security**: Restored original API key configuration per user request
 - **Token Limits**: Increased maxOutputTokens from 2048 to 8192 tokens
