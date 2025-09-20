@@ -13,7 +13,7 @@ import os
 
 # Google Gemini API Key
 # Lấy miễn phí tại: https://aistudio.google.com/app/apikey
-# IMPORTANT: Use Replit Secrets instead of hardcoding keys here
+# Environment variable GEMINI_API_KEY will override this if set
 GEMINI_API_KEY = "AIzaSyDhWAco4k7ajmzonA97uoRgVJvxfQblJFI"
 
 
