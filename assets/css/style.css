@@ -12,6 +12,391 @@ img[src*="nexorax-logo.svg"] {
     filter: brightness(1.1) !important;
 }
 
+/* Modern Settings Modal Styles */
+.modern-settings-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 
+        0 20px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+    transform: translateY(10px);
+    animation: modalSlideIn 0.5s ease-out forwards;
+}
+
+@keyframes modalSlideIn {
+    to {
+        transform: translateY(0);
+    }
+}
+
+.modern-settings-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.modern-settings-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    backdrop-filter: blur(10px);
+}
+
+.modern-settings-header > * {
+    position: relative;
+    z-index: 1;
+}
+
+.settings-icon-container {
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modern-close-btn {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+}
+
+.modern-close-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.05);
+}
+
+.modern-settings-content {
+    padding: 20px;
+    max-height: 60vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e0 transparent;
+}
+
+.modern-settings-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modern-settings-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.modern-settings-content::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #cbd5e0, #a0aec0);
+    border-radius: 6px;
+}
+
+.settings-section {
+    margin-bottom: 24px;
+}
+
+.settings-section:last-child {
+    margin-bottom: 0;
+}
+
+.settings-section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #4a5568;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.modern-settings-item {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    text-align: left;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+}
+
+.modern-settings-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.6s;
+}
+
+.modern-settings-item:hover::before {
+    left: 100%;
+}
+
+.modern-settings-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border-color: rgba(102, 126, 234, 0.2);
+}
+
+.settings-item-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 16px;
+    position: relative;
+    z-index: 1;
+}
+
+.ai-icon {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.theme-icon {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.about-icon {
+    background: linear-gradient(135deg, #4299e1, #3182ce);
+    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+}
+
+.danger-icon {
+    background: linear-gradient(135deg, #fc8181, #f56565);
+    box-shadow: 0 4px 12px rgba(245, 101, 101, 0.3);
+}
+
+.settings-item-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.settings-item-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 2px;
+}
+
+.settings-item-subtitle {
+    font-size: 13px;
+    color: #718096;
+    line-height: 1.4;
+}
+
+.settings-item-arrow,
+.settings-item-chevron {
+    margin-left: 12px;
+}
+
+/* Theme Toggle Switch */
+.theme-toggle-switch {
+    margin-left: 12px;
+}
+
+.toggle-track {
+    width: 52px;
+    height: 28px;
+    background: #e2e8f0;
+    border-radius: 14px;
+    position: relative;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.toggle-thumb {
+    width: 24px;
+    height: 24px;
+    background: white;
+    border-radius: 12px;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dark .toggle-track {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+.dark .toggle-thumb {
+    transform: translateX(24px);
+}
+
+/* Model Options Dropdown */
+.model-options {
+    margin-top: 12px;
+    padding: 8px;
+    background: rgba(102, 126, 234, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(102, 126, 234, 0.1);
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.model-option {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.model-option:hover {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.model-radio {
+    margin-right: 12px;
+    accent-color: #667eea;
+}
+
+.model-option-content {
+    flex: 1;
+}
+
+.model-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 2px;
+}
+
+.model-description {
+    font-size: 12px;
+    color: #718096;
+}
+
+.model-check {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.model-option:has(.model-radio:checked) .model-check {
+    opacity: 1;
+}
+
+/* Dark Mode Styles for Settings */
+.dark .modern-settings-card {
+    background: rgba(26, 32, 44, 0.95);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .modern-settings-content {
+    scrollbar-color: #4a5568 transparent;
+}
+
+.dark .settings-section-title {
+    color: #a0aec0;
+}
+
+.dark .modern-settings-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .modern-settings-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(102, 126, 234, 0.3);
+}
+
+.dark .settings-item-title {
+    color: #f7fafc;
+}
+
+.dark .settings-item-subtitle {
+    color: #a0aec0;
+}
+
+.dark .model-options {
+    background: rgba(102, 126, 234, 0.1);
+    border-color: rgba(102, 126, 234, 0.2);
+}
+
+.dark .model-option:hover {
+    background: rgba(102, 126, 234, 0.15);
+}
+
+.dark .model-name {
+    color: #f7fafc;
+}
+
+.dark .model-description {
+    color: #a0aec0;
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+    .modern-settings-card {
+        margin: 16px;
+        max-width: calc(100vw - 32px);
+    }
+    
+    .modern-settings-header {
+        padding: 20px;
+    }
+    
+    .modern-settings-content {
+        padding: 16px;
+    }
+    
+    .settings-item-icon {
+        width: 36px;
+        height: 36px;
+        margin-right: 12px;
+    }
+    
+    .settings-item-title {
+        font-size: 15px;
+    }
+    
+    .settings-item-subtitle {
+        font-size: 12px;
+    }
+}
+
 /* Modern AI Loading Animation like Replit */
 .ai-loading {
     display: inline-flex;
