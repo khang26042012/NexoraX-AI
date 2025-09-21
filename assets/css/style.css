@@ -731,7 +731,10 @@ body.dark-mode .ai-message .message-content {
 } */
 
 .sidebar-transition {
-    transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+    backface-visibility: hidden;
+    perspective: 1000px;
 }
 
 .chat-item {

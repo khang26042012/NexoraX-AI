@@ -512,7 +512,17 @@ class NexoraXChat {
         const desktopLeftIcon = document.getElementById('desktopPanelLeftIcon');
         
         if (isClosed) {
-            // Show panel-right icon (sidebar closed)
+            // Show panel-left icon (sidebar closed, click to open)
+            if (mobileRightIcon && mobileLeftIcon) {
+                mobileLeftIcon.classList.remove('hidden');
+                mobileRightIcon.classList.add('hidden');
+            }
+            if (desktopRightIcon && desktopLeftIcon) {
+                desktopLeftIcon.classList.remove('hidden');
+                desktopRightIcon.classList.add('hidden');
+            }
+        } else {
+            // Show panel-right icon (sidebar open, click to close)
             if (mobileRightIcon && mobileLeftIcon) {
                 mobileRightIcon.classList.remove('hidden');
                 mobileLeftIcon.classList.add('hidden');
@@ -521,16 +531,6 @@ class NexoraXChat {
                 desktopRightIcon.classList.remove('hidden');
                 desktopLeftIcon.classList.add('hidden');
             }
-        } else {
-            // Show panel-left icon (sidebar open)
-            if (mobileRightIcon && mobileLeftIcon) {
-                mobileRightIcon.classList.add('hidden');
-                mobileLeftIcon.classList.remove('hidden');
-            }
-            if (desktopRightIcon && desktopLeftIcon) {
-                desktopRightIcon.classList.add('hidden');
-                desktopLeftIcon.classList.remove('hidden');
-            }
         }
     }
     
@@ -538,37 +538,54 @@ class NexoraXChat {
         const isHidden = this.sidebar.classList.contains('-translate-x-full');
         
         if (isHidden) {
-            // Opening animation
+            // Opening animation - smoother transition
             this.sidebarToggle.classList.add('opening');
-            setTimeout(() => this.sidebarToggle.classList.remove('opening'), 600);
-            
             this.sidebar.classList.remove('-translate-x-full');
-            this.sidebarToggle.style.opacity = '0';
-            this.sidebarToggle.style.pointerEvents = 'none';
-            this.updateSidebarIcons(false); // sidebar is now open
-        } else {
-            // Closing animation
-            this.sidebarToggle.classList.add('closing');
-            setTimeout(() => this.sidebarToggle.classList.remove('closing'), 600);
             
+            // Update icons immediately
+            this.updateSidebarIcons(false); // sidebar is now open
+            
+            // Hide toggle button smoothly
+            setTimeout(() => {
+                this.sidebarToggle.style.opacity = '0';
+                this.sidebarToggle.style.pointerEvents = 'none';
+                this.sidebarToggle.classList.remove('opening');
+            }, 100);
+        } else {
+            // Closing animation - much smoother
+            this.sidebarToggle.classList.add('closing');
             this.sidebar.classList.add('-translate-x-full');
-            this.sidebarToggle.style.opacity = '1';
-            this.sidebarToggle.style.pointerEvents = 'auto';
+            
+            // Update icons immediately
             this.updateSidebarIcons(true); // sidebar is now closed
+            
+            // Show toggle button smoothly after sidebar animation
+            setTimeout(() => {
+                this.sidebarToggle.style.opacity = '1';
+                this.sidebarToggle.style.pointerEvents = 'auto';
+                this.sidebarToggle.classList.remove('closing');
+            }, 300); // Match sidebar transition time
         }
     }
     
     closeSidebar() {
+        // Smooth closing animation
         this.sidebar.classList.add('-translate-x-full');
-        this.sidebarToggle.style.opacity = '1';
-        this.sidebarToggle.style.pointerEvents = 'auto';
         
-        const desktopToggle = document.getElementById('desktopSidebarToggle');
-        if (desktopToggle) {
-            desktopToggle.style.opacity = '1';
-            desktopToggle.style.pointerEvents = 'auto';
-        }
+        // Update icons immediately
         this.updateSidebarIcons(true); // sidebar is now closed
+        
+        // Show toggle buttons smoothly after sidebar animation
+        setTimeout(() => {
+            this.sidebarToggle.style.opacity = '1';
+            this.sidebarToggle.style.pointerEvents = 'auto';
+            
+            const desktopToggle = document.getElementById('desktopSidebarToggle');
+            if (desktopToggle) {
+                desktopToggle.style.opacity = '1';
+                desktopToggle.style.pointerEvents = 'auto';
+            }
+        }, 300); // Match sidebar transition time
     }
     
     toggleDesktopSidebar() {
@@ -576,23 +593,33 @@ class NexoraXChat {
         const desktopToggle = document.getElementById('desktopSidebarToggle');
         
         if (isHidden) {
-            // Opening animation
+            // Opening animation - smoother transition
             desktopToggle.classList.add('opening');
-            setTimeout(() => desktopToggle.classList.remove('opening'), 600);
-            
             this.sidebar.classList.remove('-translate-x-full');
-            desktopToggle.style.opacity = '0';
-            desktopToggle.style.pointerEvents = 'none';
-            this.updateSidebarIcons(false); // sidebar is now open
-        } else {
-            // Closing animation
-            desktopToggle.classList.add('closing');
-            setTimeout(() => desktopToggle.classList.remove('closing'), 600);
             
+            // Update icons immediately
+            this.updateSidebarIcons(false); // sidebar is now open
+            
+            // Hide toggle button smoothly
+            setTimeout(() => {
+                desktopToggle.style.opacity = '0';
+                desktopToggle.style.pointerEvents = 'none';
+                desktopToggle.classList.remove('opening');
+            }, 100);
+        } else {
+            // Closing animation - much smoother
+            desktopToggle.classList.add('closing');
             this.sidebar.classList.add('-translate-x-full');
-            desktopToggle.style.opacity = '1';
-            desktopToggle.style.pointerEvents = 'auto';
+            
+            // Update icons immediately
             this.updateSidebarIcons(true); // sidebar is now closed
+            
+            // Show toggle button smoothly after sidebar animation
+            setTimeout(() => {
+                desktopToggle.style.opacity = '1';
+                desktopToggle.style.pointerEvents = 'auto';
+                desktopToggle.classList.remove('closing');
+            }, 300); // Match sidebar transition time
         }
     }
     
@@ -604,7 +631,7 @@ class NexoraXChat {
             desktopToggle.style.opacity = '1';
             desktopToggle.style.pointerEvents = 'auto';
         }
-        this.updateSidebarIcons(true); // sidebar is initially closed
+        this.updateSidebarIcons(true); // sidebar is initially closed - shows panel-left icon
     }
     
     showHomeScreen() {
