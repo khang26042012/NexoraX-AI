@@ -1093,20 +1093,21 @@ class NexoraXChat {
     
     showSettings() {
         this.settingsModal.classList.remove('hidden');
-        setTimeout(() => {
-            const content = document.getElementById('settingsContent');
-            content.classList.remove('scale-95', 'opacity-0');
-            content.classList.add('scale-100', 'opacity-100');
-        }, 10);
+        // Force reflow to ensure hidden class is removed before animation
+        this.settingsModal.offsetHeight;
+        
+        const content = document.getElementById('settingsContent');
+        content.classList.add('show');
     }
     
     hideSettings() {
         const content = document.getElementById('settingsContent');
-        content.classList.remove('scale-100', 'opacity-100');
-        content.classList.add('scale-95', 'opacity-0');
+        content.classList.remove('show');
+        
+        // Wait for animation to complete before hiding
         setTimeout(() => {
             this.settingsModal.classList.add('hidden');
-        }, 300);
+        }, 250);
     }
     
     showAbout() {
