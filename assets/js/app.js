@@ -829,7 +829,7 @@ class NexoraXChat {
                 '</div>';
         } else {
             // AI message - ChatGPT style with avatar on left, no bubble
-            const aiAvatarContent = '<img src="attached_assets/Gemini_Generated_Image_lu53s7lu53s7lu53_1758414823909.png" alt="AI" class="w-8 h-8 object-contain">';
+            const aiAvatarContent = '<img src="assets/images/nexorax-logo.svg" alt="AI" class="w-8 h-8 object-contain">';
             
             messageDiv.innerHTML = '<div class="message-wrapper">' +
                 '<div class="avatar ai-avatar">' + aiAvatarContent + '</div>' +

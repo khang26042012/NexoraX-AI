@@ -1,15 +1,15 @@
-/* Logo transparent background */
-img[src*="Gemini_Generated_Image"] {
+/* SVG LOGO - Clean transparent styling */
+img[src*="nexorax-logo.svg"] {
     background: transparent !important;
-    background-color: transparent !important;
-    backdrop-filter: none !important;
-    mix-blend-mode: multiply;
+    /* SVG is naturally transparent - no filters needed */
+    filter: none !important;
+    mix-blend-mode: normal !important;
 }
 
-/* Dark mode logo */
-.dark img[src*="Gemini_Generated_Image"] {
-    mix-blend-mode: screen;
-    filter: brightness(1.1);
+/* Dark mode SVG logo */
+.dark img[src*="nexorax-logo.svg"] {
+    /* SVG will automatically adapt - clean styling */
+    filter: brightness(1.1) !important;
 }
 
 /* Modern AI Loading Animation like Replit */
