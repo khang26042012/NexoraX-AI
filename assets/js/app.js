@@ -19,7 +19,6 @@ class NexoraXChat {
         this.loadModelSelection();
         this.initializeDesktopSidebar();
         this.renderChatList();
-        this.initializeTypingEffects();
     }
     
     migrateLocalStorageKeys() {
@@ -970,6 +969,13 @@ class NexoraXChat {
     }
     
     async typewriterEffect(element, text, onComplete = null) {
+        // Check if user prefers reduced motion
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            element.innerHTML = this.formatMessage(text);
+            if (onComplete) onComplete();
+            return;
+        }
+        
         // Cancel any existing typewriter effect
         if (element.dataset.typewriterActive) {
             element.dataset.cancelled = 'true';
@@ -980,11 +986,15 @@ class NexoraXChat {
         element.dataset.typewriterActive = 'true';
         element.dataset.cancelled = 'false';
         
-        // Add typing cursor
-        element.classList.add('typing-cursor');
+        // Add AI typing shimmer effect
+        element.classList.add('ai-typing');
         element.innerHTML = '';
         
-        // Type character by character like Replit
+        // Create and add cursor element
+        const cursor = document.createElement('span');
+        cursor.classList.add('typing-cursor');
+        
+        // Type character by character with improved timing
         for (let i = 0; i < text.length; i++) {
             // Check if cancelled
             if (element.dataset.cancelled === 'true') {
@@ -992,28 +1002,42 @@ class NexoraXChat {
             }
             
             currentText += text[i];
+            
+            // Update content with cursor
             element.innerHTML = this.formatMessage(currentText);
+            element.appendChild(cursor);
+            
             this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
             
-            // Adjust speed based on character type
-            let delay = 15; // Base delay for smooth typing
+            // Adjust speed based on character type for natural feeling
+            let delay = 20; // Base delay for smooth typing
             const char = text[i];
             
             if (char === '.' || char === '!' || char === '?') {
-                delay = 300; // Longer pause after sentences
+                delay = 400; // Longer pause after sentences
             } else if (char === ',' || char === ';' || char === ':') {
-                delay = 100; // Medium pause after punctuation
+                delay = 150; // Medium pause after punctuation
             } else if (char === ' ') {
-                delay = 30; // Quick for spaces
+                delay = 40; // Quick for spaces
             } else if (char === '\n') {
-                delay = 200; // Pause for new lines
+                delay = 250; // Pause for new lines
             }
             
             await new Promise(resolve => setTimeout(resolve, delay));
         }
         
-        // Clean up
-        element.classList.remove('typing-cursor');
+        // Final cleanup
+        element.innerHTML = this.formatMessage(currentText);
+        element.classList.remove('ai-typing');
+        
+        // Remove cursor after a brief pause
+        setTimeout(() => {
+            if (cursor.parentElement) {
+                cursor.remove();
+            }
+        }, 1000);
+        
+        // Clean up dataset
         element.dataset.typewriterActive = 'false';
         element.dataset.cancelled = 'false';
         
@@ -1357,63 +1381,6 @@ class NexoraXChat {
         }
     }
     
-    initializeTypingEffects() {
-        // Initialize typing effects for home page after DOM is ready
-        setTimeout(() => {
-            // Check if user prefers reduced motion
-            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                return; // Skip typing effects for accessibility
-            }
-            
-            const titleElement = document.getElementById('mainTitle');
-            const subtitleElement = document.getElementById('mainSubtitle');
-            
-            // Apply typing effect to title
-            if (titleElement) {
-                const originalText = titleElement.textContent;
-                titleElement.textContent = '';
-                titleElement.classList.add('typing-title');
-                
-                // Use custom typing effect for better control
-                this.typeTextCharByChar(titleElement, originalText, 80, () => {
-                    // After title is done, start subtitle typing
-                    if (subtitleElement) {
-                        const originalSubtitle = subtitleElement.textContent;
-                        subtitleElement.textContent = '';
-                        subtitleElement.classList.add('typing-subtitle');
-                        
-                        setTimeout(() => {
-                            this.typeTextCharByChar(subtitleElement, originalSubtitle, 60, () => {
-                                // Add a brief cursor blink at the end
-                                const cursor = document.createElement('span');
-                                cursor.classList.add('typing-cursor');
-                                subtitleElement.appendChild(cursor);
-                                
-                                setTimeout(() => {
-                                    if (cursor.parentElement) {
-                                        cursor.remove();
-                                    }
-                                }, 2000);
-                            });
-                        }, 300); // Small delay before subtitle starts
-                    }
-                });
-            }
-        }, 500); // Wait a bit for DOM to be fully ready
-    }
-    
-    async typeTextCharByChar(element, text, speed = 60, callback = null) {
-        if (!element || !text) return;
-        
-        element.textContent = '';
-        
-        for (let i = 0; i < text.length; i++) {
-            element.textContent += text.charAt(i);
-            await new Promise(resolve => setTimeout(resolve, speed));
-        }
-        
-        if (callback) callback();
-    }
     
     saveChats() {
         localStorage.setItem('nexorax_chats', JSON.stringify(this.chats));
