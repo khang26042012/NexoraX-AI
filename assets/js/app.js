@@ -829,10 +829,7 @@ class NexoraXChat {
                 '</div>';
         } else {
             // AI message - ChatGPT style with avatar on left, no bubble
-            const aiAvatarContent = '<img src="attached_assets/Gemini_Generated_Image_lu53s7lu53s7lu53_1758414823909.png" alt="AI" class="w-8 h-8 object-contain" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';">' +
-                '<div class="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-lg" style="display: none;">' +
-                '<span class="text-white font-bold text-sm">AI</span>' +
-                '</div>';
+            const aiAvatarContent = '<img src="attached_assets/Gemini_Generated_Image_lu53s7lu53s7lu53_1758414823909.png" alt="AI" class="w-8 h-8 object-contain">';
             
             messageDiv.innerHTML = '<div class="message-wrapper">' +
                 '<div class="avatar ai-avatar">' + aiAvatarContent + '</div>' +
