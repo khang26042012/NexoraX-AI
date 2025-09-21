@@ -483,22 +483,7 @@ body.dark-mode .ai-loading-text {
     }
 }
 
-/* Typing Animation Cursor */
-.typing-cursor::after {
-    content: '|';
-    animation: cursorBlink 1s infinite;
-    color: #3b82f6;
-    font-weight: bold;
-}
-
-@keyframes cursorBlink {
-    0%, 50% {
-        opacity: 1;
-    }
-    51%, 100% {
-        opacity: 0;
-    }
-}
+/* Old cursor removed - using new implementation below */
 
 
 /* Removed quick suggestion styles */
@@ -2044,5 +2029,112 @@ body.dark-mode .new-attachment-btn svg {
     /* Better mobile focus states */
     .new-input-container:focus-within {
         box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5), 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+}
+
+/* ======================== */
+/* TYPING EFFECT ANIMATION  */
+/* ======================== */
+
+/* Typing cursor */
+.typing-cursor {
+    display: inline-block;
+    background-color: #3b82f6;
+    width: 2px;
+    height: 1.2em;
+    margin-left: 2px;
+    animation: blink 1s infinite;
+    vertical-align: text-bottom;
+    opacity: 1;
+}
+
+/* Dark mode cursor */
+.dark .typing-cursor,
+[data-theme="dark"] .typing-cursor,
+body.dark-mode .typing-cursor {
+    background-color: #60a5fa;
+}
+
+/* Cursor blinking animation */
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
+/* Typing container */
+.typing-text {
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    min-height: 1.2em;
+}
+
+/* Enhanced typing effect for titles - JS-controlled only */
+.typing-title {
+    /* Removed CSS animation - using JS for better control */
+}
+
+/* Subtitle typing effect - JS-controlled only */
+.typing-subtitle {
+    /* Removed CSS animation - using JS for better control */
+}
+
+@keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* AI response typing effect */
+.ai-typing {
+    overflow: hidden;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+    border-radius: 8px;
+    padding: 2px 4px;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* Responsive typing effects */
+@media (max-width: 768px) {
+    .typing-title {
+        animation-duration: 1.5s;
+    }
+    
+    .typing-subtitle {
+        animation-duration: 1.2s;
+        animation-delay: 2s;
+    }
+    
+    .typing-cursor {
+        width: 1.5px;
+        margin-left: 1px;
+    }
+}
+
+/* Reduced motion accessibility - comprehensive coverage */
+@media (prefers-reduced-motion: reduce) {
+    .typing-title,
+    .typing-subtitle,
+    .ai-typing {
+        animation: none !important;
+        width: auto !important;
+        opacity: 1 !important;
+    }
+    
+    .typing-cursor {
+        animation: none !important;
+        opacity: 0 !important; /* Hide cursor completely for reduced motion users */
+    }
+    
+    /* Disable all typing animations */
+    .typing-text {
+        animation: none !important;
     }
 }

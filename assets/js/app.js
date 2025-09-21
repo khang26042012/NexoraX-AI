@@ -19,6 +19,7 @@ class NexoraXChat {
         this.loadModelSelection();
         this.initializeDesktopSidebar();
         this.renderChatList();
+        this.initializeTypingEffects();
     }
     
     migrateLocalStorageKeys() {
@@ -1356,8 +1357,219 @@ class NexoraXChat {
         }
     }
     
+    initializeTypingEffects() {
+        // Initialize typing effects for home page after DOM is ready
+        setTimeout(() => {
+            // Check if user prefers reduced motion
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                return; // Skip typing effects for accessibility
+            }
+            
+            const titleElement = document.getElementById('mainTitle');
+            const subtitleElement = document.getElementById('mainSubtitle');
+            
+            // Apply typing effect to title
+            if (titleElement) {
+                const originalText = titleElement.textContent;
+                titleElement.textContent = '';
+                titleElement.classList.add('typing-title');
+                
+                // Use custom typing effect for better control
+                this.typeTextCharByChar(titleElement, originalText, 80, () => {
+                    // After title is done, start subtitle typing
+                    if (subtitleElement) {
+                        const originalSubtitle = subtitleElement.textContent;
+                        subtitleElement.textContent = '';
+                        subtitleElement.classList.add('typing-subtitle');
+                        
+                        setTimeout(() => {
+                            this.typeTextCharByChar(subtitleElement, originalSubtitle, 60, () => {
+                                // Add a brief cursor blink at the end
+                                const cursor = document.createElement('span');
+                                cursor.classList.add('typing-cursor');
+                                subtitleElement.appendChild(cursor);
+                                
+                                setTimeout(() => {
+                                    if (cursor.parentElement) {
+                                        cursor.remove();
+                                    }
+                                }, 2000);
+                            });
+                        }, 300); // Small delay before subtitle starts
+                    }
+                });
+            }
+        }, 500); // Wait a bit for DOM to be fully ready
+    }
+    
+    async typeTextCharByChar(element, text, speed = 60, callback = null) {
+        if (!element || !text) return;
+        
+        element.textContent = '';
+        
+        for (let i = 0; i < text.length; i++) {
+            element.textContent += text.charAt(i);
+            await new Promise(resolve => setTimeout(resolve, speed));
+        }
+        
+        if (callback) callback();
+    }
+    
     saveChats() {
         localStorage.setItem('nexorax_chats', JSON.stringify(this.chats));
+    }
+}
+
+// ================================
+// TYPING EFFECT FUNCTIONS
+// ================================
+
+class TypingEffect {
+    
+    // Typing effect for simple text
+    static async typeText(element, text, speed = 50) {
+        if (!element) return;
+        
+        element.textContent = '';
+        element.style.width = '0';
+        element.classList.add('typing-text');
+        
+        for (let i = 0; i < text.length; i++) {
+            element.textContent += text.charAt(i);
+            await new Promise(resolve => setTimeout(resolve, speed));
+        }
+        
+        element.style.width = 'auto';
+    }
+    
+    // Typing effect with blinking cursor
+    static async typeTextWithCursor(element, text, speed = 80, showCursor = true) {
+        if (!element) return;
+        
+        // Clear element
+        element.innerHTML = '';
+        
+        // Create cursor element
+        const cursor = document.createElement('span');
+        cursor.classList.add('typing-cursor');
+        
+        if (showCursor) {
+            element.appendChild(cursor);
+        }
+        
+        // Type each character
+        for (let i = 0; i < text.length; i++) {
+            // Remove cursor temporarily
+            if (cursor.parentElement) {
+                cursor.remove();
+            }
+            
+            // Add character
+            element.textContent += text.charAt(i);
+            
+            // Add cursor back
+            if (showCursor) {
+                element.appendChild(cursor);
+            }
+            
+            // Wait before next character
+            await new Promise(resolve => setTimeout(resolve, speed));
+        }
+        
+        // Remove cursor after completion if desired
+        setTimeout(() => {
+            if (cursor.parentElement) {
+                cursor.remove();
+            }
+        }, 3000);
+    }
+    
+    // Typing effect for AI responses (word by word)
+    static async typeAIResponse(element, text, speed = 30) {
+        if (!element) return;
+        
+        element.textContent = '';
+        element.classList.add('ai-typing');
+        
+        const words = text.split(' ');
+        
+        for (let i = 0; i < words.length; i++) {
+            element.textContent += (i > 0 ? ' ' : '') + words[i];
+            await new Promise(resolve => setTimeout(resolve, speed));
+        }
+        
+        // Remove typing class after completion
+        setTimeout(() => {
+            element.classList.remove('ai-typing');
+        }, 500);
+    }
+    
+    // Initialize home page typing effects
+    static initHomePageTyping() {
+        // Wait for DOM to be ready
+        setTimeout(() => {
+            const titleElement = document.querySelector('h1');
+            const subtitleElement = document.querySelector('p');
+            
+            if (titleElement) {
+                titleElement.classList.add('typing-title');
+            }
+            
+            if (subtitleElement && subtitleElement.textContent.includes('Xin chào')) {
+                subtitleElement.classList.add('typing-subtitle');
+            }
+        }, 100);
+    }
+    
+    // Enhanced typing for chat messages
+    static async typeMessage(element, text, isAI = false) {
+        if (!element || !text) return;
+        
+        // Check if user prefers reduced motion
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            element.textContent = text;
+            return;
+        }
+        
+        if (isAI) {
+            await this.typeAIResponse(element, text, 25);
+        } else {
+            await this.typeTextWithCursor(element, text, 60, false);
+        }
+    }
+    
+    // Utility to check if element is in viewport
+    static isInViewport(element) {
+        const rect = element.getBoundingClientRect();
+        return (
+            rect.top >= 0 &&
+            rect.left >= 0 &&
+            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+            rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+        );
+    }
+    
+    // Auto trigger typing when element comes into view
+    static observeElement(element, text, options = {}) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !entry.target.hasAttribute('data-typed')) {
+                    entry.target.setAttribute('data-typed', 'true');
+                    
+                    if (options.isAI) {
+                        this.typeAIResponse(entry.target, text, options.speed || 30);
+                    } else {
+                        this.typeTextWithCursor(entry.target, text, options.speed || 80, options.showCursor !== false);
+                    }
+                    
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+        
+        observer.observe(element);
     }
 }
 
