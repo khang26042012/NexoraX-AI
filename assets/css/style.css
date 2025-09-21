@@ -1414,3 +1414,191 @@ body.dark-mode .attachment-btn:hover {
 body.dark-mode .fixed {
     background: linear-gradient(180deg, transparent 0%, rgba(17,24,39,0.8) 20%, #111827 100%) !important;
 }
+
+/* ========================================= */
+/* New Modern Input Container Design */
+/* ========================================= */
+
+.new-input-container {
+    display: flex;
+    align-items: center;
+    background-color: #ffffff;
+    border: 2px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 8px;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.new-input-container:focus-within {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Attachment button */
+.new-attachment-btn {
+    width: 40px;
+    height: 40px;
+    background-color: transparent;
+    border: none;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.new-attachment-btn:hover {
+    background-color: #f3f4f6;
+}
+
+.new-attachment-btn svg {
+    width: 20px;
+    height: 20px;
+    color: #6b7280;
+}
+
+/* Input field */
+.new-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 16px;
+    color: #1f2937;
+    padding: 12px 16px;
+    line-height: 1.5;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    resize: none;
+    min-height: 24px;
+}
+
+.new-input::placeholder {
+    color: #9ca3af;
+}
+
+/* Send button - positioned at right */
+.new-send-btn {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    border: none;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.new-send-btn:hover {
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.new-send-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.new-send-btn svg {
+    width: 18px;
+    height: 18px;
+    color: white;
+}
+
+/* Dark mode support */
+.dark .new-input-container,
+[data-theme="dark"] .new-input-container,
+body.dark-mode .new-input-container {
+    background-color: #374151;
+    border-color: #4b5563;
+}
+
+.dark .new-input-container:focus-within,
+[data-theme="dark"] .new-input-container:focus-within,
+body.dark-mode .new-input-container:focus-within {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2), 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.dark .new-input,
+[data-theme="dark"] .new-input,
+body.dark-mode .new-input {
+    color: #f9fafb;
+}
+
+.dark .new-input::placeholder,
+[data-theme="dark"] .new-input::placeholder,
+body.dark-mode .new-input::placeholder {
+    color: #9ca3af;
+}
+
+.dark .new-attachment-btn:hover,
+[data-theme="dark"] .new-attachment-btn:hover,
+body.dark-mode .new-attachment-btn:hover {
+    background-color: #4b5563;
+}
+
+.dark .new-attachment-btn svg,
+[data-theme="dark"] .new-attachment-btn svg,
+body.dark-mode .new-attachment-btn svg {
+    color: #d1d5db;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+    .new-input-container {
+        border-radius: 12px;
+        padding: 6px;
+        gap: 6px;
+        max-width: calc(100% - 16px);
+        margin: 0 8px;
+    }
+    
+    .new-attachment-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+    }
+    
+    .new-attachment-btn svg {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .new-input {
+        font-size: 16px; /* Prevent zoom on iOS */
+        padding: 10px 12px;
+        min-height: 20px;
+        -webkit-appearance: none;
+        -webkit-user-select: text;
+        -webkit-touch-callout: default;
+        user-select: text;
+    }
+    
+    .new-send-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+    }
+    
+    .new-send-btn svg {
+        width: 16px;
+        height: 16px;
+    }
+    
+    /* Better mobile focus states */
+    .new-input-container:focus-within {
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5), 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+}
