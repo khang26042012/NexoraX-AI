@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-NovaX AI Configuration File
+NexoraX AI Configuration File
 Chỉnh sửa file này để thay đổi API keys và cấu hình khác
 """
 
@@ -92,7 +92,7 @@ def check_config():
     return warnings
 
 if __name__ == "__main__":
-    print("🔧 NovaX AI Configuration")
+    print("🔧 NexoraX AI Configuration")
     print("=" * 40)
     warnings = check_config()
     if warnings:

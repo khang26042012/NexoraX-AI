@@ -1,13 +1,16 @@
-class NovaXChat {
+class NexoraXChat {
     constructor() {
+        // Migrate old NovaX localStorage keys to NexoraX keys (one-time migration)
+        this.migrateLocalStorageKeys();
+        
         this.currentChatId = null;
-        this.chats = JSON.parse(localStorage.getItem('novax_chats') || '{}');
+        this.chats = JSON.parse(localStorage.getItem('nexorax_chats') || '{}');
         // API calls now go through server-side proxy - no client-side key needed
-        this.isDarkMode = localStorage.getItem('novax_dark_mode') === 'true';
+        this.isDarkMode = localStorage.getItem('nexorax_dark_mode') === 'true';
         this.currentRating = 0;
         // Only support gemini-flash model now
         this.selectedModel = 'gemini-flash';
-        localStorage.setItem('novax_selected_model', this.selectedModel);
+        localStorage.setItem('nexorax_selected_model', this.selectedModel);
         this.selectedFiles = new Map(); // Store selected files with their data
         
         this.initializeElements();
@@ -16,6 +19,24 @@ class NovaXChat {
         this.loadModelSelection();
         this.initializeDesktopSidebar();
         this.renderChatList();
+    }
+    
+    migrateLocalStorageKeys() {
+        // One-time migration from NovaX to NexoraX localStorage keys
+        const migrations = [
+            ['novax_chats', 'nexorax_chats'],
+            ['novax_dark_mode', 'nexorax_dark_mode'],
+            ['novax_selected_model', 'nexorax_selected_model'],
+            ['novax_feedbacks', 'nexorax_feedbacks']
+        ];
+        
+        migrations.forEach(([oldKey, newKey]) => {
+            const oldValue = localStorage.getItem(oldKey);
+            if (oldValue !== null && localStorage.getItem(newKey) === null) {
+                localStorage.setItem(newKey, oldValue);
+                localStorage.removeItem(oldKey);
+            }
+        });
     }
     
     initializeElements() {
@@ -808,7 +829,7 @@ class NovaXChat {
                 '</div>';
         } else {
             // AI message - ChatGPT style with avatar on left, no bubble
-            const aiAvatarContent = '<img src="https://i.postimg.cc/Jyz7fhf8/image.png" alt="AI" class="w-8 h-8 object-contain" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';">' +
+            const aiAvatarContent = '<img src="attached_assets/Gemini_Generated_Image_lu53s7lu53s7lu53_1758414823909.png" alt="AI" class="w-8 h-8 object-contain" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';">' +
                 '<div class="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-lg" style="display: none;">' +
                 '<span class="text-white font-bold text-sm">AI</span>' +
                 '</div>';
@@ -1061,7 +1082,7 @@ class NovaXChat {
     
     toggleTheme() {
         this.isDarkMode = !this.isDarkMode;
-        localStorage.setItem('novax_dark_mode', this.isDarkMode);
+        localStorage.setItem('nexorax_dark_mode', this.isDarkMode);
         this.loadTheme();
     }
     
@@ -1208,9 +1229,9 @@ class NovaXChat {
             timestamp: new Date().toISOString()
         };
         
-        const feedbacks = JSON.parse(localStorage.getItem('novax_feedbacks') || '[]');
+        const feedbacks = JSON.parse(localStorage.getItem('nexorax_feedbacks') || '[]');
         feedbacks.push(feedback);
-        localStorage.setItem('novax_feedbacks', JSON.stringify(feedbacks));
+        localStorage.setItem('nexorax_feedbacks', JSON.stringify(feedbacks));
         
         this.hideFeedback();
         this.showNotification('Cảm ơn bạn đã đánh giá! 🙏', 'success');
@@ -1241,7 +1262,7 @@ class NovaXChat {
     
     changeModel(modelType) {
         this.selectedModel = modelType;
-        localStorage.setItem('novax_selected_model', modelType);
+        localStorage.setItem('nexorax_selected_model', modelType);
         
         const modelNames = {
             'gemini-flash': 'Gemini Flash 2.5'
@@ -1273,9 +1294,9 @@ class NovaXChat {
     }
     
     saveChats() {
-        localStorage.setItem('novax_chats', JSON.stringify(this.chats));
+        localStorage.setItem('nexorax_chats', JSON.stringify(this.chats));
     }
 }
 
 // Initialize the app
-const app = new NovaXChat();
+const app = new NexoraXChat();

@@ -936,8 +936,8 @@ html, body {
     color: #f3f4f6;
 }
 
-/* NovaX Message Input Styles */
-.novax-message-input-wrapper {
+/* NexoraX Message Input Styles */
+.nexorax-message-input-wrapper {
     background-color: #ffffff;
     border: 1px solid #e5e7eb;
     border-radius: 24px;
@@ -950,12 +950,12 @@ html, body {
     position: relative;
 }
 
-.novax-message-input-wrapper:focus-within {
+.nexorax-message-input-wrapper:focus-within {
     border-color: #3b82f6;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.novax-message-input {
+.nexorax-message-input {
     flex: 1;
     border: none;
     outline: none;
@@ -967,17 +967,17 @@ html, body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 }
 
-.novax-message-input::placeholder {
+.nexorax-message-input::placeholder {
     color: #9ca3af;
 }
 
-.novax-input-actions {
+.nexorax-input-actions {
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-.novax-mic-button {
+.nexorax-mic-button {
     width: 36px;
     height: 36px;
     background-color: transparent;
@@ -990,17 +990,17 @@ html, body {
     transition: background-color 0.2s ease;
 }
 
-.novax-mic-button:hover {
+.nexorax-mic-button:hover {
     background-color: #f3f4f6;
 }
 
-.novax-mic-button svg {
+.nexorax-mic-button svg {
     width: 20px;
     height: 20px;
     color: #6b7280;
 }
 
-.novax-send-button {
+.nexorax-send-button {
     width: 36px;
     height: 36px;
     background-color: #a78bfa;
@@ -1013,47 +1013,47 @@ html, body {
     transition: all 0.2s ease;
 }
 
-.novax-send-button:hover {
+.nexorax-send-button:hover {
     background-color: #8b5cf6;
     transform: scale(1.05);
 }
 
-.novax-send-button svg {
+.nexorax-send-button svg {
     width: 18px;
     height: 18px;
     color: white;
 }
 
-/* Dark mode for NovaX message input - Updated to match new theme */
-.dark .novax-message-input-wrapper {
+/* Dark mode for NexoraX message input - Updated to match new theme */
+.dark .nexorax-message-input-wrapper {
     background-color: #2f3349;
     border-color: #404356;
 }
 
-.dark .novax-message-input-wrapper:focus-within {
+.dark .nexorax-message-input-wrapper:focus-within {
     border-color: #5865f2;
     box-shadow: 0 0 0 1px rgba(88, 101, 242, 0.4);
 }
 
-.dark .novax-message-input {
+.dark .nexorax-message-input {
     color: #dcddde;
 }
 
-.dark .novax-message-input::placeholder {
+.dark .nexorax-message-input::placeholder {
     color: #72767d;
 }
 
-.dark .novax-mic-button:hover {
+.dark .nexorax-mic-button:hover {
     background-color: #404356;
 }
 
-.dark .novax-mic-button svg {
+.dark .nexorax-mic-button svg {
     color: #d1d5db;
 }
 
 /* Responsive */
 @media (max-width: 640px) {
-    .novax-message-input {
+    .nexorax-message-input {
         font-size: 16px;
     }
 }

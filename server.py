@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-NovaX AI Server - Production-ready HTTP server for serving static files
-Author: NovaX AI Team
+NexoraX AI Server - Production-ready HTTP server for serving static files
+Author: NexoraX AI Team
 Date: August 2025
 """
 
@@ -38,8 +38,8 @@ except ImportError:
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class NovaXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
-    """Custom HTTP request handler for NovaX AI application"""
+class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
+    """Custom HTTP request handler for NexoraX AI application"""
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=os.getcwd(), **kwargs)
@@ -206,15 +206,15 @@ class NovaXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         logger.info(f"{self.client_address[0]} - {format % args}")
 
 def run_server(port=5000):
-    """Run the NovaX AI server"""
-    handler = NovaXHTTPRequestHandler
+    """Run the NexoraX AI server"""
+    handler = NexoraXHTTPRequestHandler
     
     # Allow reuse of socket address to prevent "Address already in use" errors
     socketserver.TCPServer.allow_reuse_address = True
     
     try:
         with socketserver.TCPServer(("0.0.0.0", port), handler) as httpd:
-            logger.info(f"NovaX AI Server running on http://0.0.0.0:{port}/")
+            logger.info(f"NexoraX AI Server running on http://0.0.0.0:{port}/")
             logger.info("Press Ctrl+C to stop the server")
             
             # Serve forever
@@ -251,5 +251,5 @@ if __name__ == "__main__":
         logger.error(f"Missing required files: {', '.join(missing_files)}")
         sys.exit(1)
     
-    logger.info("NovaX AI - Starting production server...")
+    logger.info("NexoraX AI - Starting production server...")
     run_server(port)

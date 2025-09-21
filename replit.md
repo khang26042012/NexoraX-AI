@@ -1,7 +1,7 @@
-# NovaX AI - Replit Setup
+# NexoraX AI - Replit Setup
 
 ## Project Overview
-NovaX AI is a modern Vietnamese AI chat application that provides conversations using Google Gemini language model. Successfully imported and configured for Replit environment on September 18, 2025.
+NexoraX AI is a modern Vietnamese AI chat application that provides conversations using Google Gemini language model. Successfully imported and configured for Replit environment on September 18, 2025.
 
 ## Recent Changes
 - **September 20, 2025**: Fixed mobile UI issues
@@ -36,7 +36,7 @@ NovaX AI is a modern Vietnamese AI chat application that provides conversations 
 - **Host**: 0.0.0.0 (configured for Replit proxy requirements)
 
 ### Current Configuration
-- **Workflow**: "NovaX AI Server" running `python3 server.py`
+- **Workflow**: "NexoraX AI Server" running `python3 server.py`
 - **Deployment**: Configured for autoscale deployment target
 - **Dependencies**: No external Python packages required (uses built-in modules)
 
@@ -50,7 +50,7 @@ NovaX AI is a modern Vietnamese AI chat application that provides conversations 
 │   ├── css/style.css   # Application styles
 │   └── js/app.js       # JavaScript application logic
 ├── attached_assets/    # User uploaded images/files  
-├── NovaX.md           # Original project documentation
+├── NexoraX.md           # Original project documentation
 ├── README_RENDER.md   # Render deployment guide
 └── replit.md          # This file
 ```

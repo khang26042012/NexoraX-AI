@@ -1,4 +1,4 @@
-# Hướng Dẫn Deploy NovaX AI lên Render
+# Hướng Dẫn Deploy NexoraX AI lên Render
 
 ## Bước 1: Chuẩn bị Repository
 1. Push code lên GitHub repository
@@ -11,7 +11,7 @@
 4. Cấu hình như sau:
 
 ### Cấu hình Cơ Bản
-- **Name**: novax-ai (hoặc tên bạn muốn)
+- **Name**: nexorax-ai (hoặc tên bạn muốn)
 - **Runtime**: Python 3
 - **Build Command**: `pip install -r requirements.txt` (hoặc để trống vì không cần)
 - **Start Command**: `python3 server.py`
