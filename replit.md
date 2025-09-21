@@ -4,6 +4,12 @@
 NexoraX AI is a modern Vietnamese AI chat application that provides conversations using Google Gemini language model. Successfully imported and configured for Replit environment on September 18, 2025.
 
 ## Recent Changes
+- **September 21, 2025**: Redesigned settings modal for better performance and UI
+  - **Performance Optimization**: Removed heavy backdrop-filter blur effects causing lag
+  - **UI Layout Fix**: Repositioned close button to right side of header with proper flex alignment
+  - **Text Update**: Changed "🤖 TRÍ TUỆ NHÂN TẠO" to "🤖 Molded AI" 
+  - **Animation Improvements**: Simplified animations using GPU-friendly transform3d and reduced transition times
+  - **Responsive Design**: Maintained mobile responsiveness while improving performance
 - **September 20, 2025**: Fixed mobile UI issues
   - **Send Button Mobile Fix**: Increased touch target size from 22px to 40px for better touch interaction
   - **Input Bar Mobile Fix**: Enhanced mobile keyboard behavior with better focus/blur handling
