@@ -52,6 +52,18 @@ def get_allowed_origins():
     render_url = os.getenv('RENDER_EXTERNAL_URL', '')
     if render_url:
         origins.append(render_url)
+        # Also add without trailing slash
+        origins.append(render_url.rstrip('/'))
+    
+    # Additional Render domain detection
+    render_service = os.getenv('RENDER_SERVICE_NAME', '')
+    if render_service:
+        origins.append(f"https://{render_service}.onrender.com")
+    
+    # For production on Render - allow Render domains
+    if os.getenv('RENDER'):
+        # Allow all .onrender.com domains for Render deployment
+        return ["*"]
     
     # For Replit proxy requirements - allow all hosts for development
     # This is necessary because Replit shows the website in an iframe proxy

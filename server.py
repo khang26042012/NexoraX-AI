@@ -47,16 +47,27 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     def _is_origin_allowed(self, origin):
         """Check if origin is in secure allowed list"""
         if not origin:
-            return False
+            return True  # Allow requests without origin (server-to-server)
         allowed_origins = get_allowed_origins()
+        # If allowed origins contains "*", allow all
+        if "*" in allowed_origins:
+            return True
         return origin in allowed_origins
     
     def _send_cors_headers(self, origin=None):
         """Send appropriate CORS headers securely"""
         origin = origin or self.headers.get('Origin', '')
-        if self._is_origin_allowed(origin):
+        allowed_origins = get_allowed_origins()
+        
+        if "*" in allowed_origins:
+            # For production environments like Render/Replit
+            self.send_header('Access-Control-Allow-Origin', '*')
+        elif self._is_origin_allowed(origin) and origin:
             self.send_header('Access-Control-Allow-Origin', origin)
-        self.send_header('Vary', 'Origin')
+            self.send_header('Vary', 'Origin')
+        else:
+            # Fallback to wildcard for production
+            self.send_header('Access-Control-Allow-Origin', '*')
     
     def _send_json_error(self, status_code, error_message, error_code):
         """Send JSON error response with proper CORS"""
@@ -129,6 +140,9 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         except urllib.error.URLError as e:
             logger.error(f"Gemini connection error: {e}")
             self._send_json_error(502, "Không thể kết nối đến Gemini API", "CONNECTION_ERROR")
+        except json.JSONDecodeError as e:
+            logger.error(f"Invalid JSON in request: {e}")
+            self._send_json_error(400, "Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra định dạng JSON.", "INVALID_JSON")
         except Exception as e:
             logger.error(f"Gemini proxy error: {e}")
             logger.error(f"Exception type: {type(e)}")
@@ -243,6 +257,16 @@ if __name__ == "__main__":
     else:
         port = int(os.getenv('PORT', 5000))  # Default to PORT env var or 5000
     
+    # Debug logging for deployment
+    logger.info("NexoraX AI - Starting production server...")
+    logger.info(f"Environment: {'Render' if os.getenv('RENDER') else 'Replit' if os.getenv('REPLIT_DOMAIN') else 'Local'}")
+    logger.info(f"Port: {port}")
+    logger.info(f"Allowed Origins: {get_allowed_origins()}")
+    
+    # API Key status
+    api_key = get_api_key('gemini')
+    logger.info(f"API Key Status: {'Configured' if api_key and api_key != 'your_gemini_api_key_here' else 'NOT CONFIGURED - Please set GEMINI_API_KEY environment variable'}")
+    
     # Check if files exist
     required_files = ['index.html', 'assets/css/style.css', 'assets/js/app.js']
     missing_files = [f for f in required_files if not os.path.exists(f)]
@@ -251,5 +275,4 @@ if __name__ == "__main__":
         logger.error(f"Missing required files: {', '.join(missing_files)}")
         sys.exit(1)
     
-    logger.info("NexoraX AI - Starting production server...")
     run_server(port)

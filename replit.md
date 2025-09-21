@@ -4,7 +4,14 @@
 NexoraX AI is a modern Vietnamese AI chat application that provides conversations using Google Gemini language model. Successfully imported and configured for Replit environment on September 18, 2025.
 
 ## Recent Changes
-- **September 21, 2025**: Redesigned settings modal for better performance and UI
+- **September 21, 2025**: Fixed Render deployment issues and improved sidebar
+  - **Render CORS Fix**: Enhanced CORS configuration to automatically detect and support Render domains
+  - **API Error Handling**: Improved error messages for missing API keys on production deployments
+  - **Debug Logging**: Added environment detection and status logging for easier troubleshooting
+  - **Sidebar Icons**: Updated toggle buttons to use Panel Left/Right icons with proper logic (Panel Left = open, Panel Right = close)
+  - **Animation Improvements**: Optimized sidebar animation timing for smoother transitions (300ms)
+  - **Deployment Guide**: Created RENDER_DEPLOYMENT.md with complete setup instructions
+- **Earlier September 21, 2025**: Redesigned settings modal for better performance and UI
   - **Performance Optimization**: Removed heavy backdrop-filter blur effects causing lag
   - **UI Layout Fix**: Repositioned close button to right side of header with proper flex alignment
   - **Text Update**: Changed "🤖 TRÍ TUỆ NHÂN TẠO" to "🤖 Molded AI" 
@@ -86,4 +93,9 @@ NexoraX AI is a modern Vietnamese AI chat application that provides conversation
 3. **Customize**: Modify branding, colors, or features as needed
 
 ## Status
-🟢 **READY TO USE** - Application is fully functional and ready for deployment or further customization.
+🟢 **READY FOR DEPLOYMENT** - Application is fully functional with Render deployment fixes applied. 
+
+### Deployment Support
+- ✅ **Replit**: Works perfectly with auto CORS configuration
+- ✅ **Render**: Fixed CORS issues, added deployment guide
+- ✅ **Local**: Full development support with detailed logging
