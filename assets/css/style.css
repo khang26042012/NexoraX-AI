@@ -1425,7 +1425,7 @@ body.dark-mode .fixed {
     background-color: #ffffff;
     border: 2px solid #e5e7eb;
     border-radius: 16px;
-    padding: 8px;
+    padding: 8px 8px 8px 8px;
     gap: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
@@ -1452,6 +1452,7 @@ body.dark-mode .fixed {
     cursor: pointer;
     transition: all 0.2s ease;
     flex-shrink: 0;
+    order: 1;
 }
 
 .new-attachment-btn:hover {
@@ -1472,18 +1473,20 @@ body.dark-mode .fixed {
     background: transparent;
     font-size: 16px;
     color: #1f2937;
-    padding: 12px 16px;
+    padding: 12px 16px 12px 16px;
     line-height: 1.5;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
     resize: none;
     min-height: 24px;
+    order: 2;
+    margin-right: 8px;
 }
 
 .new-input::placeholder {
     color: #9ca3af;
 }
 
-/* Send button - positioned at right */
+/* Send button - positioned at right inside input container */
 .new-send-btn {
     width: 40px;
     height: 40px;
@@ -1497,6 +1500,10 @@ body.dark-mode .fixed {
     transition: all 0.2s ease;
     flex-shrink: 0;
     box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    order: 3;
+    margin-left: auto;
+    position: relative;
+    z-index: 1;
 }
 
 .new-send-btn:hover {
