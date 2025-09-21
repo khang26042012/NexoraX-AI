@@ -52,6 +52,11 @@ def get_allowed_origins():
     render_url = os.getenv('RENDER_EXTERNAL_URL', '')
     if render_url:
         origins.append(render_url)
+    
+    # For Replit proxy requirements - allow all hosts for development
+    # This is necessary because Replit shows the website in an iframe proxy
+    if os.getenv('REPLIT_DOMAIN'):
+        return ["*"]
         
     return [origin for origin in origins if origin]
 
