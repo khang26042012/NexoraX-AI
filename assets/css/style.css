@@ -1,3 +1,17 @@
+/* Logo transparent background */
+img[src*="Gemini_Generated_Image"] {
+    background: transparent !important;
+    background-color: transparent !important;
+    backdrop-filter: none !important;
+    mix-blend-mode: multiply;
+}
+
+/* Dark mode logo */
+.dark img[src*="Gemini_Generated_Image"] {
+    mix-blend-mode: screen;
+    filter: brightness(1.1);
+}
+
 /* Modern AI Loading Animation like Replit */
 .ai-loading {
     display: inline-flex;
