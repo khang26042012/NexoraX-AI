@@ -502,6 +502,38 @@ class NexoraXChat {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
     
+    updateSidebarIcons(isClosed) {
+        // Mobile icons
+        const mobileRightIcon = document.getElementById('mobilePanelRightIcon');
+        const mobileLeftIcon = document.getElementById('mobilePanelLeftIcon');
+        
+        // Desktop icons
+        const desktopRightIcon = document.getElementById('desktopPanelRightIcon');
+        const desktopLeftIcon = document.getElementById('desktopPanelLeftIcon');
+        
+        if (isClosed) {
+            // Show panel-right icon (sidebar closed)
+            if (mobileRightIcon && mobileLeftIcon) {
+                mobileRightIcon.classList.remove('hidden');
+                mobileLeftIcon.classList.add('hidden');
+            }
+            if (desktopRightIcon && desktopLeftIcon) {
+                desktopRightIcon.classList.remove('hidden');
+                desktopLeftIcon.classList.add('hidden');
+            }
+        } else {
+            // Show panel-left icon (sidebar open)
+            if (mobileRightIcon && mobileLeftIcon) {
+                mobileRightIcon.classList.add('hidden');
+                mobileLeftIcon.classList.remove('hidden');
+            }
+            if (desktopRightIcon && desktopLeftIcon) {
+                desktopRightIcon.classList.add('hidden');
+                desktopLeftIcon.classList.remove('hidden');
+            }
+        }
+    }
+    
     toggleSidebar() {
         const isHidden = this.sidebar.classList.contains('-translate-x-full');
         
@@ -513,6 +545,7 @@ class NexoraXChat {
             this.sidebar.classList.remove('-translate-x-full');
             this.sidebarToggle.style.opacity = '0';
             this.sidebarToggle.style.pointerEvents = 'none';
+            this.updateSidebarIcons(false); // sidebar is now open
         } else {
             // Closing animation
             this.sidebarToggle.classList.add('closing');
@@ -521,6 +554,7 @@ class NexoraXChat {
             this.sidebar.classList.add('-translate-x-full');
             this.sidebarToggle.style.opacity = '1';
             this.sidebarToggle.style.pointerEvents = 'auto';
+            this.updateSidebarIcons(true); // sidebar is now closed
         }
     }
     
@@ -534,6 +568,7 @@ class NexoraXChat {
             desktopToggle.style.opacity = '1';
             desktopToggle.style.pointerEvents = 'auto';
         }
+        this.updateSidebarIcons(true); // sidebar is now closed
     }
     
     toggleDesktopSidebar() {
@@ -548,6 +583,7 @@ class NexoraXChat {
             this.sidebar.classList.remove('-translate-x-full');
             desktopToggle.style.opacity = '0';
             desktopToggle.style.pointerEvents = 'none';
+            this.updateSidebarIcons(false); // sidebar is now open
         } else {
             // Closing animation
             desktopToggle.classList.add('closing');
@@ -556,6 +592,7 @@ class NexoraXChat {
             this.sidebar.classList.add('-translate-x-full');
             desktopToggle.style.opacity = '1';
             desktopToggle.style.pointerEvents = 'auto';
+            this.updateSidebarIcons(true); // sidebar is now closed
         }
     }
     
@@ -567,6 +604,7 @@ class NexoraXChat {
             desktopToggle.style.opacity = '1';
             desktopToggle.style.pointerEvents = 'auto';
         }
+        this.updateSidebarIcons(true); // sidebar is initially closed
     }
     
     showHomeScreen() {
