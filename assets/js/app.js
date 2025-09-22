@@ -1475,29 +1475,45 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
         this.speechRecognition = new SpeechRecognition();
         
         this.speechRecognition.continuous = false;
-        this.speechRecognition.interimResults = true;
+        this.speechRecognition.interimResults = true; // Enable interim results
         this.speechRecognition.lang = 'vi-VN'; // Vietnamese language
         this.speechRecognition.maxAlternatives = 1;
+        
+        // Buffer để lưu text đã hoàn thành
+        this.speechFinalBuffer = '';
 
         this.speechRecognition.onstart = () => {
             this.isRecording = true;
+            this.speechFinalBuffer = ''; // Reset buffer khi bắt đầu
             this.updateRecordingUI(true);
         };
 
         this.speechRecognition.onend = () => {
             this.isRecording = false;
             this.updateRecordingUI(false);
+            
+            // Khi kết thúc, đảm bảo text cuối cùng được lưu và focus vào input
+            if (this.speechFinalBuffer.trim()) {
+                this.handleSpeechResult(this.speechFinalBuffer.trim());
+            }
         };
 
         this.speechRecognition.onresult = (event) => {
-            let transcript = '';
+            let interimTranscript = '';
+            
+            // Thêm final results vào buffer
             for (let i = event.resultIndex; i < event.results.length; i++) {
-                transcript += event.results[i][0].transcript;
+                const transcript = event.results[i][0].transcript;
+                if (event.results[i].isFinal) {
+                    this.speechFinalBuffer += transcript;
+                } else {
+                    interimTranscript += transcript;
+                }
             }
             
-            if (event.results[event.results.length - 1].isFinal) {
-                this.handleSpeechResult(transcript.trim());
-            }
+            // Hiển thị tổng hợp: text đã hoàn thành + text tạm thời
+            const fullTranscript = this.speechFinalBuffer + interimTranscript;
+            this.updateInputWithTranscript(fullTranscript);
         };
 
         this.speechRecognition.onerror = (event) => {
@@ -1580,20 +1596,24 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
         });
     }
 
+    updateInputWithTranscript(transcript) {
+        // Hiển thị transcript trong input field (bao gồm interim results)
+        if (this.currentActiveInput === 'home' && this.homeInput) {
+            this.homeInput.value = transcript;
+        } else if (this.currentActiveInput === 'chat' && this.chatInput) {
+            this.chatInput.value = transcript;
+        }
+    }
+
     handleSpeechResult(transcript) {
         if (!transcript) return;
 
-        // Insert transcript into appropriate input field
-        if (this.currentActiveInput === 'home') {
-            this.homeInput.value = transcript;
+        // Chỉ focus vào input khi hoàn thành, không hiển thị thông báo
+        if (this.currentActiveInput === 'home' && this.homeInput) {
             this.homeInput.focus();
-        } else if (this.currentActiveInput === 'chat') {
-            this.chatInput.value = transcript;
+        } else if (this.currentActiveInput === 'chat' && this.chatInput) {
             this.chatInput.focus();
         }
-
-        // Show success feedback
-        this.showNotification(`Đã nhận diện: "${transcript}"`, 'success');
     }
 
     disableMicButtons() {
