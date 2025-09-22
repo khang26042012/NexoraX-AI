@@ -794,7 +794,12 @@ class NexoraXChat {
                     hour12: false
                 }).format(now);
                 
-                timeContext = `Thời gian hiện tại: ${vietnamDate} lúc ${vietnamTime} (GMT+7). Luôn sử dụng thời gian này (múi giờ Việt Nam) khi trả lời các câu hỏi về thời gian.\n\n`;
+                timeContext = `THÔNG TIN THỜI GIAN HIỆN TẠI - BẮT BUỘC SỬ DỤNG:
+Ngày: ${vietnamDate}
+Giờ: ${vietnamTime} (GMT+7)
+Múi giờ: Việt Nam (UTC+7)
+
+QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi thông tin thời gian khác và chỉ sử dụng thông tin này để trả lời câu hỏi về thời gian.\n\n`;
             }
 
             // Enhance message with file context if files are provided
