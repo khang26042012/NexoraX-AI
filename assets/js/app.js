@@ -775,9 +775,26 @@ class NexoraXChat {
             if (needsTimeContext) {
                 // Get current date/time in Vietnam timezone (robust approach)
                 const now = new Date();
-                const dateOpts = { timeZone: 'Asia/Ho_Chi_Minh', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-                const timeOpts = { timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-                timeContext = `Thời gian hiện tại: ${now.toLocaleDateString('vi-VN', dateOpts)} lúc ${now.toLocaleTimeString('vi-VN', timeOpts)} (GMT+7). Luôn sử dụng thời gian này (múi giờ Việt Nam) khi trả lời các câu hỏi về thời gian.\n\n`;
+                
+                // Create date formatter for Vietnam timezone
+                const vietnamDate = new Intl.DateTimeFormat('vi-VN', {
+                    timeZone: 'Asia/Ho_Chi_Minh',
+                    weekday: 'long',
+                    year: 'numeric', 
+                    month: 'long',
+                    day: 'numeric'
+                }).format(now);
+                
+                // Create time formatter for Vietnam timezone  
+                const vietnamTime = new Intl.DateTimeFormat('vi-VN', {
+                    timeZone: 'Asia/Ho_Chi_Minh',
+                    hour: '2-digit',
+                    minute: '2-digit', 
+                    second: '2-digit',
+                    hour12: false
+                }).format(now);
+                
+                timeContext = `Thời gian hiện tại: ${vietnamDate} lúc ${vietnamTime} (GMT+7). Luôn sử dụng thời gian này (múi giờ Việt Nam) khi trả lời các câu hỏi về thời gian.\n\n`;
             }
 
             // Enhance message with file context if files are provided
@@ -1133,7 +1150,7 @@ class NexoraXChat {
             (this.currentChatId === chat.id ? 'bg-blue-50 border-l-4 border-blue-500' : 'hover:bg-gray-50') + 
             '" onclick="app.loadChat(\'' + chat.id + '\')"><div class="flex items-center justify-between"><div class="flex-1"><div class="font-medium text-sm truncate mb-1">' +
             (chat.isPinned ? '<svg class="w-3 h-3 text-blue-600 inline mr-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>' : '') + chat.title + 
-            '</div><div class="text-xs text-gray-500">' + new Date(chat.createdAt).toLocaleDateString('vi-VN') + 
+            '</div><div class="text-xs text-gray-500">' + new Intl.DateTimeFormat('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', day: 'numeric', month: 'numeric', year: 'numeric' }).format(new Date(chat.createdAt)) + 
             '</div></div><div class="flex items-center space-x-1"><button class="p-2 hover:bg-blue-100 rounded-lg transition-colors" onclick="event.stopPropagation(); app.togglePin(\'' + chat.id + '\')" title="' + 
             (chat.isPinned ? 'Bỏ ghim' : 'Ghim cuộc trò chuyện') + '">' + 
             (chat.isPinned ? 
