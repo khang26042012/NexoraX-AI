@@ -1615,6 +1615,7 @@ class TypingEffect {
         
         observer.observe(element);
     }
+    
     // Voice Recording Methods
     setupVoiceRecordingListeners() {
         const homeMicBtn = document.getElementById('homeMicBtn');
