@@ -737,6 +737,12 @@ class NexoraXChat {
             const modelEndpoint = 'gemini-2.5-flash';
             const url = '/api/gemini';
             
+            // Get current date/time in Vietnam timezone (robust approach)
+            const now = new Date();
+            const dateOpts = { timeZone: 'Asia/Ho_Chi_Minh', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const timeOpts = { timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            const timeContext = `Thời gian hiện tại: ${now.toLocaleDateString('vi-VN', dateOpts)} lúc ${now.toLocaleTimeString('vi-VN', timeOpts)} (GMT+7). Luôn sử dụng thời gian này (múi giờ Việt Nam) khi trả lời các câu hỏi về thời gian.`;
+
             // Enhance message with file context if files are provided
             let enhancedMessage = message;
             if (files && files.length > 0) {
@@ -747,7 +753,7 @@ class NexoraXChat {
             const requestBody = {
                 contents: [{
                     parts: [{
-                        text: enhancedMessage
+                        text: `${timeContext}\n\nUser: ${enhancedMessage}`
                     }]
                 }],
                 generationConfig: {
