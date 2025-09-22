@@ -13,8 +13,14 @@ class NexoraXChat {
         localStorage.setItem('nexorax_selected_model', this.selectedModel);
         this.selectedFiles = new Map(); // Store selected files with their data
         
+        // Speech recognition setup
+        this.speechRecognition = null;
+        this.isRecording = false;
+        this.currentActiveInput = null;
+        
         this.initializeElements();
         this.setupEventListeners();
+        this.initializeSpeechRecognition();
         this.loadTheme();
         this.loadModelSelection();
         this.initializeDesktopSidebar();
@@ -234,6 +240,9 @@ class NexoraXChat {
         
         // File upload event listeners
         this.setupFileUploadListeners();
+        
+        // Voice recording event listeners
+        this.setupVoiceRecordingListeners();
         
         // Quick suggestions
         document.querySelectorAll('.quick-suggestion').forEach(suggestion => {
@@ -1605,6 +1614,188 @@ class TypingEffect {
         });
         
         observer.observe(element);
+    }
+    // Voice Recording Methods
+    setupVoiceRecordingListeners() {
+        const homeMicBtn = document.getElementById('homeMicBtn');
+        const chatMicBtn = document.getElementById('chatMicBtn');
+
+        if (homeMicBtn) {
+            homeMicBtn.addEventListener('click', () => {
+                this.toggleVoiceRecording('home');
+            });
+        }
+
+        if (chatMicBtn) {
+            chatMicBtn.addEventListener('click', () => {
+                this.toggleVoiceRecording('chat');
+            });
+        }
+    }
+
+    initializeSpeechRecognition() {
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+            console.warn('Speech recognition not supported in this browser');
+            this.disableMicButtons();
+            return;
+        }
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        this.speechRecognition = new SpeechRecognition();
+        
+        this.speechRecognition.continuous = false;
+        this.speechRecognition.interimResults = true;
+        this.speechRecognition.lang = 'vi-VN'; // Vietnamese language
+        this.speechRecognition.maxAlternatives = 1;
+
+        this.speechRecognition.onstart = () => {
+            this.isRecording = true;
+            this.updateRecordingUI(true);
+        };
+
+        this.speechRecognition.onend = () => {
+            this.isRecording = false;
+            this.updateRecordingUI(false);
+        };
+
+        this.speechRecognition.onresult = (event) => {
+            let transcript = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                transcript += event.results[i][0].transcript;
+            }
+            
+            if (event.results[event.results.length - 1].isFinal) {
+                this.handleSpeechResult(transcript.trim());
+            }
+        };
+
+        this.speechRecognition.onerror = (event) => {
+            console.error('Speech recognition error:', event.error);
+            this.isRecording = false;
+            this.updateRecordingUI(false);
+            
+            let errorMessage = 'Lỗi nhận diện giọng nói';
+            switch (event.error) {
+                case 'no-speech':
+                    errorMessage = 'Không phát hiện giọng nói. Vui lòng thử lại.';
+                    break;
+                case 'audio-capture':
+                    errorMessage = 'Không thể truy cập microphone.';
+                    break;
+                case 'not-allowed':
+                    errorMessage = 'Quyền truy cập microphone bị từ chối.';
+                    break;
+                case 'network':
+                    errorMessage = 'Lỗi mạng. Vui lòng kiểm tra kết nối.';
+                    break;
+            }
+            this.showNotification(errorMessage, 'error');
+        };
+    }
+
+    toggleVoiceRecording(inputType) {
+        if (!this.speechRecognition) {
+            this.showNotification('Trình duyệt không hỗ trợ nhận diện giọng nói', 'error');
+            return;
+        }
+
+        if (this.isRecording) {
+            this.speechRecognition.stop();
+            return;
+        }
+
+        // Set current active input
+        this.currentActiveInput = inputType;
+
+        try {
+            this.speechRecognition.start();
+        } catch (error) {
+            console.error('Error starting speech recognition:', error);
+            this.showNotification('Không thể khởi động nhận diện giọng nói', 'error');
+        }
+    }
+
+    updateRecordingUI(isRecording) {
+        const homeMicBtn = document.getElementById('homeMicBtn');
+        const chatMicBtn = document.getElementById('chatMicBtn');
+
+        [homeMicBtn, chatMicBtn].forEach(btn => {
+            if (btn) {
+                if (isRecording) {
+                    btn.classList.add('recording');
+                    btn.title = 'Đang ghi âm... Nhấn để dừng';
+                } else {
+                    btn.classList.remove('recording');
+                    btn.title = 'Nói để nhập văn bản';
+                }
+            }
+        });
+    }
+
+    handleSpeechResult(transcript) {
+        if (!transcript) return;
+
+        // Insert transcript into appropriate input field
+        if (this.currentActiveInput === 'home') {
+            this.homeInput.value = transcript;
+            this.homeInput.focus();
+        } else if (this.currentActiveInput === 'chat') {
+            this.chatInput.value = transcript;
+            this.chatInput.focus();
+        }
+
+        // Show success feedback
+        this.showNotification(`Đã nhận diện: "${transcript}"`, 'success');
+    }
+
+    disableMicButtons() {
+        const homeMicBtn = document.getElementById('homeMicBtn');
+        const chatMicBtn = document.getElementById('chatMicBtn');
+
+        [homeMicBtn, chatMicBtn].forEach(btn => {
+            if (btn) {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+                btn.title = 'Trình duyệt không hỗ trợ nhận diện giọng nói';
+            }
+        });
+    }
+
+    showNotification(message, type = 'info') {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 z-[9999] px-4 py-3 rounded-lg shadow-lg text-white transition-all duration-300 transform translate-x-full`;
+        
+        // Set background color based on type
+        switch (type) {
+            case 'success':
+                notification.className += ' bg-green-500';
+                break;
+            case 'error':
+                notification.className += ' bg-red-500';
+                break;
+            default:
+                notification.className += ' bg-blue-500';
+        }
+        
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        // Animate in
+        setTimeout(() => {
+            notification.classList.remove('translate-x-full');
+        }, 100);
+
+        // Animate out and remove
+        setTimeout(() => {
+            notification.classList.add('translate-x-full');
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 3000);
     }
 }
 

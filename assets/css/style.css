@@ -1899,6 +1899,60 @@ body.dark-mode .fixed {
     color: #9ca3af;
 }
 
+/* Microphone button */
+.new-mic-btn {
+    width: 36px;
+    height: 36px;
+    background-color: transparent;
+    border: none;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    flex-grow: 0;
+    order: 2.5;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.new-mic-btn:hover {
+    background-color: #f3f4f6;
+}
+
+.new-mic-btn.recording {
+    background-color: #fef2f2;
+    animation: pulse-recording 1.5s infinite;
+}
+
+.new-mic-btn.recording .mic-icon {
+    display: none;
+}
+
+.new-mic-btn.recording .mic-recording-icon {
+    display: block !important;
+    color: #dc2626;
+}
+
+.new-mic-btn svg {
+    width: 20px;
+    height: 20px;
+    color: #6b7280;
+}
+
+@keyframes pulse-recording {
+    0%, 100% {
+        background-color: #fef2f2;
+        transform: scale(1);
+    }
+    50% {
+        background-color: #fee2e2;
+        transform: scale(1.05);
+    }
+}
+
 /* Send button - positioned at right inside input container */
 .new-send-btn {
     width: 36px;
@@ -1974,6 +2028,18 @@ body.dark-mode .new-attachment-btn:hover {
 .dark .new-attachment-btn svg,
 [data-theme="dark"] .new-attachment-btn svg,
 body.dark-mode .new-attachment-btn svg {
+    color: #d1d5db;
+}
+
+.dark .new-mic-btn:hover,
+[data-theme="dark"] .new-mic-btn:hover,
+body.dark-mode .new-mic-btn:hover {
+    background-color: #4b5563;
+}
+
+.dark .new-mic-btn svg,
+[data-theme="dark"] .new-mic-btn svg,
+body.dark-mode .new-mic-btn svg {
     color: #d1d5db;
 }
 
