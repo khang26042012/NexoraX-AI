@@ -731,17 +731,54 @@ class NexoraXChat {
         }
     }
 
+    // Detect if message is asking about current time/date (narrow detection)
+    isTimeRelatedQuery(message) {
+        // Normalize message to handle diacritics and case
+        const normalized = message.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+        
+        // Vietnamese patterns for current time/date queries
+        const vietnamesePatterns = [
+            /b(a|ay)\s*gio\s*(la\s*)?(may|gi|nao)/i,  // bây giờ là mấy giờ, bay gio may gio
+            /may\s*gio(\s*roi)?/i,                    // mấy giờ rồi, may gio roi  
+            /gio\s*(hien\s*tai|bay\s*gio)/i,         // giờ hiện tại, gio bay gio
+            /hom\s*nay\s*(la\s*)?(ngay\s*)?(may|gi)/i, // hôm nay là ngày mấy, hom nay ngay may
+            /thu\s*may(\s*hom\s*nay)?/i,             // thứ mấy hôm nay, thu may
+            /ngay\s*(hom\s*nay|hien\s*tai)/i,        // ngày hôm nay, ngay hien tai
+            /thoi\s*gian\s*(hien\s*tai|bay\s*gio)/i  // thời gian hiện tại, thoi gian bay gio
+        ];
+        
+        // English patterns for current time/date queries  
+        const englishPatterns = [
+            /what('|')?s\s+the\s+time/i,              // what's the time, what is the time
+            /what\s+time\s+is\s+it/i,                 // what time is it
+            /time\s+(now|right\s*now)/i,              // time now, time right now
+            /current\s+(time|date)/i,                 // current time, current date
+            /what('|')?s\s+today('|')?s\s+(date|day)/i, // what's today's date
+            /what\s+day\s+is\s+(it|today)/i,          // what day is it today
+            /what('|')?s\s+the\s+date/i               // what's the date
+        ];
+        
+        const allPatterns = [...vietnamesePatterns, ...englishPatterns];
+        return allPatterns.some(pattern => pattern.test(normalized));
+    }
+
     async getGeminiResponse(message, aiMessage, files = null) {
         try {
             // Use server-side proxy instead of direct API calls
             const modelEndpoint = 'gemini-2.5-flash';
             const url = '/api/gemini';
             
-            // Get current date/time in Vietnam timezone (robust approach)
-            const now = new Date();
-            const dateOpts = { timeZone: 'Asia/Ho_Chi_Minh', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            const timeOpts = { timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-            const timeContext = `Thời gian hiện tại: ${now.toLocaleDateString('vi-VN', dateOpts)} lúc ${now.toLocaleTimeString('vi-VN', timeOpts)} (GMT+7). Luôn sử dụng thời gian này (múi giờ Việt Nam) khi trả lời các câu hỏi về thời gian.`;
+            // Check if this is a time-related query
+            const needsTimeContext = this.isTimeRelatedQuery(message);
+            let timeContext = '';
+            
+            if (needsTimeContext) {
+                // Get current date/time in Vietnam timezone (robust approach)
+                const now = new Date();
+                const dateOpts = { timeZone: 'Asia/Ho_Chi_Minh', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                const timeOpts = { timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+                timeContext = `Thời gian hiện tại: ${now.toLocaleDateString('vi-VN', dateOpts)} lúc ${now.toLocaleTimeString('vi-VN', timeOpts)} (GMT+7). Luôn sử dụng thời gian này (múi giờ Việt Nam) khi trả lời các câu hỏi về thời gian.\n\n`;
+            }
 
             // Enhance message with file context if files are provided
             let enhancedMessage = message;
@@ -753,7 +790,7 @@ class NexoraXChat {
             const requestBody = {
                 contents: [{
                     parts: [{
-                        text: `${timeContext}\n\nUser: ${enhancedMessage}`
+                        text: `${timeContext}User: ${enhancedMessage}`
                     }]
                 }],
                 generationConfig: {
