@@ -1464,6 +1464,66 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
     }
 
     // Voice Recording Methods
+    initializeSpeechRecognition() {
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+            console.warn('Speech recognition not supported in this browser');
+            this.disableMicButtons();
+            return;
+        }
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        this.speechRecognition = new SpeechRecognition();
+        
+        this.speechRecognition.continuous = false;
+        this.speechRecognition.interimResults = true;
+        this.speechRecognition.lang = 'vi-VN'; // Vietnamese language
+        this.speechRecognition.maxAlternatives = 1;
+
+        this.speechRecognition.onstart = () => {
+            this.isRecording = true;
+            this.updateRecordingUI(true);
+        };
+
+        this.speechRecognition.onend = () => {
+            this.isRecording = false;
+            this.updateRecordingUI(false);
+        };
+
+        this.speechRecognition.onresult = (event) => {
+            let transcript = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                transcript += event.results[i][0].transcript;
+            }
+            
+            if (event.results[event.results.length - 1].isFinal) {
+                this.handleSpeechResult(transcript.trim());
+            }
+        };
+
+        this.speechRecognition.onerror = (event) => {
+            console.error('Speech recognition error:', event.error);
+            this.isRecording = false;
+            this.updateRecordingUI(false);
+            
+            let errorMessage = 'Lỗi nhận diện giọng nói';
+            switch (event.error) {
+                case 'no-speech':
+                    errorMessage = 'Không phát hiện giọng nói. Vui lòng thử lại.';
+                    break;
+                case 'audio-capture':
+                    errorMessage = 'Không thể truy cập microphone.';
+                    break;
+                case 'not-allowed':
+                    errorMessage = 'Quyền truy cập microphone bị từ chối.';
+                    break;
+                case 'network':
+                    errorMessage = 'Lỗi mạng. Vui lòng kiểm tra kết nối.';
+                    break;
+            }
+            this.showNotification(errorMessage, 'error');
+        };
+    }
+
     setupVoiceRecordingListeners() {
         const homeMicBtn = document.getElementById('homeMicBtn');
         const chatMicBtn = document.getElementById('chatMicBtn');
