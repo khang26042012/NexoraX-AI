@@ -260,8 +260,51 @@ class NexoraXChat {
             });
         });
         
-        // Close sidebar when clicking outside on mobile
+        // Quick model selector buttons
+        const homeQuickModelBtn = document.getElementById('homeQuickModelBtn');
+        if (homeQuickModelBtn) {
+            homeQuickModelBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggleQuickModelDropdown('home');
+            });
+        }
+        
+        const quickModelBtn = document.getElementById('quickModelBtn');
+        if (quickModelBtn) {
+            quickModelBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggleQuickModelDropdown('chat');
+            });
+        }
+        
+        // Quick model options
+        document.querySelectorAll('.quick-model-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const model = e.currentTarget.getAttribute('data-model');
+                this.selectQuickModel(model);
+            });
+        });
+        
+        // Close sidebar and dropdowns when clicking outside
         document.addEventListener('click', (e) => {
+            // Close quick model dropdowns
+            const homeDropdown = document.getElementById('homeQuickModelDropdown');
+            const chatDropdown = document.getElementById('chatQuickModelDropdown');
+            const homeBtn = document.getElementById('homeQuickModelBtn');
+            const chatBtn = document.getElementById('quickModelBtn');
+            
+            if (homeDropdown && !homeDropdown.contains(e.target) && 
+                homeBtn && !homeBtn.contains(e.target)) {
+                homeDropdown.classList.add('hidden');
+            }
+            
+            if (chatDropdown && !chatDropdown.contains(e.target) && 
+                chatBtn && !chatBtn.contains(e.target)) {
+                chatDropdown.classList.add('hidden');
+            }
+            
+            // Close sidebar on mobile
             if (window.innerWidth < 1024 && 
                 this.sidebar && !this.sidebar.contains(e.target) && 
                 this.sidebarToggle && !this.sidebarToggle.contains(e.target) &&
@@ -1600,6 +1643,57 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
                 modelArrow.classList.remove('rotate-180');
             }
         }
+    }
+    
+    toggleQuickModelDropdown(inputType) {
+        const dropdownId = inputType === 'home' ? 'homeQuickModelDropdown' : 'chatQuickModelDropdown';
+        const otherDropdownId = inputType === 'home' ? 'chatQuickModelDropdown' : 'homeQuickModelDropdown';
+        
+        const dropdown = document.getElementById(dropdownId);
+        const otherDropdown = document.getElementById(otherDropdownId);
+        
+        // Close other dropdown first
+        if (otherDropdown) {
+            otherDropdown.classList.add('hidden');
+        }
+        
+        // Toggle current dropdown
+        if (dropdown) {
+            if (dropdown.classList.contains('hidden')) {
+                dropdown.classList.remove('hidden');
+                dropdown.classList.add('scale-in');
+            } else {
+                dropdown.classList.add('hidden');
+            }
+        }
+    }
+    
+    selectQuickModel(model) {
+        // Close all dropdowns
+        const homeDropdown = document.getElementById('homeQuickModelDropdown');
+        const chatDropdown = document.getElementById('chatQuickModelDropdown');
+        
+        if (homeDropdown) homeDropdown.classList.add('hidden');
+        if (chatDropdown) chatDropdown.classList.add('hidden');
+        
+        // Update selected model
+        this.changeModel(model);
+        
+        // Update model radio buttons in settings
+        const modelRadio = document.querySelector('input[name="aiModel"][value="' + model + '"]');
+        if (modelRadio) {
+            modelRadio.checked = true;
+        }
+        
+        // Visual feedback - highlight selected model in dropdowns
+        document.querySelectorAll('.quick-model-option').forEach(option => {
+            if (option.getAttribute('data-model') === model) {
+                option.style.backgroundColor = '#f0f9ff';
+                setTimeout(() => {
+                    option.style.backgroundColor = '';
+                }, 1000);
+            }
+        });
     }
     
     
