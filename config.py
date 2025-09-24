@@ -16,6 +16,11 @@ import os
 # Environment variable GEMINI_API_KEY will override this if set
 GEMINI_API_KEY = "AIzaSyDhWAco4k7ajmzonA97uoRgVJvxfQblJFI"
 
+# Tavily Search API Key
+# API tìm kiếm web được tối ưu cho LLMs: https://tavily.com
+# Environment variable TAVILY_API_KEY will override this if set
+TAVILY_API_KEY = "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"
+
 
 # ===========================================
 # SERVER CONFIGURATION
@@ -85,6 +90,8 @@ def get_api_key(service):
     """
     if service.lower() == "gemini":
         return os.getenv('GEMINI_API_KEY', GEMINI_API_KEY)
+    elif service.lower() == "tavily":
+        return os.getenv('TAVILY_API_KEY', TAVILY_API_KEY)
     else:
         return None
 
@@ -96,10 +103,14 @@ def get_server_port():
 def check_config():
     """Kiểm tra xem API keys đã được cấu hình chưa"""
     gemini_key = get_api_key("gemini")
+    tavily_key = get_api_key("tavily")
     
     warnings = []
     if gemini_key == "your_gemini_api_key_here":
         warnings.append("⚠️  GEMINI_API_KEY chưa được cấu hình")
+    
+    if tavily_key == "your_tavily_api_key_here":
+        warnings.append("⚠️  TAVILY_API_KEY chưa được cấu hình")
     
     return warnings
 
