@@ -936,7 +936,7 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
                     temperature: 0.7,
                     topK: 40,
                     topP: 0.95,
-                    maxOutputTokens: 3000,
+                    maxOutputTokens: 20000,
                 }
             };
             
