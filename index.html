@@ -109,37 +109,41 @@
                 
                 <!-- New Input Area -->
                 <div class="w-full max-w-4xl mx-auto mt-8 px-4">
-                    <div class="new-input-container">
-                        <button type="button" class="new-attachment-btn" id="homeFileBtn" title="Gửi file/ảnh">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
-                            </svg>
-                        </button>
-                        <input 
-                            type="text" 
-                            id="homeInput" 
-                            class="new-input" 
-                            placeholder="Hỏi bất kỳ điều gì bạn muốn..."
-                            autocomplete="off"
-                        >
-                        <button type="button" class="new-mic-btn" id="homeMicBtn" title="Nói để nhập văn bản">
-                            <svg class="mic-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
-                                <path d="M19 10v1a7 7 0 0 1-14 0v-1"/>
-                                <path d="M12 18v4"/>
-                                <path d="M8 22h8"/>
-                            </svg>
-                            <svg class="mic-recording-icon hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                <circle cx="12" cy="12" r="10"/>
-                                <circle cx="12" cy="12" r="3" fill="white"/>
-                            </svg>
-                        </button>
-                        <button id="homeSendBtn" class="new-send-btn">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="m15 17 5-5-5-5"/>
-                                <path d="M4 18v-2a4 4 0 0 1 4-4h12"/>
-                            </svg>
-                        </button>
+                    <div class="replit-input-container">
+                        <div class="replit-input-wrapper">
+                            <input 
+                                type="text" 
+                                id="homeInput" 
+                                class="replit-input" 
+                                placeholder="Hỏi bất kỳ điều gì bạn muốn..."
+                                autocomplete="off"
+                            >
+                            <button id="homeSendBtn" class="replit-send-btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="m15 17 5-5-5-5"/>
+                                    <path d="M4 18v-2a4 4 0 0 1 4-4h12"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="replit-bottom-actions">
+                            <button type="button" class="replit-action-btn" id="homeFileBtn" title="Gửi file/ảnh">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
+                                </svg>
+                            </button>
+                            <button type="button" class="replit-action-btn" id="homeMicBtn" title="Nói để nhập văn bản">
+                                <svg class="mic-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                                    <path d="M19 10v1a7 7 0 0 1-14 0v-1"/>
+                                    <path d="M12 18v4"/>
+                                    <path d="M8 22h8"/>
+                                </svg>
+                                <svg class="mic-recording-icon hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <circle cx="12" cy="12" r="3" fill="white"/>
+                                </svg>
+                            </button>
+                        </div>
                         <!-- Hidden file inputs -->
                         <input type="file" id="homeFileInput" class="hidden" multiple accept="image/*,application/pdf,.doc,.docx,.txt">
                     </div>
@@ -189,37 +193,41 @@
             
             <!-- New Chat Input Area -->
             <div class="fixed bottom-0 left-0 right-0 p-4 z-10" style="background: linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.8) 20%, #ffffff 100%);">
-                <div class="new-input-container">
-                    <button type="button" class="new-attachment-btn" id="chatFileBtn" title="Gửi file/ảnh">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
-                        </svg>
-                    </button>
-                    <input 
-                        type="text" 
-                        id="chatInput" 
-                        class="new-input" 
-                        placeholder="Nhập tin nhắn..."
-                        autocomplete="off"
-                    >
-                    <button type="button" class="new-mic-btn" id="chatMicBtn" title="Nói để nhập văn bản">
-                        <svg class="mic-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
-                            <path d="M19 10v1a7 7 0 0 1-14 0v-1"/>
-                            <path d="M12 18v4"/>
-                            <path d="M8 22h8"/>
-                        </svg>
-                        <svg class="mic-recording-icon hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                            <circle cx="12" cy="12" r="10"/>
-                            <circle cx="12" cy="12" r="3" fill="white"/>
-                        </svg>
-                    </button>
-                    <button id="sendBtn" class="new-send-btn">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="m15 17 5-5-5-5"/>
-                            <path d="M4 18v-2a4 4 0 0 1 4-4h12"/>
-                        </svg>
-                    </button>
+                <div class="replit-input-container">
+                    <div class="replit-input-wrapper">
+                        <input 
+                            type="text" 
+                            id="chatInput" 
+                            class="replit-input" 
+                            placeholder="Nhập tin nhắn..."
+                            autocomplete="off"
+                        >
+                        <button id="sendBtn" class="replit-send-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m15 17 5-5-5-5"/>
+                                <path d="M4 18v-2a4 4 0 0 1 4-4h12"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="replit-bottom-actions">
+                        <button type="button" class="replit-action-btn" id="chatFileBtn" title="Gửi file/ảnh">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
+                            </svg>
+                        </button>
+                        <button type="button" class="replit-action-btn" id="chatMicBtn" title="Nói để nhập văn bản">
+                            <svg class="mic-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 0 0 0-3-3Z"/>
+                                <path d="M19 10v1a7 7 0 0 1-14 0v-1"/>
+                                <path d="M12 18v4"/>
+                                <path d="M8 22h8"/>
+                            </svg>
+                            <svg class="mic-recording-icon hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <circle cx="12" cy="12" r="10"/>
+                                <circle cx="12" cy="12" r="3" fill="white"/>
+                            </svg>
+                        </button>
+                    </div>
                     <!-- Hidden file inputs -->
                     <input type="file" id="fileInput" class="hidden" multiple accept="image/*,application/pdf,.doc,.docx,.txt">
                 </div>
