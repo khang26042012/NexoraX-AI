@@ -2206,241 +2206,29 @@ body.dark-mode .typing-cursor {
 }
 
 /* ======================== */
-/* Replit-style Input Container */
+/* Replit-style Input Dark Mode Support */
 /* ======================== */
 
-.replit-input-container {
-    background-color: #ffffff;
-    border: 2px solid #e5e7eb;
-    border-radius: 20px;
-    padding: 16px;
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transition: all 0.2s ease;
-    position: relative;
-    min-height: 80px;
-}
-
-.replit-input-container:focus-within {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 4px 16px rgba(0, 0, 0, 0.15);
-}
-
-.replit-input-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
-}
-
-.replit-input {
-    flex: 1;
-    border: none;
-    outline: none;
-    background: transparent;
-    font-size: 16px;
-    color: #1f2937;
-    padding: 12px 16px;
-    line-height: 1.5;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-    border-radius: 12px;
-    background-color: #f8fafc;
-    transition: background-color 0.2s ease;
-}
-
-.replit-input:focus {
-    background-color: #ffffff;
-}
-
-.replit-input::placeholder {
-    color: #9ca3af;
-    font-weight: 400;
-}
-
-.replit-send-btn {
-    width: 48px;
-    height: 48px;
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-    border: none;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-    flex-shrink: 0;
-}
-
-.replit-send-btn:hover {
-    background: linear-gradient(135deg, #2563eb, #1e40af);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-}
-
-.replit-send-btn:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-}
-
-.replit-send-btn svg {
-    width: 20px;
-    height: 20px;
-    color: white;
-}
-
-.replit-bottom-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    justify-content: flex-start;
-    margin-left: 16px;
-}
-
-.replit-action-btn {
-    width: 36px;
-    height: 36px;
-    background-color: transparent;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    color: #6b7280;
-}
-
-.replit-action-btn:hover {
-    background-color: #f3f4f6;
-    border-color: #d1d5db;
-    color: #374151;
-}
-
-.replit-action-btn.recording {
-    background-color: #fef2f2;
-    border-color: #fecaca;
-    animation: pulse-recording 1.5s infinite;
-}
-
-.replit-action-btn.recording .mic-icon {
-    display: none;
-}
-
-.replit-action-btn.recording .mic-recording-icon {
-    display: block !important;
-    color: #dc2626;
-}
-
-.replit-action-btn svg {
-    width: 18px;
-    height: 18px;
-    color: inherit;
-}
-
-/* Dark mode styles */
-.dark .replit-input-container,
-[data-theme="dark"] .replit-input-container,
-:body.dark-mode .replit-input-container {
-    background-color: #374151;
+/* Dark mode for fieldset and input containers */
+.dark fieldset div[class*="bg-white"] {
+    background-color: #374151 !important;
     border-color: #4b5563;
 }
 
-.dark .replit-input-container:focus-within,
-[data-theme="dark"] .replit-input-container:focus-within,
-:body.dark-mode .replit-input-container:focus-within {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2), 0 4px 16px rgba(0, 0, 0, 0.3);
+.dark fieldset input {
+    color: #f9fafb !important;
 }
 
-.dark .replit-input,
-[data-theme="dark"] .replit-input,
-:body.dark-mode .replit-input {
-    color: #f9fafb;
-    background-color: #4b5563;
+.dark fieldset input::placeholder {
+    color: #9ca3af !important;
 }
 
-.dark .replit-input:focus,
-[data-theme="dark"] .replit-input:focus,
-:body.dark-mode .replit-input:focus {
-    background-color: #374151;
+.dark fieldset button[class*="border-gray-200"] {
+    border-color: #6b7280 !important;
+    color: #d1d5db !important;
 }
 
-.dark .replit-input::placeholder,
-[data-theme="dark"] .replit-input::placeholder,
-:body.dark-mode .replit-input::placeholder {
-    color: #9ca3af;
-}
-
-.dark .replit-action-btn,
-[data-theme="dark"] .replit-action-btn,
-:body.dark-mode .replit-action-btn {
-    border-color: #6b7280;
-    color: #d1d5db;
-}
-
-.dark .replit-action-btn:hover,
-[data-theme="dark"] .replit-action-btn:hover,
-:body.dark-mode .replit-action-btn:hover {
-    background-color: #4b5563;
-    border-color: #9ca3af;
-    color: #f3f4f6;
-}
-
-.dark .replit-action-btn.recording,
-[data-theme="dark"] .replit-action-btn.recording,
-:body.dark-mode .replit-action-btn.recording {
-    background-color: #422006;
-    border-color: #d97706;
-}
-
-/* Mobile responsive adjustments */
-@media (max-width: 768px) {
-    .replit-input-container {
-        border-radius: 16px;
-        padding: 12px;
-        min-height: 70px;
-        max-width: calc(100% - 16px);
-        margin: 0 8px;
-    }
-
-    .replit-input-wrapper {
-        margin-bottom: 10px;
-        gap: 8px;
-    }
-    
-    .replit-input {
-        font-size: 16px; /* Prevent zoom on iOS */
-        padding: 10px 12px;
-        border-radius: 10px;
-    }
-
-    .replit-send-btn {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-    }
-
-    .replit-send-btn svg {
-        width: 18px;
-        height: 18px;
-    }
-    
-    .replit-action-btn {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
-    }
-
-    .replit-action-btn svg {
-        width: 16px;
-        height: 16px;
-    }
-
-    .replit-bottom-actions {
-        margin-left: 12px;
-        gap: 6px;
-    }
+.dark fieldset button[class*="border-gray-200"]:hover {
+    background-color: #4b5563 !important;
+    border-color: #9ca3af !important;
 }
