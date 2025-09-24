@@ -85,6 +85,8 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         """Handle POST requests for API proxy"""
         if self.path == '/api/gemini':
             self.handle_gemini_proxy()
+        elif self.path == '/api/search':
+            self.handle_search_proxy()
         else:
             self._send_json_error(404, "API endpoint không tồn tại", "NOT_FOUND")
 
@@ -149,6 +151,81 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             logger.error(f"Exception args: {e.args}")
             self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
 
+    def handle_search_proxy(self):
+        """Proxy requests to Tavily Search API using server-side API key"""
+        try:
+            # Get API key from config hoặc environment
+            api_key = get_api_key('tavily')
+            logger.info(f"Tavily API Key configured: {'Yes' if api_key and api_key != 'your_tavily_api_key_here' else 'No'}")
+            if not api_key or api_key == "your_tavily_api_key_here":
+                self._send_json_error(500, 
+                    "Tavily API key chưa được cấu hình. Vui lòng thêm TAVILY_API_KEY vào environment variables.",
+                    "API_KEY_MISSING")
+                return
+            
+            # Read request body
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            request_data = json.loads(post_data.decode('utf-8'))
+            
+            # Extract query from request
+            query = request_data.get('query', '')
+            if not query:
+                self._send_json_error(400, "Query không được để trống", "MISSING_QUERY")
+                return
+            
+            # Build Tavily API URL
+            tavily_url = "https://api.tavily.com/search"
+            
+            # Prepare request payload for Tavily API
+            tavily_payload = {
+                "api_key": api_key,
+                "query": query,
+                "search_depth": request_data.get('search_depth', 'basic'),
+                "include_answer": request_data.get('include_answer', True),
+                "include_raw_content": request_data.get('include_raw_content', False),
+                "max_results": request_data.get('max_results', 5),
+                "include_domains": request_data.get('include_domains', []),
+                "exclude_domains": request_data.get('exclude_domains', [])
+            }
+            
+            # Prepare request for Tavily API
+            tavily_request = urllib.request.Request(
+                tavily_url,
+                data=json.dumps(tavily_payload).encode('utf-8'),
+                headers={'Content-Type': 'application/json'}
+            )
+            
+            # Make request to Tavily API with timeout
+            with urllib.request.urlopen(tavily_request, timeout=REQUEST_TIMEOUT) as response:
+                tavily_response = response.read()
+                
+            # Return response to client
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            # Send secure CORS headers
+            self._send_cors_headers()
+            self.end_headers()
+            self.wfile.write(tavily_response)
+            
+        except urllib.error.HTTPError as e:
+            # Forward exact status and error from Tavily API
+            try:
+                error_body = e.read().decode('utf-8')
+                self._send_json_error(e.code, f"Tavily API lỗi: {error_body}", "UPSTREAM_ERROR")
+            except:
+                self._send_json_error(e.code, f"Tavily API lỗi: {e.reason}", "UPSTREAM_ERROR")
+        except urllib.error.URLError as e:
+            logger.error(f"Tavily connection error: {e}")
+            self._send_json_error(502, "Không thể kết nối đến Tavily API", "CONNECTION_ERROR")
+        except json.JSONDecodeError as e:
+            logger.error(f"Invalid JSON in request: {e}")
+            self._send_json_error(400, "Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra định dạng JSON.", "INVALID_JSON")
+        except Exception as e:
+            logger.error(f"Tavily proxy error: {e}")
+            logger.error(f"Exception type: {type(e)}")
+            logger.error(f"Exception args: {e.args}")
+            self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
 
     def do_OPTIONS(self):
         """Handle CORS preflight requests"""

@@ -732,8 +732,15 @@ class NexoraXChat {
     
     async getAIResponse(message, aiMessage, files = null) {
         try {
-            // Only use Gemini API
-            return await this.getGeminiResponse(message, aiMessage, files);
+            // Check if this is a search query
+            if (this.isSearchQuery(message)) {
+                // Extract search query by removing search keywords
+                const searchQuery = this.extractSearchQuery(message);
+                return await this.getTavilySearchResponse(searchQuery, aiMessage);
+            } else {
+                // Use Gemini API for regular chat
+                return await this.getGeminiResponse(message, aiMessage, files);
+            }
         } catch (error) {
             console.error('AI Response Error:', error);
             this.handleAIError(aiMessage);
@@ -769,6 +776,64 @@ class NexoraXChat {
         
         const allPatterns = [...vietnamesePatterns, ...englishPatterns];
         return allPatterns.some(pattern => pattern.test(normalized));
+    }
+
+    // Detect if message is a search query
+    isSearchQuery(message) {
+        // Normalize message to handle diacritics and case
+        const normalized = message.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim();
+        
+        // Vietnamese search patterns
+        const vietnamesePatterns = [
+            /^tim\s*kiem\s*/i,           // tìm kiếm
+            /^tim\s+/i,                  // tìm
+            /^search\s*/i,               // search
+            /^tra\s*cuu\s*/i,           // tra cứu
+            /^tim\s*hieu\s*/i,          // tìm hiểu
+            /^kiem\s*tra\s*/i,          // kiểm tra (when used as search)
+            /^google\s*/i,              // google
+            /^bing\s*/i,                // bing
+        ];
+        
+        // English search patterns
+        const englishPatterns = [
+            /^search\s+for\s*/i,        // search for
+            /^look\s+up\s*/i,          // look up
+            /^find\s+(out\s+)?about\s*/i, // find about / find out about
+            /^google\s*/i,             // google
+            /^bing\s*/i,               // bing
+        ];
+        
+        const allPatterns = [...vietnamesePatterns, ...englishPatterns];
+        return allPatterns.some(pattern => pattern.test(normalized));
+    }
+
+    // Extract search query by removing search keywords
+    extractSearchQuery(message) {
+        const normalized = message.trim();
+        
+        // Search keywords to remove (Vietnamese and English)
+        const searchKeywords = [
+            /^tim\s*kiem\s*/i,
+            /^tim\s+/i,
+            /^search\s*(for\s*)?/i,
+            /^tra\s*cuu\s*/i,
+            /^tim\s*hieu\s*/i,
+            /^kiem\s*tra\s*/i,
+            /^look\s+up\s*/i,
+            /^find\s+(out\s+)?about\s*/i,
+            /^google\s*/i,
+            /^bing\s*/i,
+        ];
+        
+        // Remove search keywords from the beginning of the message
+        let query = normalized;
+        for (const keyword of searchKeywords) {
+            query = query.replace(keyword, '').trim();
+        }
+        
+        // If query is empty after removing keywords, use original message
+        return query || normalized;
     }
 
     async getGeminiResponse(message, aiMessage, files = null) {
@@ -939,6 +1004,85 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
         }
     }
 
+    async getTavilySearchResponse(query, aiMessage) {
+        try {
+            const url = '/api/search';
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    query: query,
+                    search_depth: 'basic',
+                    include_answer: true,
+                    max_results: 5
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error || 'Unknown error'}`);
+            }
+
+            const data = await response.json();
+            
+            // Format search results for display
+            let formattedResults = `🔍 **Kết quả tìm kiếm cho: "${query}"**\n\n`;
+            
+            if (data.answer) {
+                formattedResults += `**📝 Tóm tắt:**\n${data.answer}\n\n`;
+            }
+            
+            if (data.results && data.results.length > 0) {
+                formattedResults += `**🌐 Nguồn tham khảo:**\n\n`;
+                data.results.forEach((result, index) => {
+                    formattedResults += `**${index + 1}. [${result.title}](${result.url})**\n`;
+                    if (result.content) {
+                        // Truncate content to 200 characters
+                        const content = result.content.length > 200 
+                            ? result.content.substring(0, 200) + '...' 
+                            : result.content;
+                        formattedResults += `${content}\n\n`;
+                    }
+                });
+            } else {
+                formattedResults += `Không tìm thấy kết quả nào cho câu hỏi này.`;
+            }
+
+            aiMessage.content = formattedResults;
+            aiMessage.isTyping = false;
+            aiMessage.isFinalized = false;
+            this.updateMessage(aiMessage);
+            
+        } catch (error) {
+            console.error('Tavily Search Error:', error);
+            
+            // Provide specific error messages based on error type
+            let errorMessage = '';
+            if (error.message.includes('HTTP error! status: 400')) {
+                errorMessage = '❌ Yêu cầu tìm kiếm không hợp lệ. Vui lòng thử lại với từ khóa khác.';
+            } else if (error.message.includes('HTTP error! status: 401')) {
+                errorMessage = '🔑 Tavily API key không hợp lệ. Vui lòng kiểm tra cấu hình.';
+            } else if (error.message.includes('HTTP error! status: 403')) {
+                errorMessage = '🚫 Không có quyền truy cập Tavily API. Vui lòng kiểm tra API key.';
+            } else if (error.message.includes('HTTP error! status: 429')) {
+                errorMessage = '⏰ API tìm kiếm đã đạt giới hạn. Vui lòng thử lại sau vài phút.';
+            } else if (error.message.includes('HTTP error! status: 500')) {
+                errorMessage = '🔧 Lỗi server tìm kiếm. Vui lòng thử lại sau.';
+            } else if (error.name === 'TypeError' || error.message.includes('Failed to fetch')) {
+                errorMessage = '🌐 Không thể kết nối đến server tìm kiếm. Vui lòng kiểm tra kết nối mạng.';
+            } else {
+                errorMessage = `❌ Đã xảy ra lỗi tìm kiếm: ${error.message}. Vui lòng thử lại.`;
+            }
+            
+            aiMessage.content = errorMessage;
+            aiMessage.isTyping = false;
+            aiMessage.isFinalized = false;
+            this.updateMessage(aiMessage);
+        }
+    }
     
     
     scrollToBottom() {
