@@ -937,7 +937,7 @@ class NexoraXChat {
             } else if (error.message.includes('HTTP error')) {
                 errorMessage += "Không thể kết nối đến dịch vụ tìm kiếm. Vui lòng thử lại.";
             } else {
-                errorMessage += "Vui lòng thử lại hoặc chuyển sang model NexoraX 1.";
+                errorMessage += "Vui lòng thử lại hoặc chuyển sang model Chat.";
             }
             
             aiMessage.content = errorMessage;
