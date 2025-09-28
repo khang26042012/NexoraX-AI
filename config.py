@@ -49,9 +49,9 @@ def get_allowed_origins():
     origins = ALLOWED_ORIGINS.copy()
     
     # Add Replit domain if available
-    replit_domain = os.getenv('REPLIT_DOMAIN', '')
+    replit_domain = os.getenv('REPLIT_DOMAIN', '') or os.getenv('REPLIT_DEV_DOMAIN', '')
     if replit_domain:
-        origins.append(replit_domain.replace('http://', 'https://'))
+        origins.append(f"https://{replit_domain}")
     
     # Add Render domain if available  
     render_url = os.getenv('RENDER_EXTERNAL_URL', '')
@@ -72,7 +72,7 @@ def get_allowed_origins():
     
     # For Replit proxy requirements - allow all hosts for development
     # This is necessary because Replit shows the website in an iframe proxy
-    if os.getenv('REPLIT_DOMAIN'):
+    if os.getenv('REPLIT_DOMAIN') or os.getenv('REPLIT_DEV_DOMAIN'):
         return ["*"]
         
     return [origin for origin in origins if origin]
