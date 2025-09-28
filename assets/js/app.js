@@ -947,8 +947,11 @@ class NexoraXChat {
             
             aiResponse += searchInfo;
             
-            // Start typing animation
-            await this.typewriterEffect(aiResponse, aiMessage);
+            // Update message content and start typing animation
+            aiMessage.content = aiResponse;
+            aiMessage.isTyping = false;
+            aiMessage.isFinalized = false;
+            this.updateMessage(aiMessage);
             
         } catch (error) {
             console.error('Search Enhanced Response Error:', error);
