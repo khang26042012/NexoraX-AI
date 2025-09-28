@@ -109,7 +109,7 @@ class NexoraXChat {
         if (homeSendBtn) {
             // Add both click and touch events for better mobile support
             const handleHomeSend = () => {
-                if (this.homeInput && (this.homeInput.value.trim() || this.selectedFiles.size > 0)) {
+                if (this.homeInput && this.homeInput.value.trim()) {
                     this.startNewChat(this.homeInput.value.trim());
                 }
             };
@@ -499,7 +499,8 @@ class NexoraXChat {
     }
     
     hideFilePreview() {
-        this.filePreviewModal.classList.add('hidden');
+        // File preview functionality removed - no action needed
+        return;
     }
     
     updateFilePreviewList() {
@@ -545,8 +546,8 @@ class NexoraXChat {
     }
     
     clearSelectedFiles() {
-        this.selectedFiles.clear();
-        this.hideFilePreview();
+        // File upload functionality removed - no action needed
+        return;
     }
     
     formatFileSize(bytes) {
@@ -710,8 +711,7 @@ class NexoraXChat {
         const chatId = Date.now().toString() + '_' + Math.random().toString(36).substr(2, 9);
         this.currentChatId = chatId;
         
-        const title = message ? message.substring(0, 30) + (message.length > 30 ? '...' : '') : 
-                     (this.selectedFiles.size > 0 ? `File: ${Array.from(this.selectedFiles.values())[0].name}` : 'New Chat');
+        const title = message ? message.substring(0, 30) + (message.length > 30 ? '...' : '') : 'New Chat';
         
         this.chats[chatId] = {
             id: chatId,
@@ -728,13 +728,13 @@ class NexoraXChat {
     }
     
     async sendMessage(message) {
-        if (!this.currentChatId || (!message?.trim() && this.selectedFiles.size === 0)) return;
+        if (!this.currentChatId || !message?.trim()) return;
         
         const chat = this.chats[this.currentChatId];
         if (!chat) return;
         
         const trimmedMessage = message?.trim() || '';
-        const attachedFiles = this.selectedFiles.size > 0 ? Array.from(this.selectedFiles.values()) : null;
+        const attachedFiles = null; // File upload functionality removed
         
         const userMessage = {
             id: Date.now(),
