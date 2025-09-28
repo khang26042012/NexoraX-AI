@@ -8,8 +8,8 @@ class NexoraXChat {
         // API calls now go through server-side proxy - no client-side key needed
         this.isDarkMode = localStorage.getItem('nexorax_dark_mode') === 'true';
         this.currentRating = 0;
-        // Only support gemini-flash model now
-        this.selectedModel = 'gemini-flash';
+        // Model selection: nexorax1 (Gemini) or nexorax2 (Search)
+        this.selectedModel = localStorage.getItem('nexorax_selected_model') || 'nexorax1';
         localStorage.setItem('nexorax_selected_model', this.selectedModel);
         this.selectedFiles = new Map(); // Store selected files with their data
         
@@ -63,11 +63,9 @@ class NexoraXChat {
         
         // Scroll buttons removed
         
-        // File upload elements
-        this.filePreviewModal = document.getElementById('filePreviewModal');
-        this.filePreviewList = document.getElementById('filePreviewList');
-        this.homeFileInput = document.getElementById('homeFileInput');
-        this.chatFileInput = document.getElementById('fileInput');
+        // Model selector elements
+        this.homeModelSelector = document.getElementById('homeModelSelector');
+        this.chatModelSelector = document.getElementById('chatModelSelector');
     }
     
     setupEventListeners() {
@@ -269,11 +267,16 @@ class NexoraXChat {
             });
         }
         
-        const quickModelBtn = document.getElementById('quickModelBtn');
-        if (quickModelBtn) {
-            quickModelBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.toggleQuickModelDropdown('chat');
+        // Model selector event listeners
+        if (this.homeModelSelector) {
+            this.homeModelSelector.addEventListener('change', (e) => {
+                this.changeModel(e.target.value);
+            });
+        }
+        
+        if (this.chatModelSelector) {
+            this.chatModelSelector.addEventListener('change', (e) => {
+                this.changeModel(e.target.value);
             });
         }
         
@@ -1616,17 +1619,29 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
         this.selectedModel = modelType;
         localStorage.setItem('nexorax_selected_model', modelType);
         
+        // Update both selectors to stay in sync
+        if (this.homeModelSelector) {
+            this.homeModelSelector.value = modelType;
+        }
+        if (this.chatModelSelector) {
+            this.chatModelSelector.value = modelType;
+        }
+        
         const modelNames = {
-            'gemini-flash': 'Gemini Flash 2.5'
+            'nexorax1': 'NexoraX 1 (Gemini)',
+            'nexorax2': 'NexoraX 2 (Tìm kiếm)'
         };
         
         this.showNotification('Đã chuyển sang ' + (modelNames[modelType] || modelType) + '!', 'success');
     }
     
     loadModelSelection() {
-        const modelRadio = document.querySelector('input[name="aiModel"][value="' + this.selectedModel + '"]');
-        if (modelRadio) {
-            modelRadio.checked = true;
+        // Update both model selectors to show current selection
+        if (this.homeModelSelector) {
+            this.homeModelSelector.value = this.selectedModel;
+        }
+        if (this.chatModelSelector) {
+            this.chatModelSelector.value = this.selectedModel;
         }
     }
     
