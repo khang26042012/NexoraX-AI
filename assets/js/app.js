@@ -904,16 +904,39 @@ class NexoraXChat {
             
             const data = await response.json();
             
+            // Debug logging to understand response structure
+            console.log('Search response received:', data);
+            
             // Extract AI response from the search-enhanced result
             let aiResponse = '';
-            if (data.ai_response && data.ai_response.candidates && data.ai_response.candidates[0]) {
-                const candidate = data.ai_response.candidates[0];
-                if (candidate.content && candidate.content.parts && candidate.content.parts[0]) {
-                    aiResponse = candidate.content.parts[0].text;
+            
+            // Handle different possible response structures
+            try {
+                if (data.ai_response) {
+                    // Check if it's a direct Gemini API response
+                    if (data.ai_response.candidates && Array.isArray(data.ai_response.candidates) && data.ai_response.candidates.length > 0) {
+                        const candidate = data.ai_response.candidates[0];
+                        if (candidate.content && candidate.content.parts && Array.isArray(candidate.content.parts) && candidate.content.parts.length > 0) {
+                            aiResponse = candidate.content.parts[0].text;
+                        }
+                    }
+                    // Handle error responses from Gemini API
+                    else if (data.ai_response.error) {
+                        console.error('Gemini API error in search response:', data.ai_response.error);
+                        throw new Error(`Gemini API error: ${data.ai_response.error.message || 'Unknown error'}`);
+                    }
+                    // Try alternative structure formats
+                    else if (typeof data.ai_response === 'string') {
+                        aiResponse = data.ai_response;
+                    }
                 }
+            } catch (structureError) {
+                console.error('Error parsing AI response structure:', structureError);
+                console.log('AI Response data:', data.ai_response);
             }
             
-            if (!aiResponse) {
+            if (!aiResponse || aiResponse.trim() === '') {
+                console.error('No valid AI response found. Full response:', data);
                 throw new Error('No AI response received from search-enhanced model');
             }
             
