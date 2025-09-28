@@ -4,6 +4,15 @@
 NexoraX AI is a modern Vietnamese AI chat application that provides conversations using Google Gemini language model. Successfully imported and configured for Replit environment on September 18, 2025.
 
 ## Recent Changes
+- **September 28, 2025**: Implemented Dual-Model AI System
+  - **NexoraX 1 (Gemini)**: Original model using Google Gemini Flash 2.5 for standard AI conversations
+  - **NexoraX 2 (Search)**: New search-enhanced model combining DuckDuckGo search with Gemini Flash 2.5 for informed responses
+  - **Model Selection**: Added clean dropdown selectors in both home and chat interfaces to choose between models
+  - **Backend Integration**: Implemented /api/duckduckgo and /api/search-with-ai endpoints for search functionality
+  - **UI Simplification**: Removed customization toolbar buttons (file upload, mic, old model selector) and replaced with streamlined dropdown
+  - **Search Orchestration**: Created intelligent system that searches DuckDuckGo, processes results, and generates AI responses with current information
+  - **Error Handling**: Added comprehensive error handling for search failures and API issues
+  - **Frontend Logic**: Updated JavaScript to route requests based on selected model and handle search-enhanced responses
 - **September 21, 2025**: Added Professional Text Typing Effects
   - **Homepage Typing Animation**: Implemented smooth character-by-character typing effect for main title "NexoraX AI" and subtitle "Xin chào! Tôi có thể giúp gì cho bạn?"
   - **Enhanced AI Responses**: Improved existing typewriter effect for AI chat responses with better timing and visual polish
@@ -101,7 +110,14 @@ NexoraX AI is a modern Vietnamese AI chat application that provides conversation
 3. **Customize**: Modify branding, colors, or features as needed
 
 ## Status
-🟢 **READY FOR DEPLOYMENT** - Application is fully functional with Render deployment fixes applied. 
+🟢 **READY FOR DEPLOYMENT** - Dual-model system fully implemented and functional.
+
+### Current Features
+- ✅ **Dual AI Models**: NexoraX 1 (standard Gemini) and NexoraX 2 (search-enhanced)
+- ✅ **Search Integration**: DuckDuckGo API integration with AI processing
+- ✅ **Model Selection**: Clean dropdown interface for model switching
+- ✅ **Error Handling**: Comprehensive error handling for API failures
+- ✅ **Mobile Responsive**: Full mobile support with touch-optimized interface
 
 ### Deployment Support
 - ✅ **Replit**: Works perfectly with auto CORS configuration
