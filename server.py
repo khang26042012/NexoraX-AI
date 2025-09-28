@@ -15,6 +15,7 @@ import json
 import urllib.request
 import urllib.parse
 import urllib.error
+import time
 
 # Import configuration
 try:
@@ -87,6 +88,8 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.handle_gemini_proxy()
         elif self.path == '/api/search':
             self.handle_search_proxy()
+        elif self.path == '/api/duckduckgo':
+            self.handle_duckduckgo_search()
         else:
             self._send_json_error(404, "API endpoint không tồn tại", "NOT_FOUND")
 
@@ -226,6 +229,107 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             logger.error(f"Exception type: {type(e)}")
             logger.error(f"Exception args: {e.args}")
             self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
+
+    def handle_duckduckgo_search(self):
+        """Handle DuckDuckGo search requests"""
+        try:
+            # Read request body
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            request_data = json.loads(post_data.decode('utf-8'))
+            
+            # Extract query from request
+            query = request_data.get('query', '')
+            if not query:
+                self._send_json_error(400, "Query không được để trống", "MISSING_QUERY")
+                return
+            
+            # Build DuckDuckGo Instant Answer API URL
+            ddg_url = f"https://api.duckduckgo.com/?q={urllib.parse.quote(query)}&format=json&no_html=1&skip_disambig=1"
+            
+            # Make request to DuckDuckGo API with timeout
+            ddg_request = urllib.request.Request(ddg_url)
+            with urllib.request.urlopen(ddg_request, timeout=REQUEST_TIMEOUT) as response:
+                ddg_response = response.read().decode('utf-8')
+                ddg_data = json.loads(ddg_response)
+            
+            # Extract useful information from DuckDuckGo response
+            search_results = {
+                "query": query,
+                "answer": ddg_data.get('Answer', ''),
+                "abstract": ddg_data.get('Abstract', ''),
+                "abstract_source": ddg_data.get('AbstractSource', ''),
+                "abstract_url": ddg_data.get('AbstractURL', ''),
+                "definition": ddg_data.get('Definition', ''),
+                "definition_source": ddg_data.get('DefinitionSource', ''),
+                "definition_url": ddg_data.get('DefinitionURL', ''),
+                "related_topics": ddg_data.get('RelatedTopics', [])[:5],  # Limit to first 5
+                "results": ddg_data.get('Results', [])[:5],  # Limit to first 5
+                "infobox": ddg_data.get('Infobox', {}),
+                "redirect": ddg_data.get('Redirect', '')
+            }
+            
+            # Format the response for better use with Gemini
+            formatted_response = {
+                "search_query": query,
+                "search_results": search_results,
+                "summary": self._format_ddg_summary(search_results),
+                "timestamp": int(time.time()) if 'time' in globals() else None
+            }
+            
+            # Return response to client
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self._send_cors_headers()
+            self.end_headers()
+            
+            response_json = json.dumps(formatted_response, ensure_ascii=False)
+            self.wfile.write(response_json.encode('utf-8'))
+            
+        except urllib.error.HTTPError as e:
+            try:
+                error_body = e.read().decode('utf-8')
+                self._send_json_error(e.code, f"DuckDuckGo API lỗi: {error_body}", "UPSTREAM_ERROR")
+            except:
+                self._send_json_error(e.code, f"DuckDuckGo API lỗi: {e.reason}", "UPSTREAM_ERROR")
+        except urllib.error.URLError as e:
+            logger.error(f"DuckDuckGo connection error: {e}")
+            self._send_json_error(502, "Không thể kết nối đến DuckDuckGo API", "CONNECTION_ERROR")
+        except json.JSONDecodeError as e:
+            logger.error(f"Invalid JSON in DuckDuckGo request: {e}")
+            self._send_json_error(400, "Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra định dạng JSON.", "INVALID_JSON")
+        except Exception as e:
+            logger.error(f"DuckDuckGo search error: {e}")
+            logger.error(f"Exception type: {type(e)}")
+            logger.error(f"Exception args: {e.args}")
+            self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
+    
+    def _format_ddg_summary(self, search_results):
+        """Format DuckDuckGo search results into a readable summary"""
+        summary_parts = []
+        
+        if search_results.get('answer'):
+            summary_parts.append(f"Trả lời: {search_results['answer']}")
+        
+        if search_results.get('abstract'):
+            summary_parts.append(f"Tóm tắt: {search_results['abstract']}")
+            if search_results.get('abstract_source'):
+                summary_parts.append(f"Nguồn: {search_results['abstract_source']}")
+        
+        if search_results.get('definition'):
+            summary_parts.append(f"Định nghĩa: {search_results['definition']}")
+        
+        # Add related topics
+        related_topics = search_results.get('related_topics', [])
+        if related_topics:
+            topic_texts = []
+            for topic in related_topics[:3]:  # First 3 topics
+                if isinstance(topic, dict) and topic.get('Text'):
+                    topic_texts.append(topic['Text'])
+            if topic_texts:
+                summary_parts.append(f"Chủ đề liên quan: {'; '.join(topic_texts)}")
+        
+        return '\n\n'.join(summary_parts) if summary_parts else "Không tìm thấy thông tin phù hợp."
 
     def do_OPTIONS(self):
         """Handle CORS preflight requests"""
