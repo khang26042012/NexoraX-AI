@@ -90,6 +90,8 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.handle_search_proxy()
         elif self.path == '/api/duckduckgo':
             self.handle_duckduckgo_search()
+        elif self.path == '/api/search-with-ai':
+            self.handle_search_with_ai()
         else:
             self._send_json_error(404, "API endpoint không tồn tại", "NOT_FOUND")
 
@@ -330,6 +332,188 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 summary_parts.append(f"Chủ đề liên quan: {'; '.join(topic_texts)}")
         
         return '\n\n'.join(summary_parts) if summary_parts else "Không tìm thấy thông tin phù hợp."
+
+    def handle_search_with_ai(self):
+        """Handle search requests that combine DuckDuckGo results with Gemini AI processing"""
+        try:
+            # Get API key for Gemini
+            api_key = get_api_key('gemini')
+            if not api_key or api_key == "your_gemini_api_key_here":
+                self._send_json_error(500, 
+                    "API key chưa được cấu hình. Vui lòng thêm GEMINI_API_KEY vào environment variables.",
+                    "API_KEY_MISSING")
+                return
+
+            # Read request body
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            request_data = json.loads(post_data.decode('utf-8'))
+            
+            # Extract user query
+            user_query = request_data.get('query', '')
+            if not user_query:
+                self._send_json_error(400, "Query không được để trống", "MISSING_QUERY")
+                return
+
+            # Step 1: Search DuckDuckGo
+            logger.info(f"Starting search for: {user_query}")
+            ddg_url = f"https://api.duckduckgo.com/?q={urllib.parse.quote(user_query)}&format=json&no_html=1&skip_disambig=1"
+            
+            ddg_request = urllib.request.Request(ddg_url)
+            with urllib.request.urlopen(ddg_request, timeout=REQUEST_TIMEOUT) as response:
+                ddg_response = response.read().decode('utf-8')
+                ddg_data = json.loads(ddg_response)
+
+            # Format search results for AI processing
+            search_context = self._format_search_context_for_ai(ddg_data, user_query)
+            
+            # Step 2: Create enhanced prompt for Gemini
+            enhanced_prompt = self._create_search_enhanced_prompt(user_query, search_context)
+            
+            # Step 3: Send to Gemini Flash 2.5
+            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+            
+            gemini_payload = {
+                "contents": [{
+                    "parts": [{
+                        "text": enhanced_prompt
+                    }]
+                }],
+                "generationConfig": {
+                    "temperature": 0.7,
+                    "topK": 40,
+                    "topP": 0.95,
+                    "maxOutputTokens": 8192,
+                },
+                "safetySettings": [
+                    {
+                        "category": "HARM_CATEGORY_HARASSMENT",
+                        "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+                    },
+                    {
+                        "category": "HARM_CATEGORY_HATE_SPEECH",
+                        "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+                    },
+                    {
+                        "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                        "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+                    },
+                    {
+                        "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                        "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+                    }
+                ]
+            }
+            
+            gemini_request = urllib.request.Request(
+                gemini_url,
+                data=json.dumps(gemini_payload).encode('utf-8'),
+                headers={'Content-Type': 'application/json'}
+            )
+            
+            with urllib.request.urlopen(gemini_request, timeout=REQUEST_TIMEOUT) as response:
+                gemini_response = response.read().decode('utf-8')
+                gemini_data = json.loads(gemini_response)
+
+            # Format the final response
+            final_response = {
+                "query": user_query,
+                "model": "nexorax2-search",
+                "search_performed": True,
+                "search_results_count": len(ddg_data.get('RelatedTopics', [])) + len(ddg_data.get('Results', [])),
+                "ai_response": gemini_data,
+                "search_context": search_context,
+                "timestamp": int(time.time())
+            }
+
+            # Return response to client
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self._send_cors_headers()
+            self.end_headers()
+            
+            response_json = json.dumps(final_response, ensure_ascii=False)
+            self.wfile.write(response_json.encode('utf-8'))
+            
+            logger.info(f"Search with AI completed for query: {user_query}")
+            
+        except urllib.error.HTTPError as e:
+            try:
+                error_body = e.read().decode('utf-8')
+                self._send_json_error(e.code, f"API lỗi: {error_body}", "UPSTREAM_ERROR")
+            except:
+                self._send_json_error(e.code, f"API lỗi: {e.reason}", "UPSTREAM_ERROR")
+        except urllib.error.URLError as e:
+            logger.error(f"Search with AI connection error: {e}")
+            self._send_json_error(502, "Không thể kết nối đến dịch vụ tìm kiếm", "CONNECTION_ERROR")
+        except json.JSONDecodeError as e:
+            logger.error(f"Invalid JSON in search with AI request: {e}")
+            self._send_json_error(400, "Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra định dạng JSON.", "INVALID_JSON")
+        except Exception as e:
+            logger.error(f"Search with AI error: {e}")
+            logger.error(f"Exception type: {type(e)}")
+            logger.error(f"Exception args: {e.args}")
+            self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
+
+    def _format_search_context_for_ai(self, ddg_data, query):
+        """Format DuckDuckGo data into context for AI processing"""
+        context_parts = []
+        
+        # Add instant answer if available
+        if ddg_data.get('Answer'):
+            context_parts.append(f"Câu trả lời nhanh: {ddg_data['Answer']}")
+        
+        # Add abstract information
+        if ddg_data.get('Abstract'):
+            context_parts.append(f"Thông tin tổng quan: {ddg_data['Abstract']}")
+            if ddg_data.get('AbstractSource'):
+                context_parts.append(f"Nguồn: {ddg_data['AbstractSource']}")
+        
+        # Add definition if available
+        if ddg_data.get('Definition'):
+            context_parts.append(f"Định nghĩa: {ddg_data['Definition']}")
+        
+        # Add related topics
+        related_topics = ddg_data.get('RelatedTopics', [])
+        if related_topics:
+            topic_info = []
+            for topic in related_topics[:5]:  # First 5 topics
+                if isinstance(topic, dict) and topic.get('Text'):
+                    topic_info.append(topic['Text'])
+            if topic_info:
+                context_parts.append(f"Thông tin liên quan:\n" + "\n".join(f"- {info}" for info in topic_info))
+        
+        # Add infobox data if available
+        infobox = ddg_data.get('Infobox', {})
+        if infobox and infobox.get('content'):
+            infobox_text = []
+            for item in infobox['content'][:5]:  # First 5 items
+                if isinstance(item, dict) and item.get('label') and item.get('value'):
+                    infobox_text.append(f"{item['label']}: {item['value']}")
+            if infobox_text:
+                context_parts.append(f"Thông tin chi tiết:\n" + "\n".join(f"- {info}" for info in infobox_text))
+        
+        return "\n\n".join(context_parts) if context_parts else "Không tìm thấy thông tin từ nguồn tìm kiếm."
+
+    def _create_search_enhanced_prompt(self, user_query, search_context):
+        """Create an enhanced prompt for Gemini that includes search context"""
+        prompt = f"""Bạn là NexoraX 2, một AI assistant được tích hợp với khả năng tìm kiếm thông tin thời gian thực. Hãy trả lời câu hỏi của người dùng dựa trên thông tin tìm kiếm được cung cấp và kiến thức của bạn.
+
+Câu hỏi của người dùng: {user_query}
+
+Thông tin tìm kiếm từ DuckDuckGo:
+{search_context}
+
+Hướng dẫn trả lời:
+1. Sử dụng thông tin tìm kiếm để đưa ra câu trả lời chính xác và cập nhật
+2. Nếu thông tin tìm kiếm không đủ, hãy bổ sung từ kiến thức của bạn
+3. Trả lời bằng tiếng Việt một cách tự nhiên và dễ hiểu
+4. Nếu có nguồn thông tin, hãy đề cập đến nguồn đó
+5. Nếu thông tin không rõ ràng hoặc mâu thuẫn, hãy nói rõ điều đó
+
+Vui lòng trả lời:"""
+        
+        return prompt
 
     def do_OPTIONS(self):
         """Handle CORS preflight requests"""

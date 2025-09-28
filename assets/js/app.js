@@ -778,13 +778,12 @@ class NexoraXChat {
     
     async getAIResponse(message, aiMessage, files = null) {
         try {
-            // Check if this is a search query
-            if (this.isSearchQuery(message)) {
-                // Extract search query by removing search keywords
-                const searchQuery = this.extractSearchQuery(message);
-                return await this.getTavilySearchResponse(searchQuery, aiMessage);
+            // Check selected model to determine which endpoint to use
+            if (this.selectedModel === 'nexorax2') {
+                // Use search-enhanced AI model (DuckDuckGo + Gemini)
+                return await this.getSearchEnhancedResponse(message, aiMessage);
             } else {
-                // Use Gemini API for regular chat
+                // Use standard Gemini API for nexorax1
                 return await this.getGeminiResponse(message, aiMessage, files);
             }
         } catch (error) {
@@ -880,6 +879,73 @@ class NexoraXChat {
         
         // If query is empty after removing keywords, use original message
         return query || normalized;
+    }
+
+    async getSearchEnhancedResponse(message, aiMessage) {
+        try {
+            const url = '/api/search-with-ai';
+            
+            const requestBody = {
+                query: message
+            };
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody),
+                signal: AbortSignal.timeout(120000) // 2 minute timeout for search
+            });
+            
+            if (!response.ok) {
+                throw new Error('HTTP error! status: ' + response.status);
+            }
+            
+            const data = await response.json();
+            
+            // Extract AI response from the search-enhanced result
+            let aiResponse = '';
+            if (data.ai_response && data.ai_response.candidates && data.ai_response.candidates[0]) {
+                const candidate = data.ai_response.candidates[0];
+                if (candidate.content && candidate.content.parts && candidate.content.parts[0]) {
+                    aiResponse = candidate.content.parts[0].text;
+                }
+            }
+            
+            if (!aiResponse) {
+                throw new Error('No AI response received from search-enhanced model');
+            }
+            
+            // Add search context information to the response
+            const searchInfo = data.search_results_count > 0 ? 
+                `\n\n*🔍 Tìm kiếm được ${data.search_results_count} kết quả liên quan*` : 
+                '\n\n*🔍 Sử dụng model tìm kiếm NexoraX 2*';
+            
+            aiResponse += searchInfo;
+            
+            // Start typing animation
+            await this.typewriterEffect(aiResponse, aiMessage);
+            
+        } catch (error) {
+            console.error('Search Enhanced Response Error:', error);
+            
+            let errorMessage = "Xin lỗi, đã có lỗi xảy ra với model tìm kiếm. ";
+            
+            if (error.name === 'TimeoutError') {
+                errorMessage += "Yêu cầu tìm kiếm mất quá nhiều thời gian. Vui lòng thử lại.";
+            } else if (error.message.includes('HTTP error')) {
+                errorMessage += "Không thể kết nối đến dịch vụ tìm kiếm. Vui lòng thử lại.";
+            } else {
+                errorMessage += "Vui lòng thử lại hoặc chuyển sang model NexoraX 1.";
+            }
+            
+            aiMessage.content = errorMessage;
+            aiMessage.isTyping = false;
+            this.updateMessage(aiMessage);
+            
+            throw error;
+        }
     }
 
     async getGeminiResponse(message, aiMessage, files = null) {
