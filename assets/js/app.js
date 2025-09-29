@@ -1142,7 +1142,7 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
         }
     }
 
-    async getTavilySearchResponse(query, aiMessage) {
+    async getSerpAPISearchResponse(query, aiMessage) {
         try {
             const url = '/api/search';
             
@@ -1153,9 +1153,7 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
                 },
                 body: JSON.stringify({
                     query: query,
-                    search_depth: 'basic',
-                    include_answer: true,
-                    max_results: 5
+                    num: 5
                 })
             });
 
@@ -1167,26 +1165,36 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
             const data = await response.json();
             
             // Format search results for display
-            let formattedResults = `🔍 **Kết quả tìm kiếm cho: "${query}"**\n\n`;
+            let formattedResults = `🔍 **Kết quả tìm kiếm Google cho: "${query}"**\n\n`;
             
-            if (data.answer) {
-                formattedResults += `**📝 Tóm tắt:**\n${data.answer}\n\n`;
+            const searchResults = data.search_results || {};
+            
+            if (searchResults.answer) {
+                formattedResults += `**📝 Câu trả lời:**\n${searchResults.answer}\n\n`;
             }
             
-            if (data.results && data.results.length > 0) {
-                formattedResults += `**🌐 Nguồn tham khảo:**\n\n`;
-                data.results.forEach((result, index) => {
-                    formattedResults += `**${index + 1}. [${result.title}](${result.url})**\n`;
-                    if (result.content) {
+            if (searchResults.snippet) {
+                formattedResults += `**📄 Tóm tắt:**\n${searchResults.snippet}\n\n`;
+            }
+            
+            if (searchResults.organic_results && searchResults.organic_results.length > 0) {
+                formattedResults += `**🌐 Kết quả tìm kiếm:**\n\n`;
+                searchResults.organic_results.forEach((result, index) => {
+                    formattedResults += `**${index + 1}. [${result.title}](${result.link})**\n`;
+                    if (result.snippet) {
                         // Truncate content to 200 characters
-                        const content = result.content.length > 200 
-                            ? result.content.substring(0, 200) + '...' 
-                            : result.content;
+                        const content = result.snippet.length > 200 
+                            ? result.snippet.substring(0, 200) + '...' 
+                            : result.snippet;
                         formattedResults += `${content}\n\n`;
                     }
                 });
             } else {
                 formattedResults += `Không tìm thấy kết quả nào cho câu hỏi này.`;
+            }
+
+            if (searchResults.total_results) {
+                formattedResults += `\n**📊 Tổng cộng: ${searchResults.total_results.toLocaleString()} kết quả**`;
             }
 
             aiMessage.content = formattedResults;
@@ -1195,16 +1203,16 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
             this.updateMessage(aiMessage);
             
         } catch (error) {
-            console.error('Tavily Search Error:', error);
+            console.error('SerpAPI Search Error:', error);
             
             // Provide specific error messages based on error type
             let errorMessage = '';
             if (error.message.includes('HTTP error! status: 400')) {
                 errorMessage = '❌ Yêu cầu tìm kiếm không hợp lệ. Vui lòng thử lại với từ khóa khác.';
             } else if (error.message.includes('HTTP error! status: 401')) {
-                errorMessage = '🔑 Tavily API key không hợp lệ. Vui lòng kiểm tra cấu hình.';
+                errorMessage = '🔑 SerpAPI key không hợp lệ. Vui lòng kiểm tra cấu hình.';
             } else if (error.message.includes('HTTP error! status: 403')) {
-                errorMessage = '🚫 Không có quyền truy cập Tavily API. Vui lòng kiểm tra API key.';
+                errorMessage = '🚫 Không có quyền truy cập SerpAPI. Vui lòng kiểm tra API key.';
             } else if (error.message.includes('HTTP error! status: 429')) {
                 errorMessage = '⏰ API tìm kiếm đã đạt giới hạn. Vui lòng thử lại sau vài phút.';
             } else if (error.message.includes('HTTP error! status: 500')) {

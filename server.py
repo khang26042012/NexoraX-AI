@@ -25,6 +25,8 @@ except ImportError:
     def get_api_key(service):
         if service.lower() == "gemini":
             return os.getenv('GEMINI_API_KEY')
+        elif service.lower() == "serpapi":
+            return os.getenv('SERPAPI_API_KEY')
         return None
     
     def check_config():
@@ -87,9 +89,9 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         if self.path == '/api/gemini':
             self.handle_gemini_proxy()
         elif self.path == '/api/search':
-            self.handle_search_proxy()
-        elif self.path == '/api/duckduckgo':
-            self.handle_duckduckgo_search()
+            self.handle_serpapi_search()
+        elif self.path == '/api/serpapi' or self.path == '/api/duckduckgo':
+            self.handle_serpapi_search()
         elif self.path == '/api/search-with-ai':
             self.handle_search_with_ai()
         else:
@@ -156,15 +158,16 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             logger.error(f"Exception args: {e.args}")
             self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
 
-    def handle_search_proxy(self):
-        """Proxy requests to Tavily Search API using server-side API key"""
+
+    def handle_serpapi_search(self):
+        """Handle SerpAPI search requests"""
         try:
             # Get API key from config hoặc environment
-            api_key = get_api_key('tavily')
-            logger.info(f"Tavily API Key configured: {'Yes' if api_key and api_key != 'your_tavily_api_key_here' else 'No'}")
-            if not api_key or api_key == "your_tavily_api_key_here":
+            api_key = get_api_key('serpapi')
+            logger.info(f"SerpAPI Key configured: {'Yes' if api_key and api_key != 'your_serpapi_api_key_here' else 'No'}")
+            if not api_key or api_key == "your_serpapi_api_key_here":
                 self._send_json_error(500, 
-                    "Tavily API key chưa được cấu hình. Vui lòng thêm TAVILY_API_KEY vào environment variables.",
+                    "SerpAPI key chưa được cấu hình. Vui lòng thêm SERPAPI_API_KEY vào environment variables.",
                     "API_KEY_MISSING")
                 return
             
@@ -179,103 +182,48 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self._send_json_error(400, "Query không được để trống", "MISSING_QUERY")
                 return
             
-            # Build Tavily API URL
-            tavily_url = "https://api.tavily.com/search"
-            
-            # Prepare request payload for Tavily API
-            tavily_payload = {
+            # Build SerpAPI URL for Google search
+            serpapi_url = "https://serpapi.com/search.json"
+            serpapi_params = {
+                "q": query,
+                "engine": "google",
                 "api_key": api_key,
-                "query": query,
-                "search_depth": request_data.get('search_depth', 'basic'),
-                "include_answer": request_data.get('include_answer', True),
-                "include_raw_content": request_data.get('include_raw_content', False),
-                "max_results": request_data.get('max_results', 5),
-                "include_domains": request_data.get('include_domains', []),
-                "exclude_domains": request_data.get('exclude_domains', [])
+                "num": request_data.get('num', 10),  # Number of results
+                "hl": "vi",  # Vietnamese language
+                "gl": "vn"   # Vietnam location
             }
             
-            # Prepare request for Tavily API
-            tavily_request = urllib.request.Request(
-                tavily_url,
-                data=json.dumps(tavily_payload).encode('utf-8'),
-                headers={'Content-Type': 'application/json'}
-            )
+            # Build URL with parameters
+            url_params = urllib.parse.urlencode(serpapi_params)
+            full_url = f"{serpapi_url}?{url_params}"
             
-            # Make request to Tavily API with timeout
-            with urllib.request.urlopen(tavily_request, timeout=REQUEST_TIMEOUT) as response:
-                tavily_response = response.read()
-                
-            # Return response to client
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            # Send secure CORS headers
-            self._send_cors_headers()
-            self.end_headers()
-            self.wfile.write(tavily_response)
+            # Make request to SerpAPI with timeout
+            serpapi_request = urllib.request.Request(full_url)
+            with urllib.request.urlopen(serpapi_request, timeout=REQUEST_TIMEOUT) as response:
+                serpapi_response = response.read().decode('utf-8')
+                serpapi_data = json.loads(serpapi_response)
             
-        except urllib.error.HTTPError as e:
-            # Forward exact status and error from Tavily API
-            try:
-                error_body = e.read().decode('utf-8')
-                self._send_json_error(e.code, f"Tavily API lỗi: {error_body}", "UPSTREAM_ERROR")
-            except:
-                self._send_json_error(e.code, f"Tavily API lỗi: {e.reason}", "UPSTREAM_ERROR")
-        except urllib.error.URLError as e:
-            logger.error(f"Tavily connection error: {e}")
-            self._send_json_error(502, "Không thể kết nối đến Tavily API", "CONNECTION_ERROR")
-        except json.JSONDecodeError as e:
-            logger.error(f"Invalid JSON in request: {e}")
-            self._send_json_error(400, "Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra định dạng JSON.", "INVALID_JSON")
-        except Exception as e:
-            logger.error(f"Tavily proxy error: {e}")
-            logger.error(f"Exception type: {type(e)}")
-            logger.error(f"Exception args: {e.args}")
-            self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
-
-    def handle_duckduckgo_search(self):
-        """Handle DuckDuckGo search requests"""
-        try:
-            # Read request body
-            content_length = int(self.headers['Content-Length'])
-            post_data = self.rfile.read(content_length)
-            request_data = json.loads(post_data.decode('utf-8'))
+            # Extract useful information from SerpAPI response
+            organic_results = serpapi_data.get('organic_results', [])
+            answer_box = serpapi_data.get('answer_box', {})
+            knowledge_graph = serpapi_data.get('knowledge_graph', {})
             
-            # Extract query from request
-            query = request_data.get('query', '')
-            if not query:
-                self._send_json_error(400, "Query không được để trống", "MISSING_QUERY")
-                return
-            
-            # Build DuckDuckGo Instant Answer API URL
-            ddg_url = f"https://api.duckduckgo.com/?q={urllib.parse.quote(query)}&format=json&no_html=1&skip_disambig=1"
-            
-            # Make request to DuckDuckGo API with timeout
-            ddg_request = urllib.request.Request(ddg_url)
-            with urllib.request.urlopen(ddg_request, timeout=REQUEST_TIMEOUT) as response:
-                ddg_response = response.read().decode('utf-8')
-                ddg_data = json.loads(ddg_response)
-            
-            # Extract useful information from DuckDuckGo response
             search_results = {
                 "query": query,
-                "answer": ddg_data.get('Answer', ''),
-                "abstract": ddg_data.get('Abstract', ''),
-                "abstract_source": ddg_data.get('AbstractSource', ''),
-                "abstract_url": ddg_data.get('AbstractURL', ''),
-                "definition": ddg_data.get('Definition', ''),
-                "definition_source": ddg_data.get('DefinitionSource', ''),
-                "definition_url": ddg_data.get('DefinitionURL', ''),
-                "related_topics": ddg_data.get('RelatedTopics', [])[:5],  # Limit to first 5
-                "results": ddg_data.get('Results', [])[:5],  # Limit to first 5
-                "infobox": ddg_data.get('Infobox', {}),
-                "redirect": ddg_data.get('Redirect', '')
+                "answer": answer_box.get('answer', ''),
+                "snippet": answer_box.get('snippet', ''),
+                "title": answer_box.get('title', ''),
+                "link": answer_box.get('link', ''),
+                "knowledge_graph": knowledge_graph,
+                "organic_results": organic_results[:5],  # Limit to first 5
+                "total_results": serpapi_data.get('search_information', {}).get('total_results', 0)
             }
             
             # Format the response for better use with Gemini
             formatted_response = {
                 "search_query": query,
                 "search_results": search_results,
-                "summary": self._format_ddg_summary(search_results),
+                "summary": self._format_serpapi_summary(search_results),
                 "timestamp": int(time.time()) if 'time' in globals() else None
             }
             
@@ -291,56 +239,71 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         except urllib.error.HTTPError as e:
             try:
                 error_body = e.read().decode('utf-8')
-                self._send_json_error(e.code, f"DuckDuckGo API lỗi: {error_body}", "UPSTREAM_ERROR")
+                self._send_json_error(e.code, f"SerpAPI lỗi: {error_body}", "UPSTREAM_ERROR")
             except:
-                self._send_json_error(e.code, f"DuckDuckGo API lỗi: {e.reason}", "UPSTREAM_ERROR")
+                self._send_json_error(e.code, f"SerpAPI lỗi: {e.reason}", "UPSTREAM_ERROR")
         except urllib.error.URLError as e:
-            logger.error(f"DuckDuckGo connection error: {e}")
-            self._send_json_error(502, "Không thể kết nối đến DuckDuckGo API", "CONNECTION_ERROR")
+            logger.error(f"SerpAPI connection error: {e}")
+            self._send_json_error(502, "Không thể kết nối đến SerpAPI", "CONNECTION_ERROR")
         except json.JSONDecodeError as e:
-            logger.error(f"Invalid JSON in DuckDuckGo request: {e}")
+            logger.error(f"Invalid JSON in SerpAPI request: {e}")
             self._send_json_error(400, "Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra định dạng JSON.", "INVALID_JSON")
         except Exception as e:
-            logger.error(f"DuckDuckGo search error: {e}")
+            logger.error(f"SerpAPI search error: {e}")
             logger.error(f"Exception type: {type(e)}")
             logger.error(f"Exception args: {e.args}")
             self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
     
-    def _format_ddg_summary(self, search_results):
-        """Format DuckDuckGo search results into a readable summary"""
+    def _format_serpapi_summary(self, search_results):
+        """Format SerpAPI search results into a readable summary"""
         summary_parts = []
         
         if search_results.get('answer'):
             summary_parts.append(f"Trả lời: {search_results['answer']}")
         
-        if search_results.get('abstract'):
-            summary_parts.append(f"Tóm tắt: {search_results['abstract']}")
-            if search_results.get('abstract_source'):
-                summary_parts.append(f"Nguồn: {search_results['abstract_source']}")
+        if search_results.get('snippet'):
+            summary_parts.append(f"Tóm tắt: {search_results['snippet']}")
         
-        if search_results.get('definition'):
-            summary_parts.append(f"Định nghĩa: {search_results['definition']}")
+        if search_results.get('title'):
+            summary_parts.append(f"Tiêu đề: {search_results['title']}")
         
-        # Add related topics
-        related_topics = search_results.get('related_topics', [])
-        if related_topics:
-            topic_texts = []
-            for topic in related_topics[:3]:  # First 3 topics
-                if isinstance(topic, dict) and topic.get('Text'):
-                    topic_texts.append(topic['Text'])
-            if topic_texts:
-                summary_parts.append(f"Chủ đề liên quan: {'; '.join(topic_texts)}")
+        # Add knowledge graph information
+        knowledge_graph = search_results.get('knowledge_graph', {})
+        if knowledge_graph.get('description'):
+            summary_parts.append(f"Mô tả: {knowledge_graph['description']}")
+        
+        # Add organic results
+        organic_results = search_results.get('organic_results', [])
+        if organic_results:
+            result_texts = []
+            for result in organic_results[:3]:  # First 3 results
+                if result.get('title') and result.get('snippet'):
+                    result_texts.append(f"{result['title']}: {result['snippet'][:100]}...")
+            if result_texts:
+                summary_parts.append(f"Kết quả tìm kiếm:\n" + "\n".join(f"- {text}" for text in result_texts))
+        
+        total_results = search_results.get('total_results', 0)
+        if total_results > 0:
+            summary_parts.append(f"Tổng số kết quả: {total_results:,}")
         
         return '\n\n'.join(summary_parts) if summary_parts else "Không tìm thấy thông tin phù hợp."
 
     def handle_search_with_ai(self):
-        """Handle search requests that combine DuckDuckGo results with Gemini AI processing"""
+        """Handle search requests that combine SerpAPI results with Gemini AI processing"""
         try:
-            # Get API key for Gemini
-            api_key = get_api_key('gemini')
-            if not api_key or api_key == "your_gemini_api_key_here":
+            # Get API keys for both Gemini and SerpAPI
+            gemini_key = get_api_key('gemini')
+            serpapi_key = get_api_key('serpapi')
+            
+            if not gemini_key or gemini_key == "your_gemini_api_key_here":
                 self._send_json_error(500, 
-                    "API key chưa được cấu hình. Vui lòng thêm GEMINI_API_KEY vào environment variables.",
+                    "Gemini API key chưa được cấu hình. Vui lòng thêm GEMINI_API_KEY vào environment variables.",
+                    "API_KEY_MISSING")
+                return
+                
+            if not serpapi_key or serpapi_key == "your_serpapi_api_key_here":
+                self._send_json_error(500, 
+                    "SerpAPI key chưa được cấu hình. Vui lòng thêm SERPAPI_API_KEY vào environment variables.",
                     "API_KEY_MISSING")
                 return
 
@@ -355,23 +318,34 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self._send_json_error(400, "Query không được để trống", "MISSING_QUERY")
                 return
 
-            # Step 1: Search DuckDuckGo
+            # Step 1: Search SerpAPI
             logger.info(f"Starting search for: {user_query}")
-            ddg_url = f"https://api.duckduckgo.com/?q={urllib.parse.quote(user_query)}&format=json&no_html=1&skip_disambig=1"
+            serpapi_url = "https://serpapi.com/search.json"
+            serpapi_params = {
+                "q": user_query,
+                "engine": "google",
+                "api_key": serpapi_key,
+                "num": 5,
+                "hl": "vi",
+                "gl": "vn"
+            }
             
-            ddg_request = urllib.request.Request(ddg_url)
-            with urllib.request.urlopen(ddg_request, timeout=REQUEST_TIMEOUT) as response:
-                ddg_response = response.read().decode('utf-8')
-                ddg_data = json.loads(ddg_response)
+            url_params = urllib.parse.urlencode(serpapi_params)
+            full_url = f"{serpapi_url}?{url_params}"
+            
+            serpapi_request = urllib.request.Request(full_url)
+            with urllib.request.urlopen(serpapi_request, timeout=REQUEST_TIMEOUT) as response:
+                serpapi_response = response.read().decode('utf-8')
+                serpapi_data = json.loads(serpapi_response)
 
             # Format search results for AI processing
-            search_context = self._format_search_context_for_ai(ddg_data, user_query)
+            search_context = self._format_search_context_for_ai(serpapi_data, user_query)
             
             # Step 2: Create enhanced prompt for Gemini
             enhanced_prompt = self._create_search_enhanced_prompt(user_query, search_context)
             
             # Step 3: Send to Gemini Flash 2.5
-            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_key}"
             
             gemini_payload = {
                 "contents": [{
@@ -420,7 +394,7 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 "query": user_query,
                 "model": "nexorax2-search",
                 "search_performed": True,
-                "search_results_count": len(ddg_data.get('RelatedTopics', [])) + len(ddg_data.get('Results', [])),
+                "search_results_count": len(serpapi_data.get('organic_results', [])),
                 "ai_response": gemini_data,
                 "search_context": search_context,
                 "timestamp": int(time.time())
@@ -455,53 +429,50 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             logger.error(f"Exception args: {e.args}")
             self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
 
-    def _format_search_context_for_ai(self, ddg_data, query):
-        """Format DuckDuckGo data into context for AI processing"""
+    def _format_search_context_for_ai(self, serpapi_data, query):
+        """Format SerpAPI data into context for AI processing"""
         context_parts = []
         
-        # Add instant answer if available
-        if ddg_data.get('Answer'):
-            context_parts.append(f"Câu trả lời nhanh: {ddg_data['Answer']}")
+        # Add answer box if available
+        answer_box = serpapi_data.get('answer_box', {})
+        if answer_box.get('answer'):
+            context_parts.append(f"Câu trả lời nhanh: {answer_box['answer']}")
+        if answer_box.get('snippet'):
+            context_parts.append(f"Thông tin tổng quan: {answer_box['snippet']}")
+        if answer_box.get('title'):
+            context_parts.append(f"Tiêu đề: {answer_box['title']}")
         
-        # Add abstract information
-        if ddg_data.get('Abstract'):
-            context_parts.append(f"Thông tin tổng quan: {ddg_data['Abstract']}")
-            if ddg_data.get('AbstractSource'):
-                context_parts.append(f"Nguồn: {ddg_data['AbstractSource']}")
+        # Add knowledge graph information
+        knowledge_graph = serpapi_data.get('knowledge_graph', {})
+        if knowledge_graph.get('description'):
+            context_parts.append(f"Định nghĩa: {knowledge_graph['description']}")
+        if knowledge_graph.get('title'):
+            context_parts.append(f"Chủ đề chính: {knowledge_graph['title']}")
         
-        # Add definition if available
-        if ddg_data.get('Definition'):
-            context_parts.append(f"Định nghĩa: {ddg_data['Definition']}")
+        # Add organic search results
+        organic_results = serpapi_data.get('organic_results', [])
+        if organic_results:
+            result_info = []
+            for result in organic_results[:5]:  # First 5 results
+                if result.get('title') and result.get('snippet'):
+                    result_info.append(f"{result['title']}: {result['snippet']}")
+            if result_info:
+                context_parts.append(f"Kết quả tìm kiếm từ Google:\n" + "\n".join(f"- {info}" for info in result_info))
         
-        # Add related topics
-        related_topics = ddg_data.get('RelatedTopics', [])
-        if related_topics:
-            topic_info = []
-            for topic in related_topics[:5]:  # First 5 topics
-                if isinstance(topic, dict) and topic.get('Text'):
-                    topic_info.append(topic['Text'])
-            if topic_info:
-                context_parts.append(f"Thông tin liên quan:\n" + "\n".join(f"- {info}" for info in topic_info))
-        
-        # Add infobox data if available
-        infobox = ddg_data.get('Infobox', {})
-        if infobox and infobox.get('content'):
-            infobox_text = []
-            for item in infobox['content'][:5]:  # First 5 items
-                if isinstance(item, dict) and item.get('label') and item.get('value'):
-                    infobox_text.append(f"{item['label']}: {item['value']}")
-            if infobox_text:
-                context_parts.append(f"Thông tin chi tiết:\n" + "\n".join(f"- {info}" for info in infobox_text))
+        # Add search information
+        search_info = serpapi_data.get('search_information', {})
+        if search_info.get('total_results'):
+            context_parts.append(f"Tổng số kết quả tìm thấy: {search_info['total_results']:,}")
         
         return "\n\n".join(context_parts) if context_parts else "Không tìm thấy thông tin từ nguồn tìm kiếm."
 
     def _create_search_enhanced_prompt(self, user_query, search_context):
         """Create an enhanced prompt for Gemini that includes search context"""
-        prompt = f"""Bạn là NexoraX 2, một AI assistant được tích hợp với khả năng tìm kiếm thông tin thời gian thực. Hãy trả lời câu hỏi của người dùng dựa trên thông tin tìm kiếm được cung cấp và kiến thức của bạn.
+        prompt = f"""Bạn là NexoraX 2, một AI assistant được tích hợp với khả năng tìm kiếm thông tin thời gian thực qua Google Search. Hãy trả lời câu hỏi của người dùng dựa trên thông tin tìm kiếm được cung cấp và kiến thức của bạn.
 
 Câu hỏi của người dùng: {user_query}
 
-Thông tin tìm kiếm từ DuckDuckGo:
+Thông tin tìm kiếm từ Google (qua SerpAPI):
 {search_context}
 
 Hướng dẫn trả lời:
