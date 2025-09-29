@@ -4,13 +4,19 @@
 NexoraX AI is a modern Vietnamese AI chat application that provides conversations using Google Gemini language model. Successfully imported and configured for Replit environment on September 18, 2025.
 
 ## Recent Changes
+- **September 29, 2025**: Replaced DuckDuckGo Search with SerpAPI Integration
+  - **Search API Migration**: Successfully migrated from DuckDuckGo to SerpAPI (Google search) for better search results
+  - **JavaScript Updates**: Updated getSerpAPISearchResponse() function with proper SerpAPI data formatting
+  - **Maintained API Structure**: All existing API endpoints (/api/search, /api/search-with-ai) preserved as requested
+  - **Testing Confirmed**: Successfully tested with Vietnamese queries, confirmed working via logs
+  - **SerpAPI Configuration**: Added SerpAPI key (e5e04b97a6f406a53f9430701e795fb8d306cdc7514a8d68bbbc6c6b0a4d4a98) to config.py
 - **September 28, 2025**: Implemented Dual-Model AI System
   - **NexoraX 1 (Gemini)**: Original model using Google Gemini Flash 2.5 for standard AI conversations
-  - **NexoraX 2 (Search)**: New search-enhanced model combining DuckDuckGo search with Gemini Flash 2.5 for informed responses
+  - **NexoraX 2 (Search)**: New search-enhanced model combining SerpAPI (Google search) with Gemini Flash 2.5 for informed responses
   - **Model Selection**: Added clean dropdown selectors in both home and chat interfaces to choose between models
-  - **Backend Integration**: Implemented /api/duckduckgo and /api/search-with-ai endpoints for search functionality
+  - **Backend Integration**: Implemented /api/serpapi and /api/search-with-ai endpoints for search functionality
   - **UI Simplification**: Removed customization toolbar buttons (file upload, mic, old model selector) and replaced with streamlined dropdown
-  - **Search Orchestration**: Created intelligent system that searches DuckDuckGo, processes results, and generates AI responses with current information
+  - **Search Orchestration**: Created intelligent system that searches SerpAPI (Google), processes results, and generates AI responses with current information
   - **Error Handling**: Added comprehensive error handling for search failures and API issues
   - **Frontend Logic**: Updated JavaScript to route requests based on selected model and handle search-enhanced responses
 - **September 21, 2025**: Added Professional Text Typing Effects
