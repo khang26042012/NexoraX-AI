@@ -780,8 +780,11 @@ class NexoraXChat {
         try {
             // Check selected model to determine which endpoint to use
             if (this.selectedModel === 'nexorax2') {
-                // Use search-enhanced AI model (DuckDuckGo + Gemini)
+                // Use search-enhanced AI model (SerpAPI + Gemini)
                 return await this.getSearchEnhancedResponse(message, aiMessage);
+            } else if (this.selectedModel === 'gpt-5' || this.selectedModel === 'claude-3.7') {
+                // Use Puter.ai for GPT-5 and Claude 3.7
+                return await this.getPuterAIResponse(message, aiMessage);
             } else {
                 // Use standard Gemini API for nexorax1
                 return await this.getGeminiResponse(message, aiMessage, files);
