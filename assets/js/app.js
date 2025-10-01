@@ -884,6 +884,42 @@ class NexoraXChat {
         return query || normalized;
     }
 
+    async getPuterAIResponse(message, aiMessage) {
+        try {
+            // Map model names to Puter.ai model IDs
+            const modelMapping = {
+                'gpt-5': 'gpt-5-nano',
+                'claude-3.7': 'claude-3.7-sonnet'
+            };
+            
+            const puterModel = modelMapping[this.selectedModel];
+            
+            if (!puterModel) {
+                throw new Error('Invalid Puter.ai model selected');
+            }
+            
+            console.log(`Using Puter.ai model: ${puterModel}`);
+            
+            // Call Puter.ai API
+            const response = await puter.ai.chat(message, {
+                model: puterModel
+            });
+            
+            console.log('Puter.ai response:', response);
+            
+            // Update AI message with response
+            aiMessage.content = response;
+            aiMessage.isTyping = false;
+            this.updateMessage(aiMessage);
+            
+        } catch (error) {
+            console.error('Puter.ai Error:', error);
+            aiMessage.content = `Xin lỗi, đã có lỗi xảy ra khi gọi ${this.selectedModel}. Vui lòng thử lại hoặc chọn model khác.`;
+            aiMessage.isTyping = false;
+            this.updateMessage(aiMessage);
+        }
+    }
+
     async getSearchEnhancedResponse(message, aiMessage) {
         try {
             const url = '/api/search-with-ai';
@@ -1731,8 +1767,10 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
         }
         
         const modelNames = {
-            'nexorax1': 'NexoraX 1 (Gemini)',
-            'nexorax2': 'NexoraX 2 (Tìm kiếm)'
+            'nexorax1': 'Gemini Flash 2.5',
+            'nexorax2': 'Tìm kiếm với AI',
+            'gpt-5': 'GPT-5 Nano',
+            'claude-3.7': 'Claude 3.7 Sonnet'
         };
         
         this.showNotification('Đã chuyển sang ' + (modelNames[modelType] || modelType) + '!', 'success');
