@@ -18,6 +18,9 @@ class NexoraXChat {
         this.isRecording = false;
         this.currentActiveInput = null;
         
+        // Puter.ai initialization flag
+        this.puterInitialized = false;
+        
         this.initializeElements();
         this.setupEventListeners();
         this.initializeSpeechRecognition();
@@ -25,6 +28,9 @@ class NexoraXChat {
         this.loadModelSelection();
         this.initializeDesktopSidebar();
         this.renderChatList();
+        
+        // Initialize Puter.ai silently in the background (no redirect)
+        this.initializePuterAuth();
     }
     
     migrateLocalStorageKeys() {
@@ -43,6 +49,34 @@ class NexoraXChat {
                 localStorage.removeItem(oldKey);
             }
         });
+    }
+    
+    async initializePuterAuth() {
+        // Check Puter.ai authentication status silently
+        try {
+            // Check if Puter.ai SDK is loaded
+            if (typeof puter === 'undefined' || !puter.auth) {
+                console.log('Puter.ai SDK not loaded yet');
+                this.puterInitialized = false;
+                return;
+            }
+            
+            // Check if already signed in (no redirect if already authenticated)
+            if (puter.auth.isSignedIn()) {
+                console.log('Puter.ai: Already signed in');
+                this.puterInitialized = true;
+                return;
+            }
+            
+            // Not signed in - will need to sign in on first use
+            // Don't auto-signin here to avoid redirect on page load
+            console.log('Puter.ai: Not signed in yet (will signin when needed)');
+            this.puterInitialized = false;
+        } catch (error) {
+            // Silent fail - user can still use Gemini and Search models
+            console.log('Puter.ai: Check failed:', error.message);
+            this.puterInitialized = false;
+        }
     }
     
     initializeElements() {
@@ -889,6 +923,20 @@ class NexoraXChat {
             // Check if Puter.ai SDK is available
             if (typeof puter === 'undefined' || !puter.ai) {
                 throw new Error('Puter.ai SDK chưa được tải. Vui lòng tải lại trang.');
+            }
+            
+            // Check if signed in, if not sign in once (this will redirect/popup once only)
+            if (!puter.auth.isSignedIn()) {
+                console.log('Puter.ai: Not signed in, signing in now...');
+                try {
+                    // Sign in (this will redirect to puter.com once, then cache auth)
+                    await puter.auth.signIn();
+                    this.puterInitialized = true;
+                    console.log('Puter.ai: Signed in successfully');
+                } catch (signInError) {
+                    console.error('Puter.ai: Sign in failed:', signInError);
+                    throw new Error('Không thể đăng nhập Puter.ai. Vui lòng thử lại sau.');
+                }
             }
             
             // Map model names to Puter.ai model IDs
