@@ -894,7 +894,7 @@ class NexoraXChat {
             // Map model names to Puter.ai model IDs
             const modelMapping = {
                 'gpt-5': 'gpt-5-nano',
-                'claude-3.7': 'claude-3.7-sonnet'
+                'claude-3.7': 'claude-sonnet-4.5'
             };
             
             const puterModel = modelMapping[this.selectedModel];
@@ -914,10 +914,24 @@ class NexoraXChat {
             console.log('Puter.ai response:', response);
             console.log('Response type:', typeof response);
             
-            // Handle response - it might be a string or an object
+            // Handle response - Puter.ai returns different formats for different models
             let responseText = '';
             if (typeof response === 'string') {
                 responseText = response;
+            } else if (response && response.message && response.message.content) {
+                // Check if content is an array (Claude format) or string (GPT format)
+                if (Array.isArray(response.message.content)) {
+                    // Claude format: content is array with {type: "text", text: "..."}
+                    responseText = response.message.content
+                        .filter(item => item.type === 'text')
+                        .map(item => item.text)
+                        .join('\n');
+                } else if (typeof response.message.content === 'string') {
+                    // GPT format: content is a string
+                    responseText = response.message.content;
+                } else {
+                    responseText = JSON.stringify(response.message.content);
+                }
             } else if (response && response.message) {
                 responseText = response.message;
             } else if (response && response.text) {
@@ -1480,10 +1494,18 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
     
     formatMessage(content) {
         try {
+            // Ensure content is a string
+            if (typeof content !== 'string') {
+                content = String(content || '');
+            }
             return marked.parse(content);
         } catch (error) {
             console.error('Markdown parsing error:', error);
-            return content.replace(/\n/g, '<br>');
+            // Ensure content is a string before calling replace
+            if (typeof content === 'string') {
+                return content.replace(/\n/g, '<br>');
+            }
+            return String(content || '').replace(/\n/g, '<br>');
         }
     }
     
@@ -1801,7 +1823,7 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
             'nexorax1': 'Gemini Flash 2.5',
             'nexorax2': 'Tìm kiếm với AI',
             'gpt-5': 'GPT-5 Nano',
-            'claude-3.7': 'Claude 3.7 Sonnet'
+            'claude-3.7': 'Claude Sonnet 4.5'
         };
         
         this.showNotification('Đã chuyển sang ' + (modelNames[modelType] || modelType) + '!', 'success');
