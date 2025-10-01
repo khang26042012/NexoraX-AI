@@ -886,6 +886,11 @@ class NexoraXChat {
 
     async getPuterAIResponse(message, aiMessage) {
         try {
+            // Check if Puter.ai SDK is available
+            if (typeof puter === 'undefined' || !puter.ai) {
+                throw new Error('Puter.ai SDK chưa được tải. Vui lòng tải lại trang.');
+            }
+            
             // Map model names to Puter.ai model IDs
             const modelMapping = {
                 'gpt-5': 'gpt-5-nano',
@@ -899,6 +904,7 @@ class NexoraXChat {
             }
             
             console.log(`Using Puter.ai model: ${puterModel}`);
+            console.log(`Message: ${message}`);
             
             // Call Puter.ai API
             const response = await puter.ai.chat(message, {
@@ -906,15 +912,40 @@ class NexoraXChat {
             });
             
             console.log('Puter.ai response:', response);
+            console.log('Response type:', typeof response);
+            
+            // Handle response - it might be a string or an object
+            let responseText = '';
+            if (typeof response === 'string') {
+                responseText = response;
+            } else if (response && response.message) {
+                responseText = response.message;
+            } else if (response && response.text) {
+                responseText = response.text;
+            } else {
+                responseText = JSON.stringify(response);
+            }
             
             // Update AI message with response
-            aiMessage.content = response;
+            aiMessage.content = responseText;
             aiMessage.isTyping = false;
             this.updateMessage(aiMessage);
             
         } catch (error) {
             console.error('Puter.ai Error:', error);
-            aiMessage.content = `Xin lỗi, đã có lỗi xảy ra khi gọi ${this.selectedModel}. Vui lòng thử lại hoặc chọn model khác.`;
+            console.error('Error details:', {
+                message: error.message,
+                stack: error.stack,
+                name: error.name
+            });
+            
+            let errorMessage = `Xin lỗi, đã có lỗi xảy ra khi gọi ${this.selectedModel}.`;
+            if (error.message) {
+                errorMessage += ` Chi tiết: ${error.message}`;
+            }
+            errorMessage += ' Vui lòng thử lại hoặc chọn model khác.';
+            
+            aiMessage.content = errorMessage;
             aiMessage.isTyping = false;
             this.updateMessage(aiMessage);
         }
