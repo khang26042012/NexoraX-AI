@@ -6,7 +6,8 @@ class NexoraXChat {
                 breaks: true,
                 gfm: true,
                 headerIds: false,
-                mangle: false
+                mangle: false,
+                sanitize: false
             });
         }
         
@@ -1651,15 +1652,68 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
             if (typeof content !== 'string') {
                 content = String(content || '');
             }
+            
+            // Auto-detect and wrap code blocks that aren't in triple backticks
+            content = this.preprocessCodeBlocks(content);
+            
             return marked.parse(content);
         } catch (error) {
             console.error('Markdown parsing error:', error);
             // Ensure content is a string before calling replace
             if (typeof content === 'string') {
-                return content.replace(/\n/g, '<br>');
+                return this.escapeHtml(content).replace(/\n/g, '<br>');
             }
             return String(content || '').replace(/\n/g, '<br>');
         }
+    }
+    
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    preprocessCodeBlocks(content) {
+        // Detect HTML/XML code blocks that aren't wrapped in backticks
+        const htmlPattern = /(<(!DOCTYPE|html|head|body|div|span|p|a|ul|ol|li|table|form|input|button|script|style)[^>]*>[\s\S]*?<\/[^>]+>)/gi;
+        
+        // Check if content contains HTML tags but no triple backticks
+        if (htmlPattern.test(content) && !content.includes('```')) {
+            // Find the start of HTML content
+            const lines = content.split('\n');
+            let htmlStartIndex = -1;
+            let beforeHtml = '';
+            let htmlContent = '';
+            let afterHtml = '';
+            
+            for (let i = 0; i < lines.length; i++) {
+                if (/<(!DOCTYPE|html|head|body|div|span|p|ul|ol|li|table|form|input|button|script|style)/i.test(lines[i])) {
+                    htmlStartIndex = i;
+                    break;
+                }
+            }
+            
+            if (htmlStartIndex >= 0) {
+                beforeHtml = lines.slice(0, htmlStartIndex).join('\n');
+                
+                // Find where HTML ends (usually at the last closing tag)
+                let htmlEndIndex = lines.length - 1;
+                for (let i = lines.length - 1; i >= htmlStartIndex; i--) {
+                    if (/<\/[^>]+>/.test(lines[i]) && lines[i].trim().length > 0) {
+                        htmlEndIndex = i;
+                        break;
+                    }
+                }
+                
+                htmlContent = lines.slice(htmlStartIndex, htmlEndIndex + 1).join('\n');
+                afterHtml = lines.slice(htmlEndIndex + 1).join('\n');
+                
+                // Wrap HTML in code block
+                return beforeHtml + '\n\n```html\n' + htmlContent + '\n```\n\n' + afterHtml;
+            }
+        }
+        
+        return content;
     }
     
     renderChatList() {
