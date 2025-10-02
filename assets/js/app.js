@@ -788,6 +788,9 @@ class NexoraXChat {
             } else if (this.selectedModel === 'gemini-search') {
                 // Use LLM7.io for Gemini Search
                 return await this.getLLM7GeminiSearchResponse(message, aiMessage);
+            } else if (this.selectedModel === 'image-gen') {
+                // Use Pollinations AI for image generation
+                return await this.getImageGenerationResponse(message, aiMessage);
             } else {
                 // Use standard Gemini API for nexorax1
                 return await this.getGeminiResponse(message, aiMessage, files);
@@ -933,6 +936,107 @@ class NexoraXChat {
                 errorMessage += ` Chi tiết: ${error.message}`;
             }
             errorMessage += ' Vui lòng thử lại hoặc chọn model khác.';
+            
+            aiMessage.content = errorMessage;
+            aiMessage.isTyping = false;
+            this.updateMessage(aiMessage);
+        }
+    }
+
+    async getImageGenerationResponse(message, aiMessage) {
+        try {
+            // Step 1: Enhance prompt with AI (expand Vietnamese abbreviations)
+            aiMessage.content = '🔄 Đang xử lý prompt với AI (nhận diện viết tắt tiếng Việt)...';
+            this.updateMessage(aiMessage);
+            
+            const enhanceUrl = '/api/enhance-prompt';
+            const enhanceResponse = await fetch(enhanceUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompt: message }),
+                signal: AbortSignal.timeout(60000)
+            });
+            
+            if (!enhanceResponse.ok) {
+                const errorData = await enhanceResponse.json();
+                throw new Error(errorData.error || 'HTTP error! status: ' + enhanceResponse.status);
+            }
+            
+            const enhanceData = await enhanceResponse.json();
+            const enhancedPrompt = enhanceData.enhanced_prompt || message;
+            
+            console.log('Prompt enhanced:', {
+                original: message,
+                enhanced: enhancedPrompt
+            });
+            
+            // Step 2: Generate image with Pollinations AI
+            aiMessage.content = `✅ Prompt đã xử lý: "${enhancedPrompt}"\n\n🎨 Đang tạo ảnh với Pollinations AI...`;
+            this.updateMessage(aiMessage);
+            
+            const genUrl = '/api/pollinations/generate';
+            const genResponse = await fetch(genUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    prompt: enhancedPrompt,
+                    width: 1920,
+                    height: 1080
+                }),
+                signal: AbortSignal.timeout(120000)
+            });
+            
+            if (!genResponse.ok) {
+                const errorData = await genResponse.json();
+                throw new Error(errorData.error || 'HTTP error! status: ' + genResponse.status);
+            }
+            
+            const genData = await genResponse.json();
+            console.log('Image generated:', genData);
+            
+            // Step 3: Display image
+            const imageId = 'img-' + Date.now();
+            const imageHtml = `
+                <div class="image-generation-result">
+                    <div class="relative group">
+                        <img src="${genData.image_url}" 
+                             alt="Generated image" 
+                             id="${imageId}"
+                             class="w-full rounded-lg shadow-lg cursor-pointer transition-all"
+                             loading="lazy">
+                        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 rounded-lg transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                            <a href="${genData.image_url}" 
+                               download="nexorax-generated-image.jpg"
+                               class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all transform hover:scale-105 shadow-xl">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                Tải xuống
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            aiMessage.content = imageHtml;
+            aiMessage.isTyping = false;
+            aiMessage.isHtml = true; // Flag to render as HTML
+            this.updateMessage(aiMessage);
+            
+        } catch (error) {
+            console.error('Image Generation Error:', error);
+            
+            let errorMessage = 'Xin lỗi, đã có lỗi xảy ra khi tạo ảnh. ';
+            if (error.message) {
+                errorMessage += `Chi tiết: ${error.message} `;
+            }
+            errorMessage += 'Vui lòng thử lại sau.';
             
             aiMessage.content = errorMessage;
             aiMessage.isTyping = false;
@@ -1375,11 +1479,16 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
             // AI message - ChatGPT style with avatar on left, no bubble
             const aiAvatarContent = '<img src="assets/images/nexorax-logo.svg" alt="AI" class="w-8 h-8 object-contain">';
             
+            // Check if message should be rendered as raw HTML (e.g., for images)
+            const contentHtml = message.isTyping 
+                ? '<div class="ai-loading"><span class="ai-loading-text">Đang suy nghĩ</span><div class="ai-loading-dots"><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div></div></div>'
+                : (message.isHtml ? message.content : this.formatMessage(message.content));
+            
             messageDiv.innerHTML = '<div class="message-wrapper">' +
                 '<div class="avatar ai-avatar">' + aiAvatarContent + '</div>' +
                 '<div class="message-content">' +
                 filesHtml +
-                (message.isTyping ? '<div class="ai-loading"><span class="ai-loading-text">Đang suy nghĩ</span><div class="ai-loading-dots"><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div></div></div>' : this.formatMessage(message.content)) +
+                contentHtml +
                 '</div>' +
                 '</div>';
         }
@@ -1434,8 +1543,11 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
             if (message.isTyping) {
                 contentElement.innerHTML = '<div class="ai-loading"><span class="ai-loading-text">Đang suy nghĩ</span><div class="ai-loading-dots"><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div></div></div>';
             } else {
-                // If this is an AI message and has content, use typing animation
-                if (message.role === 'ai' && message.content && !message.isFinalized) {
+                // Check if message should be rendered as raw HTML (e.g., for images)
+                if (message.isHtml) {
+                    contentElement.innerHTML = message.content;
+                } else if (message.role === 'ai' && message.content && !message.isFinalized) {
+                    // If this is an AI message and has content, use typing animation
                     this.typewriterEffect(contentElement, message.content, () => {
                         message.isFinalized = true;
                     });

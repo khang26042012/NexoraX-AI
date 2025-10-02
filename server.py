@@ -98,6 +98,10 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.handle_llm7_gpt5mini()
         elif self.path == '/api/llm7/gemini-search':
             self.handle_llm7_gemini_search()
+        elif self.path == '/api/enhance-prompt':
+            self.handle_enhance_prompt()
+        elif self.path == '/api/pollinations/generate':
+            self.handle_pollinations_generate()
         else:
             self._send_json_error(404, "API endpoint không tồn tại", "NOT_FOUND")
 
@@ -603,6 +607,215 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self._send_json_error(400, "Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra định dạng JSON.", "INVALID_JSON")
         except Exception as e:
             logger.error(f"LLM7 Gemini-search error: {e}")
+            logger.error(f"Exception type: {type(e)}")
+            logger.error(f"Exception args: {e.args}")
+            self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
+
+    def handle_enhance_prompt(self):
+        """Enhance prompt using Gemini AI to expand Vietnamese abbreviations and improve quality"""
+        try:
+            # Get Gemini API key
+            gemini_key = get_api_key('gemini')
+            if not gemini_key or gemini_key == "your_gemini_api_key_here":
+                self._send_json_error(500, 
+                    "Gemini API key chưa được cấu hình. Vui lòng thêm GEMINI_API_KEY vào environment variables.",
+                    "API_KEY_MISSING")
+                return
+            
+            # Read request body
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            request_data = json.loads(post_data.decode('utf-8'))
+            
+            # Extract user prompt
+            user_prompt = request_data.get('prompt', '')
+            if not user_prompt:
+                self._send_json_error(400, "Prompt không được để trống", "MISSING_PROMPT")
+                return
+            
+            # Create system prompt for Vietnamese abbreviation expansion and enhancement
+            system_prompt = """Bạn là một AI chuyên xử lý tiếng Việt và mở rộng các từ viết tắt phổ biến ở Việt Nam.
+
+Nhiệm vụ của bạn:
+1. Nhận diện và mở rộng các viết tắt tiếng Việt phổ biến, ví dụ:
+   - TP.HCM, TPHCM, SG → Thành phố Hồ Chí Minh (Ho Chi Minh City)
+   - HN → Hà Nội (Hanoi)
+   - ĐHQG → Đại học Quốc gia (National University)
+   - ĐHBK → Đại học Bách Khoa (Polytechnic University)
+   - ĐH → Đại học (University)
+   - TT → Trung tâm (Center)
+   - BV → Bệnh viện (Hospital)
+   - CV → Công viên (Park)
+   - TTTM → Trung tâm thương mại (Shopping Mall)
+   - K, ko → không (no/not)
+   - bn, b → bạn (you/friend)
+   - vs, vc → với (with)
+   - đc, dc → được (can/able)
+   - t → tôi (I/me)
+   - m → mày (you - informal)
+   - trc → trước (before)
+   - r → rồi (already)
+
+2. Giữ nguyên các từ tiếng Anh hoặc các thuật ngữ chuyên môn
+3. Cải thiện prompt để phù hợp với AI tạo ảnh (mô tả rõ ràng, chi tiết hơn)
+4. Chỉ trả về prompt đã được cải thiện, KHÔNG thêm giải thích hay văn bản khác
+
+Ví dụ:
+Input: "Tạo ảnh TPHCM ban đêm đẹp"
+Output: "Create an image of Ho Chi Minh City at night, beautiful cityscape with neon lights and skyscrapers"
+
+Input: "Vẽ ĐHQG HN đẹp"
+Output: "Draw a beautiful image of Vietnam National University Hanoi campus with modern buildings and green trees"
+
+Input: "ảnh BV Chợ Rẫy"
+Output: "Image of Cho Ray Hospital in Ho Chi Minh City, Vietnam, modern medical facility"
+
+Hãy xử lý prompt sau:"""
+            
+            # Build Gemini API URL
+            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_key}"
+            
+            # Prepare Gemini request
+            gemini_payload = {
+                "contents": [{
+                    "parts": [{
+                        "text": f"{system_prompt}\n\n{user_prompt}"
+                    }]
+                }],
+                "generationConfig": {
+                    "temperature": 0.3,  # Lower temperature for more consistent expansion
+                    "topK": 20,
+                    "topP": 0.8,
+                    "maxOutputTokens": 500,
+                }
+            }
+            
+            gemini_request = urllib.request.Request(
+                gemini_url,
+                data=json.dumps(gemini_payload).encode('utf-8'),
+                headers={'Content-Type': 'application/json'}
+            )
+            
+            with urllib.request.urlopen(gemini_request, timeout=REQUEST_TIMEOUT) as response:
+                gemini_response = response.read().decode('utf-8')
+                gemini_data = json.loads(gemini_response)
+            
+            # Extract enhanced prompt
+            enhanced_prompt = ""
+            if "candidates" in gemini_data and len(gemini_data["candidates"]) > 0:
+                candidate = gemini_data["candidates"][0]
+                if "content" in candidate and "parts" in candidate["content"]:
+                    enhanced_prompt = candidate["content"]["parts"][0].get("text", "")
+            
+            if not enhanced_prompt:
+                enhanced_prompt = user_prompt  # Fallback to original
+            
+            # Return response to client
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self._send_cors_headers()
+            self.end_headers()
+            
+            response_json = json.dumps({
+                "original_prompt": user_prompt,
+                "enhanced_prompt": enhanced_prompt.strip(),
+                "success": True
+            }, ensure_ascii=False)
+            self.wfile.write(response_json.encode('utf-8'))
+            
+            logger.info(f"Prompt enhanced: '{user_prompt}' -> '{enhanced_prompt.strip()}'")
+            
+        except urllib.error.HTTPError as e:
+            try:
+                error_body = e.read().decode('utf-8')
+                self._send_json_error(e.code, f"Gemini API lỗi: {error_body}", "UPSTREAM_ERROR")
+            except:
+                self._send_json_error(e.code, f"Gemini API lỗi: {e.reason}", "UPSTREAM_ERROR")
+        except urllib.error.URLError as e:
+            logger.error(f"Gemini connection error: {e}")
+            self._send_json_error(502, "Không thể kết nối đến Gemini API", "CONNECTION_ERROR")
+        except json.JSONDecodeError as e:
+            logger.error(f"Invalid JSON in enhance prompt request: {e}")
+            self._send_json_error(400, "Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra định dạng JSON.", "INVALID_JSON")
+        except Exception as e:
+            logger.error(f"Enhance prompt error: {e}")
+            logger.error(f"Exception type: {type(e)}")
+            logger.error(f"Exception args: {e.args}")
+            self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
+
+    def handle_pollinations_generate(self):
+        """Generate image using Pollinations AI - completely free, no API key needed"""
+        try:
+            # Read request body
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            request_data = json.loads(post_data.decode('utf-8'))
+            
+            # Extract parameters
+            prompt = request_data.get('prompt', '')
+            width = request_data.get('width', 1920)
+            height = request_data.get('height', 1080)
+            
+            if not prompt:
+                self._send_json_error(400, "Prompt không được để trống", "MISSING_PROMPT")
+                return
+            
+            # Build Pollinations AI URL
+            # Using flux model for high quality
+            pollinations_url = f"https://image.pollinations.ai/prompt/{urllib.parse.quote(prompt)}"
+            params = {
+                'width': width,
+                'height': height,
+                'nologo': 'true',
+                'enhance': 'true',
+                'model': 'flux'
+            }
+            
+            full_url = f"{pollinations_url}?{urllib.parse.urlencode(params)}"
+            
+            logger.info(f"Generating image with Pollinations AI: {prompt[:50]}...")
+            
+            # Fetch image from Pollinations API
+            pollinations_request = urllib.request.Request(
+                full_url,
+                headers={
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                }
+            )
+            with urllib.request.urlopen(pollinations_request, timeout=60) as response:
+                image_data = response.read()
+            
+            # Return image URL and status
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self._send_cors_headers()
+            self.end_headers()
+            
+            response_json = json.dumps({
+                "success": True,
+                "image_url": full_url,
+                "prompt": prompt,
+                "dimensions": f"{width}x{height}",
+                "model": "flux"
+            }, ensure_ascii=False)
+            self.wfile.write(response_json.encode('utf-8'))
+            
+            logger.info(f"Image generated successfully: {width}x{height}")
+            
+        except urllib.error.HTTPError as e:
+            try:
+                error_body = e.read().decode('utf-8')
+                self._send_json_error(e.code, f"Pollinations AI lỗi: {error_body}", "UPSTREAM_ERROR")
+            except:
+                self._send_json_error(e.code, f"Pollinations AI lỗi: {e.reason}", "UPSTREAM_ERROR")
+        except urllib.error.URLError as e:
+            logger.error(f"Pollinations connection error: {e}")
+            self._send_json_error(502, "Không thể kết nối đến Pollinations AI", "CONNECTION_ERROR")
+        except json.JSONDecodeError as e:
+            logger.error(f"Invalid JSON in Pollinations request: {e}")
+            self._send_json_error(400, "Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra định dạng JSON.", "INVALID_JSON")
+        except Exception as e:
+            logger.error(f"Pollinations generate error: {e}")
             logger.error(f"Exception type: {type(e)}")
             logger.error(f"Exception args: {e.args}")
             self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
