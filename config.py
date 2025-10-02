@@ -21,6 +21,11 @@ GEMINI_API_KEY = "AIzaSyDhWAco4k7ajmzonA97uoRgVJvxfQblJFI"
 # Environment variable SERPAPI_API_KEY will override this if set
 SERPAPI_API_KEY = "e5e04b97a6f406a53f9430701e795fb8d306cdc7514a8d68bbbc6c6b0a4d4a98"
 
+# LLM7.io API Key
+# API miễn phí cho nhiều mô hình AI: https://llm7.io/
+# Environment variable LLM7_API_KEY will override this if set
+LLM7_API_KEY = "w26Cy6CirUKgru/Y1i5NVIx2ceGAxNkfBwELpSUOgtX7ekat8cKXAQaacV0J9L9uxO8JJn5miGap4JcvWFU7OkyogAmn12R3jYNpVLQ9DbVKcrQbL/Y9s8BV0QlKUlOrdzPf"
+
 
 # ===========================================
 # SERVER CONFIGURATION
@@ -92,6 +97,8 @@ def get_api_key(service):
         return os.getenv('GEMINI_API_KEY', GEMINI_API_KEY)
     elif service.lower() == "serpapi":
         return os.getenv('SERPAPI_API_KEY', SERPAPI_API_KEY)
+    elif service.lower() == "llm7":
+        return os.getenv('LLM7_API_KEY', LLM7_API_KEY)
     else:
         return None
 

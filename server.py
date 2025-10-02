@@ -96,6 +96,10 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.handle_search_with_ai()
         elif self.path == '/api/puter':
             self.handle_puter_proxy()
+        elif self.path == '/api/llm7/gpt-5-mini':
+            self.handle_llm7_gpt5mini()
+        elif self.path == '/api/llm7/gemini-search':
+            self.handle_llm7_gemini_search()
         else:
             self._send_json_error(404, "API endpoint không tồn tại", "NOT_FOUND")
 
@@ -562,6 +566,180 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self._send_json_error(400, "Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra định dạng JSON.", "INVALID_JSON")
         except Exception as e:
             logger.error(f"Puter proxy error: {e}")
+            logger.error(f"Exception type: {type(e)}")
+            logger.error(f"Exception args: {e.args}")
+            self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
+
+    def handle_llm7_gpt5mini(self):
+        """Handle GPT-5-mini requests via LLM7.io"""
+        try:
+            # Get API key from config
+            api_key = get_api_key('llm7')
+            logger.info(f"LLM7 API Key configured: {'Yes' if api_key else 'No'}")
+            if not api_key:
+                self._send_json_error(500, 
+                    "LLM7 API key chưa được cấu hình. Vui lòng kiểm tra config.py",
+                    "API_KEY_MISSING")
+                return
+            
+            # Read request body
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            request_data = json.loads(post_data.decode('utf-8'))
+            
+            # Extract message from request
+            message = request_data.get('message', '')
+            if not message:
+                self._send_json_error(400, "Message không được để trống", "MISSING_MESSAGE")
+                return
+            
+            # Build LLM7.io API URL for GPT-5-mini
+            llm7_url = "https://api.llm7.io/v1/chat/completions"
+            llm7_headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {api_key}"
+            }
+            llm7_payload = {
+                "model": "gpt-5-mini",
+                "messages": [
+                    {"role": "user", "content": message}
+                ],
+                "temperature": 0.7
+            }
+            
+            # Make request to LLM7.io
+            llm7_request = urllib.request.Request(
+                llm7_url,
+                data=json.dumps(llm7_payload).encode('utf-8'),
+                headers=llm7_headers
+            )
+            
+            with urllib.request.urlopen(llm7_request, timeout=REQUEST_TIMEOUT) as response:
+                llm7_response = response.read().decode('utf-8')
+                llm7_data = json.loads(llm7_response)
+            
+            # Extract response
+            reply = ""
+            if "choices" in llm7_data and len(llm7_data["choices"]) > 0:
+                reply = llm7_data["choices"][0]["message"]["content"]
+            else:
+                reply = str(llm7_data)
+            
+            # Return response to client
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self._send_cors_headers()
+            self.end_headers()
+            
+            response_json = json.dumps({
+                "reply": reply,
+                "model": "gpt-5-mini"
+            }, ensure_ascii=False)
+            self.wfile.write(response_json.encode('utf-8'))
+            
+            logger.info("LLM7 GPT-5-mini completed successfully")
+            
+        except urllib.error.HTTPError as e:
+            try:
+                error_body = e.read().decode('utf-8')
+                self._send_json_error(e.code, f"LLM7 API lỗi: {error_body}", "UPSTREAM_ERROR")
+            except:
+                self._send_json_error(e.code, f"LLM7 API lỗi: {e.reason}", "UPSTREAM_ERROR")
+        except urllib.error.URLError as e:
+            logger.error(f"LLM7 connection error: {e}")
+            self._send_json_error(502, "Không thể kết nối đến LLM7 API", "CONNECTION_ERROR")
+        except json.JSONDecodeError as e:
+            logger.error(f"Invalid JSON in LLM7 request: {e}")
+            self._send_json_error(400, "Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra định dạng JSON.", "INVALID_JSON")
+        except Exception as e:
+            logger.error(f"LLM7 GPT-5-mini error: {e}")
+            logger.error(f"Exception type: {type(e)}")
+            logger.error(f"Exception args: {e.args}")
+            self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
+
+    def handle_llm7_gemini_search(self):
+        """Handle Gemini-search requests via LLM7.io"""
+        try:
+            # Get API key from config
+            api_key = get_api_key('llm7')
+            logger.info(f"LLM7 API Key configured: {'Yes' if api_key else 'No'}")
+            if not api_key:
+                self._send_json_error(500, 
+                    "LLM7 API key chưa được cấu hình. Vui lòng kiểm tra config.py",
+                    "API_KEY_MISSING")
+                return
+            
+            # Read request body
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            request_data = json.loads(post_data.decode('utf-8'))
+            
+            # Extract message from request
+            message = request_data.get('message', '')
+            if not message:
+                self._send_json_error(400, "Message không được để trống", "MISSING_MESSAGE")
+                return
+            
+            # Build LLM7.io API URL for Gemini-search
+            llm7_url = "https://api.llm7.io/v1/chat/completions"
+            llm7_headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {api_key}"
+            }
+            llm7_payload = {
+                "model": "gemini-search",
+                "messages": [
+                    {"role": "user", "content": message}
+                ],
+                "temperature": 0.7
+            }
+            
+            # Make request to LLM7.io
+            llm7_request = urllib.request.Request(
+                llm7_url,
+                data=json.dumps(llm7_payload).encode('utf-8'),
+                headers=llm7_headers
+            )
+            
+            with urllib.request.urlopen(llm7_request, timeout=REQUEST_TIMEOUT) as response:
+                llm7_response = response.read().decode('utf-8')
+                llm7_data = json.loads(llm7_response)
+            
+            # Extract response
+            reply = ""
+            if "choices" in llm7_data and len(llm7_data["choices"]) > 0:
+                reply = llm7_data["choices"][0]["message"]["content"]
+            else:
+                reply = str(llm7_data)
+            
+            # Return response to client
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self._send_cors_headers()
+            self.end_headers()
+            
+            response_json = json.dumps({
+                "reply": reply,
+                "model": "gemini-search"
+            }, ensure_ascii=False)
+            self.wfile.write(response_json.encode('utf-8'))
+            
+            logger.info("LLM7 Gemini-search completed successfully")
+            
+        except urllib.error.HTTPError as e:
+            try:
+                error_body = e.read().decode('utf-8')
+                self._send_json_error(e.code, f"LLM7 API lỗi: {error_body}", "UPSTREAM_ERROR")
+            except:
+                self._send_json_error(e.code, f"LLM7 API lỗi: {e.reason}", "UPSTREAM_ERROR")
+        except urllib.error.URLError as e:
+            logger.error(f"LLM7 connection error: {e}")
+            self._send_json_error(502, "Không thể kết nối đến LLM7 API", "CONNECTION_ERROR")
+        except json.JSONDecodeError as e:
+            logger.error(f"Invalid JSON in LLM7 request: {e}")
+            self._send_json_error(400, "Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra định dạng JSON.", "INVALID_JSON")
+        except Exception as e:
+            logger.error(f"LLM7 Gemini-search error: {e}")
             logger.error(f"Exception type: {type(e)}")
             logger.error(f"Exception args: {e.args}")
             self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")

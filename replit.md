@@ -4,7 +4,16 @@
 NexoraX AI is a modern Vietnamese AI chat application that provides conversations using Google Gemini language model, search-enhanced AI, and Puter.ai integration for GPT-5 and Claude models. Successfully configured for Replit environment.
 
 ## Recent Changes
-- **October 2, 2025 (Latest - Fresh GitHub Import)**: Successfully Configured for Replit
+- **October 2, 2025 (Latest - Added LLM7.io Models)**: Integrated GPT-5 Mini and Gemini Search
+  - **New Models Added**: 
+    - ✅ GPT-5 Mini (via LLM7.io) - Free, fast, high-quality responses
+    - ✅ Gemini Search (via LLM7.io) - Gemini with real-time web search
+  - **API Configuration**: LLM7 API key added to config.py (not in Replit secrets)
+  - **Backend Endpoints**: Added /api/llm7/gpt-5-mini and /api/llm7/gemini-search
+  - **Frontend Updates**: Both models now appear in model selector dropdown
+  - **Total Models**: 6 AI models available (Gemini, Search, GPT-5, Claude, GPT-5 Mini, Gemini Search)
+  - **All Existing APIs Preserved**: No changes to existing Gemini, SerpAPI, or Puter APIs
+- **October 2, 2025 (Earlier - Fresh GitHub Import)**: Successfully Configured for Replit
   - **Fresh Import Completed**: GitHub repository cloned and fully configured
   - **Environment**: Python 3.12.11 verified and working
   - **Server**: Running perfectly on port 5000 with 0.0.0.0 binding (Replit-compatible)
@@ -18,6 +27,8 @@ NexoraX AI is a modern Vietnamese AI chat application that provides conversation
     - ✅ Search with AI (backend proxy with SerpAPI)
     - ✅ GPT-5 Nano (client-side Puter.js)
     - ✅ Claude Sonnet 4.5 (client-side Puter.js)
+    - ✅ GPT-5 Mini (backend proxy via LLM7.io) - NEW
+    - ✅ Gemini Search (backend proxy via LLM7.io with real-time search) - NEW
   - **Testing**: UI confirmed working with screenshot verification
   - **Status**: ✅ Project fully operational and ready for deployment
 
@@ -70,14 +81,17 @@ NexoraX AI is a modern Vietnamese AI chat application that provides conversation
 ### API Integration
 - **Gemini API**: Configured with key in config.py (preserved as requested)
 - **SerpAPI**: Configured with key in config.py (preserved as requested)
+- **LLM7.io API**: Configured with key in config.py for GPT-5 Mini and Gemini Search
 - **Puter.ai**: Client-side SDK, no authentication required
-- **All API endpoints preserved**: No changes made to API structure
+- **All API endpoints preserved**: No changes made to existing API structure
 
 ### API Endpoints
 - `POST /api/gemini` - Gemini Flash 2.5 conversations
 - `POST /api/search` - SerpAPI web search
 - `POST /api/search-with-ai` - Search + AI combined responses
 - `POST /api/puter` - Puter.ai proxy (GPT-5, Claude)
+- `POST /api/llm7/gpt-5-mini` - GPT-5 Mini via LLM7.io (NEW)
+- `POST /api/llm7/gemini-search` - Gemini Search via LLM7.io (NEW)
 
 ### Deployment Notes
 - Configured for autoscale deployment (best for web apps)
@@ -98,5 +112,11 @@ NexoraX AI is a modern Vietnamese AI chat application that provides conversation
 ### User Can Now
 - Use the application immediately in development mode
 - Deploy to production with one click
-- All 4 AI models are working (Gemini, Search, GPT-5, Claude)
+- All 6 AI models are working:
+  - Gemini Flash 2.5
+  - Search with AI (NexoraX 2)
+  - GPT-5 Nano (via Puter.ai)
+  - Claude Sonnet 4.5 (via Puter.ai)
+  - GPT-5 Mini (via LLM7.io) - NEW
+  - Gemini Search (via LLM7.io) - NEW
 - Share the Replit URL with others

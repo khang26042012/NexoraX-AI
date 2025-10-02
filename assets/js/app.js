@@ -811,6 +811,12 @@ class NexoraXChat {
             } else if (this.selectedModel === 'gpt-5' || this.selectedModel === 'claude-3.7') {
                 // Use Puter.ai for GPT-5 and Claude 3.7
                 return await this.getPuterAIResponse(message, aiMessage);
+            } else if (this.selectedModel === 'gpt-5-mini') {
+                // Use LLM7.io for GPT-5 Mini
+                return await this.getLLM7GPT5MiniResponse(message, aiMessage);
+            } else if (this.selectedModel === 'gemini-search') {
+                // Use LLM7.io for Gemini Search
+                return await this.getLLM7GeminiSearchResponse(message, aiMessage);
             } else {
                 // Use standard Gemini API for nexorax1
                 return await this.getGeminiResponse(message, aiMessage, files);
@@ -992,6 +998,115 @@ class NexoraXChat {
             });
             
             let errorMessage = `Xin lỗi, đã có lỗi xảy ra khi gọi ${this.selectedModel}.`;
+            if (error.message) {
+                errorMessage += ` Chi tiết: ${error.message}`;
+            }
+            errorMessage += ' Vui lòng thử lại hoặc chọn model khác.';
+            
+            aiMessage.content = errorMessage;
+            aiMessage.isTyping = false;
+            this.updateMessage(aiMessage);
+        }
+    }
+
+    async getLLM7GPT5MiniResponse(message, aiMessage) {
+        try {
+            const url = '/api/llm7/gpt-5-mini';
+            
+            const requestBody = {
+                message: message
+            };
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody),
+                signal: AbortSignal.timeout(120000)
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'HTTP error! status: ' + response.status);
+            }
+            
+            const data = await response.json();
+            console.log('LLM7 GPT-5 Mini response:', data);
+            
+            // Extract response
+            let responseText = '';
+            if (data.reply) {
+                responseText = data.reply;
+            } else {
+                responseText = JSON.stringify(data);
+            }
+            
+            // Update AI message with response
+            aiMessage.content = responseText;
+            aiMessage.isTyping = false;
+            this.updateMessage(aiMessage);
+            
+        } catch (error) {
+            console.error('LLM7 GPT-5 Mini Error:', error);
+            
+            let errorMessage = 'Xin lỗi, đã có lỗi xảy ra khi gọi GPT-5 Mini.';
+            if (error.message) {
+                errorMessage += ` Chi tiết: ${error.message}`;
+            }
+            errorMessage += ' Vui lòng thử lại hoặc chọn model khác.';
+            
+            aiMessage.content = errorMessage;
+            aiMessage.isTyping = false;
+            this.updateMessage(aiMessage);
+        }
+    }
+
+    async getLLM7GeminiSearchResponse(message, aiMessage) {
+        try {
+            const url = '/api/llm7/gemini-search';
+            
+            const requestBody = {
+                message: message
+            };
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody),
+                signal: AbortSignal.timeout(120000)
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'HTTP error! status: ' + response.status);
+            }
+            
+            const data = await response.json();
+            console.log('LLM7 Gemini Search response:', data);
+            
+            // Extract response
+            let responseText = '';
+            if (data.reply) {
+                responseText = data.reply;
+            } else {
+                responseText = JSON.stringify(data);
+            }
+            
+            // Add search indicator
+            responseText += '\n\n*🔍 Sử dụng Gemini Search với tìm kiếm thời gian thực*';
+            
+            // Update AI message with response
+            aiMessage.content = responseText;
+            aiMessage.isTyping = false;
+            this.updateMessage(aiMessage);
+            
+        } catch (error) {
+            console.error('LLM7 Gemini Search Error:', error);
+            
+            let errorMessage = 'Xin lỗi, đã có lỗi xảy ra khi gọi Gemini Search.';
             if (error.message) {
                 errorMessage += ` Chi tiết: ${error.message}`;
             }
