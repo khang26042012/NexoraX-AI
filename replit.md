@@ -4,6 +4,17 @@
 NexoraX AI is a modern Vietnamese AI chat application that provides conversations using Google Gemini language model. Successfully imported and configured for Replit environment on September 18, 2025.
 
 ## Recent Changes
+- **October 2, 2025 (Latest)**: Attempted Puter.ai Backend Proxy - Not Feasible
+  - **Investigation**: Attempted to move Puter.ai authentication to backend proxy
+  - **Finding**: Puter.js is designed as **client-side only** SDK - no REST API for backend auth
+  - **Decision**: Keep Puter.js client-side with automatic temp user creation (no login required)
+  - **Current State**: Puter.ai works perfectly client-side without requiring user authentication
+  - **API Keys Unchanged**: Gemini and SerpAPI remain on backend proxy as before
+  - **Models Available**: 
+    - Gemini Flash 2.5 (backend proxy) ✅
+    - Search with AI (backend proxy) ✅
+    - GPT-5 Nano (client-side Puter.js) ✅
+    - Claude Sonnet 4.5 (client-side Puter.js) ✅
 - **October 2, 2025 (Latest - Fresh Import)**: GitHub Repository Successfully Re-imported to Replit
   - **Fresh Import Completed**: Successfully cloned and configured GitHub repository in Replit
   - **Environment**: Python 3.12.11 verified and working
