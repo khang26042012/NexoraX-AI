@@ -52,26 +52,18 @@ class NexoraXChat {
     }
     
     async initializePuterAuth() {
-        // Check Puter.ai authentication status silently
+        // Check Puter.ai SDK availability (no authentication needed!)
         try {
             // Check if Puter.ai SDK is loaded
-            if (typeof puter === 'undefined' || !puter.auth) {
+            if (typeof puter === 'undefined' || !puter.ai) {
                 console.log('Puter.ai SDK not loaded yet');
                 this.puterInitialized = false;
                 return;
             }
             
-            // Check if already signed in (no redirect if already authenticated)
-            if (puter.auth.isSignedIn()) {
-                console.log('Puter.ai: Already signed in');
-                this.puterInitialized = true;
-                return;
-            }
-            
-            // Not signed in - will need to sign in on first use
-            // Don't auto-signin here to avoid redirect on page load
-            console.log('Puter.ai: Not signed in yet (will signin when needed)');
-            this.puterInitialized = false;
+            // Puter.js works without authentication - no sign in required!
+            console.log('Puter.ai SDK ready - no authentication needed');
+            this.puterInitialized = true;
         } catch (error) {
             // Silent fail - user can still use Gemini and Search models
             console.log('Puter.ai: Check failed:', error.message);
@@ -925,20 +917,7 @@ class NexoraXChat {
                 throw new Error('Puter.ai SDK chưa được tải. Vui lòng tải lại trang.');
             }
             
-            // Check if signed in, if not sign in once (this will redirect/popup once only)
-            if (!puter.auth.isSignedIn()) {
-                console.log('Puter.ai: Not signed in, signing in now...');
-                try {
-                    // Sign in (this will redirect to puter.com once, then cache auth)
-                    await puter.auth.signIn();
-                    this.puterInitialized = true;
-                    console.log('Puter.ai: Signed in successfully');
-                } catch (signInError) {
-                    console.error('Puter.ai: Sign in failed:', signInError);
-                    throw new Error('Không thể đăng nhập Puter.ai. Vui lòng thử lại sau.');
-                }
-            }
-            
+            // No authentication needed! Puter.js works serverless without sign in
             // Map model names to Puter.ai model IDs
             const modelMapping = {
                 'gpt-5': 'gpt-5-nano',
@@ -951,10 +930,10 @@ class NexoraXChat {
                 throw new Error('Invalid Puter.ai model selected');
             }
             
-            console.log(`Using Puter.ai model: ${puterModel}`);
+            console.log(`Using Puter.ai model: ${puterModel} (no authentication required)`);
             console.log(`Message: ${message}`);
             
-            // Call Puter.ai API
+            // Call Puter.ai API directly - no sign in needed!
             const response = await puter.ai.chat(message, {
                 model: puterModel
             });
