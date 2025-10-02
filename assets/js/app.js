@@ -18,9 +18,6 @@ class NexoraXChat {
         this.isRecording = false;
         this.currentActiveInput = null;
         
-        // Puter.ai initialization flag
-        this.puterInitialized = false;
-        
         this.initializeElements();
         this.setupEventListeners();
         this.initializeSpeechRecognition();
@@ -28,9 +25,6 @@ class NexoraXChat {
         this.loadModelSelection();
         this.initializeDesktopSidebar();
         this.renderChatList();
-        
-        // Initialize Puter.ai silently in the background (no redirect)
-        this.initializePuterAuth();
     }
     
     migrateLocalStorageKeys() {
@@ -49,26 +43,6 @@ class NexoraXChat {
                 localStorage.removeItem(oldKey);
             }
         });
-    }
-    
-    async initializePuterAuth() {
-        // Check Puter.ai SDK availability (no authentication needed!)
-        try {
-            // Check if Puter.ai SDK is loaded
-            if (typeof puter === 'undefined' || !puter.ai) {
-                console.log('Puter.ai SDK not loaded yet');
-                this.puterInitialized = false;
-                return;
-            }
-            
-            // Puter.js works without authentication - no sign in required!
-            console.log('Puter.ai SDK ready - no authentication needed');
-            this.puterInitialized = true;
-        } catch (error) {
-            // Silent fail - user can still use Gemini and Search models
-            console.log('Puter.ai: Check failed:', error.message);
-            this.puterInitialized = false;
-        }
     }
     
     initializeElements() {
@@ -808,9 +782,6 @@ class NexoraXChat {
             if (this.selectedModel === 'nexorax2') {
                 // Use search-enhanced AI model (SerpAPI + Gemini)
                 return await this.getSearchEnhancedResponse(message, aiMessage);
-            } else if (this.selectedModel === 'gpt-5' || this.selectedModel === 'claude-3.7') {
-                // Use Puter.ai for GPT-5 and Claude 3.7
-                return await this.getPuterAIResponse(message, aiMessage);
             } else if (this.selectedModel === 'gpt-5-mini') {
                 // Use LLM7.io for GPT-5 Mini
                 return await this.getLLM7GPT5MiniResponse(message, aiMessage);
@@ -914,99 +885,6 @@ class NexoraXChat {
         
         // If query is empty after removing keywords, use original message
         return query || normalized;
-    }
-
-    async getPuterAIResponse(message, aiMessage) {
-        try {
-            // Check if Puter.ai SDK is available
-            if (typeof puter === 'undefined' || !puter.ai) {
-                throw new Error('Puter.ai SDK chưa được tải. Vui lòng tải lại trang.');
-            }
-            
-            // Silently create temporary user if not signed in (no popup!)
-            if (!puter.auth.isSignedIn()) {
-                try {
-                    // Create temp user silently without popup
-                    await puter.auth.signIn({ attempt_temp_user_creation: true });
-                    console.log('Puter: Temporary user created silently');
-                } catch (signInError) {
-                    // If temp user creation fails, continue without auth
-                    console.log('Puter: Temp user creation failed, trying without auth');
-                }
-            }
-            
-            // Map model names to Puter.ai model IDs
-            const modelMapping = {
-                'gpt-5': 'gpt-5-nano',
-                'claude-3.7': 'claude-sonnet-4.5'
-            };
-            
-            const puterModel = modelMapping[this.selectedModel];
-            
-            if (!puterModel) {
-                throw new Error('Invalid Puter.ai model selected');
-            }
-            
-            console.log(`Using Puter.ai model: ${puterModel}`);
-            console.log(`Message: ${message}`);
-            
-            // Call Puter.ai API
-            const response = await puter.ai.chat(message, {
-                model: puterModel
-            });
-            
-            console.log('Puter.ai response:', response);
-            console.log('Response type:', typeof response);
-            
-            // Handle response - Puter.ai returns different formats for different models
-            let responseText = '';
-            if (typeof response === 'string') {
-                responseText = response;
-            } else if (response && response.message && response.message.content) {
-                // Check if content is an array (Claude format) or string (GPT format)
-                if (Array.isArray(response.message.content)) {
-                    // Claude format: content is array with {type: "text", text: "..."}
-                    responseText = response.message.content
-                        .filter(item => item.type === 'text')
-                        .map(item => item.text)
-                        .join('\n');
-                } else if (typeof response.message.content === 'string') {
-                    // GPT format: content is a string
-                    responseText = response.message.content;
-                } else {
-                    responseText = JSON.stringify(response.message.content);
-                }
-            } else if (response && response.message) {
-                responseText = response.message;
-            } else if (response && response.text) {
-                responseText = response.text;
-            } else {
-                responseText = JSON.stringify(response);
-            }
-            
-            // Update AI message with response
-            aiMessage.content = responseText;
-            aiMessage.isTyping = false;
-            this.updateMessage(aiMessage);
-            
-        } catch (error) {
-            console.error('Puter.ai Error:', error);
-            console.error('Error details:', {
-                message: error.message,
-                stack: error.stack,
-                name: error.name
-            });
-            
-            let errorMessage = `Xin lỗi, đã có lỗi xảy ra khi gọi ${this.selectedModel}.`;
-            if (error.message) {
-                errorMessage += ` Chi tiết: ${error.message}`;
-            }
-            errorMessage += ' Vui lòng thử lại hoặc chọn model khác.';
-            
-            aiMessage.content = errorMessage;
-            aiMessage.isTyping = false;
-            this.updateMessage(aiMessage);
-        }
     }
 
     async getLLM7GPT5MiniResponse(message, aiMessage) {
@@ -1975,8 +1853,8 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
         const modelNames = {
             'nexorax1': 'Gemini Flash 2.5',
             'nexorax2': 'Tìm kiếm với AI',
-            'gpt-5': 'GPT-5 Nano',
-            'claude-3.7': 'Claude Sonnet 4.5'
+            'gpt-5-mini': 'GPT-5 Mini',
+            'gemini-search': 'Gemini Search'
         };
         
         this.showNotification('Đã chuyển sang ' + (modelNames[modelType] || modelType) + '!', 'success');
