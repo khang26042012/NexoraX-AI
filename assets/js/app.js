@@ -1,5 +1,15 @@
 class NexoraXChat {
     constructor() {
+        // Configure marked.js for better markdown rendering
+        if (typeof marked !== 'undefined') {
+            marked.setOptions({
+                breaks: true,
+                gfm: true,
+                headerIds: false,
+                mangle: false
+            });
+        }
+        
         // Migrate old NovaX localStorage keys to NexoraX keys (one-time migration)
         this.migrateLocalStorageKeys();
         

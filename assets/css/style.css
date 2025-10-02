@@ -738,12 +738,17 @@ body.dark-mode .ai-message .message-content {
 .message-content h1, .message-content h2, .message-content h3, 
 .message-content h4, .message-content h5, .message-content h6 {
     font-weight: bold;
-    margin: 0.5rem 0;
+    margin: 0.75rem 0 0.5rem 0;
 }
 
 .message-content h1 { font-size: 1.5rem; }
 .message-content h2 { font-size: 1.3rem; }
 .message-content h3 { font-size: 1.1rem; }
+
+.message-content p {
+    margin: 0.5rem 0;
+    line-height: 1.6;
+}
 
 .message-content strong, .message-content b {
     font-weight: bold;
@@ -754,12 +759,13 @@ body.dark-mode .ai-message .message-content {
 }
 
 .message-content ul, .message-content ol {
-    margin: 0.5rem 0;
+    margin: 0.75rem 0;
     padding-left: 1.5rem;
 }
 
 .message-content li {
     margin: 0.25rem 0;
+    line-height: 1.5;
 }
 
 .message-content code {
