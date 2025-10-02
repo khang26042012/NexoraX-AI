@@ -917,7 +917,18 @@ class NexoraXChat {
                 throw new Error('Puter.ai SDK chưa được tải. Vui lòng tải lại trang.');
             }
             
-            // No authentication needed! Puter.js works serverless without sign in
+            // Silently create temporary user if not signed in (no popup!)
+            if (!puter.auth.isSignedIn()) {
+                try {
+                    // Create temp user silently without popup
+                    await puter.auth.signIn({ attempt_temp_user_creation: true });
+                    console.log('Puter: Temporary user created silently');
+                } catch (signInError) {
+                    // If temp user creation fails, continue without auth
+                    console.log('Puter: Temp user creation failed, trying without auth');
+                }
+            }
+            
             // Map model names to Puter.ai model IDs
             const modelMapping = {
                 'gpt-5': 'gpt-5-nano',
@@ -930,10 +941,10 @@ class NexoraXChat {
                 throw new Error('Invalid Puter.ai model selected');
             }
             
-            console.log(`Using Puter.ai model: ${puterModel} (no authentication required)`);
+            console.log(`Using Puter.ai model: ${puterModel}`);
             console.log(`Message: ${message}`);
             
-            // Call Puter.ai API directly - no sign in needed!
+            // Call Puter.ai API
             const response = await puter.ai.chat(message, {
                 model: puterModel
             });
