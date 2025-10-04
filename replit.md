@@ -4,10 +4,30 @@
 NexoraX AI is a modern Vietnamese AI chat application that provides conversations using Google Gemini language model, search-enhanced AI, and LLM7.io integration for GPT-5 Mini and Gemini Search models. Successfully configured for Replit environment.
 
 ## Recent Changes
-- **October 2, 2025 (Latest - Removed Puter.ai)**: Cleaned up codebase by removing Puter.ai integration
+- **October 4, 2025 (Latest - Enhanced Markdown & Emoji)**: Major Markdown improvements and UI enhancements
+  - **Enhanced Markdown**: Added comprehensive GitHub Flavored Markdown support
+    - ✅ Syntax highlighting with Highlight.js (11.9.0)
+    - ✅ Tables with beautiful styling and dark mode support
+    - ✅ Task lists / checkboxes (interactive)
+    - ✅ Strikethrough, enhanced blockquotes, horizontal rules
+    - ✅ Keyboard tags (`<kbd>`), mark/highlight tags
+    - ✅ Subscript, superscript, definition lists
+    - ✅ Collapsible sections (`<details>/<summary>`)
+    - ✅ Auto-highlighting for code blocks without language specified
+    - ✅ XSS protection: HTML escaping in fallback paths
+  - **Emoji Models**: Added emoji icons to all AI models for better UX
+    - ✨ Gemini (Gemini Flash 2.5)
+    - 🔍 Search (Search with AI)
+    - 💬 GPT-5 Chat (via LLM7.io)
+    - 🌐 Gemini Search (via LLM7.io)
+    - 🎨 Image Generator
+  - **Fun AI Responses**: Added system prompts to make AI responses more lively with natural emoji usage
+  - **CSS Updates**: 350+ lines of new Markdown styles with full dark mode support
+  - **Security**: Fixed potential XSS vulnerability in highlight.js fallback
+- **October 2, 2025 (Earlier - Removed Puter.ai)**: Cleaned up codebase by removing Puter.ai integration
   - **Removed**: All Puter.ai related code (SDK, backend proxy, frontend handlers)
   - **Removed Models**: GPT-5 Nano and Claude Sonnet 4.5 (via Puter.ai)
-  - **Current Models**: 4 AI models available (Gemini, Search, GPT-5 Mini, Gemini Search)
+  - **Current Models**: 5 AI models available (Gemini, Search, GPT-5 Chat, Gemini Search, Image Generator)
   - **Code Cleanup**: Simplified codebase, removed unnecessary dependencies
 - **October 2, 2025 (Earlier - Added LLM7.io Models)**: Integrated GPT-5 Mini and Gemini Search
   - **New Models Added**: 
@@ -42,10 +62,11 @@ NexoraX AI is a modern Vietnamese AI chat application that provides conversation
 ## Project Architecture
 
 ### Technology Stack
-- **Frontend**: Vanilla JavaScript with TailwindCSS (CDN) and Marked.js (CDN)
+- **Frontend**: Vanilla JavaScript with TailwindCSS (CDN), Marked.js (CDN), and Highlight.js (CDN)
 - **Backend**: Python 3.12.11 HTTP server (built-in modules only)
 - **Port**: 5000 (single server for both static files and API proxy)
 - **Host**: 0.0.0.0 (configured for Replit proxy requirements)
+- **Markdown**: GitHub Flavored Markdown with syntax highlighting
 
 ### Current Configuration
 - **Workflow**: "NexoraX AI Server" running `python3 server.py`
@@ -70,7 +91,9 @@ NexoraX AI is a modern Vietnamese AI chat application that provides conversation
 ### Features Working
 ✅ Static file serving
 ✅ Responsive Vietnamese chat interface  
-✅ Multi-model AI support (Gemini, Search, GPT-5, Claude)
+✅ Multi-model AI support with emoji icons (5 models)
+✅ Enhanced Markdown rendering with syntax highlighting
+✅ Tables, checkboxes, and advanced formatting
 ✅ Chat history management
 ✅ Dark/light theme toggle
 ✅ Mobile-responsive sidebar
@@ -78,6 +101,7 @@ NexoraX AI is a modern Vietnamese AI chat application that provides conversation
 ✅ Error handling for missing API keys
 ✅ Server-side API proxy (secure)
 ✅ CORS configured for Replit iframe
+✅ XSS protection in Markdown rendering
 
 ### API Integration
 - **Gemini API**: Configured with key in config.py (preserved as requested)
@@ -110,9 +134,11 @@ NexoraX AI is a modern Vietnamese AI chat application that provides conversation
 ### User Can Now
 - Use the application immediately in development mode
 - Deploy to production with one click
-- All 4 AI models are working:
-  - Gemini Flash 2.5
-  - Search with AI (NexoraX 2)
-  - GPT-5 Mini (via LLM7.io)
-  - Gemini Search (via LLM7.io)
+- All 5 AI models are working with emoji icons:
+  - ✨ Gemini Flash 2.5
+  - 🔍 Search with AI (NexoraX 2)
+  - 💬 GPT-5 Chat (via LLM7.io)
+  - 🌐 Gemini Search (via LLM7.io)
+  - 🎨 Image Generator
+- Enjoy enhanced Markdown with syntax highlighting and rich formatting
 - Share the Replit URL with others
