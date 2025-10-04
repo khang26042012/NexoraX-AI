@@ -637,7 +637,7 @@ body.dark-mode .ai-loading-text {
 .user-message {
     display: flex;
     justify-content: flex-end;
-    margin-bottom: 12px;
+    margin-bottom: 6px;
     padding: 0 20px;
 }
 
@@ -663,7 +663,7 @@ body.dark-mode .ai-loading-text {
 .ai-message {
     display: flex;
     justify-content: flex-start;
-    margin-bottom: 12px;
+    margin-bottom: 6px;
     padding: 0 20px;
 }
 
