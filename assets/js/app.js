@@ -9,14 +9,21 @@ class NexoraXChat {
                 mangle: false,
                 sanitize: false,
                 highlight: function(code, lang) {
-                    if (lang && typeof hljs !== 'undefined' && hljs.getLanguage(lang)) {
+                    if (typeof hljs !== 'undefined') {
+                        if (lang && hljs.getLanguage(lang)) {
+                            try {
+                                return hljs.highlight(code, { language: lang }).value;
+                            } catch (err) {
+                                console.error('Highlight error:', err);
+                            }
+                        }
                         try {
-                            return hljs.highlight(code, { language: lang }).value;
+                            return hljs.highlightAuto(code).value;
                         } catch (err) {
-                            console.error('Highlight error:', err);
+                            console.error('Auto-highlight error:', err);
                         }
                     }
-                    return code;
+                    return code.replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 }
             });
         }
