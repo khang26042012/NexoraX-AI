@@ -793,15 +793,12 @@ class NexoraXChat {
             if (this.selectedModel === 'nexorax2') {
                 // Use search-enhanced AI model (SerpAPI + Gemini)
                 return await this.getSearchEnhancedResponse(message, aiMessage);
-            } else if (this.selectedModel === 'gpt-5-mini') {
-                // Use LLM7.io for GPT-5 Mini
-                return await this.getLLM7GPT5MiniResponse(message, aiMessage);
+            } else if (this.selectedModel === 'gpt-5-chat') {
+                // Use LLM7.io for GPT-5 Chat
+                return await this.getLLM7GPT5ChatResponse(message, aiMessage);
             } else if (this.selectedModel === 'gemini-search') {
                 // Use LLM7.io for Gemini Search
                 return await this.getLLM7GeminiSearchResponse(message, aiMessage);
-            } else if (this.selectedModel === 'gemini-image') {
-                // Use Gemini Image Preview model
-                return await this.getGeminiImageResponse(message, aiMessage, files);
             } else if (this.selectedModel === 'image-gen') {
                 // Use Pollinations AI for image generation
                 return await this.getImageGenerationResponse(message, aiMessage);
@@ -904,9 +901,9 @@ class NexoraXChat {
         return query || normalized;
     }
 
-    async getLLM7GPT5MiniResponse(message, aiMessage) {
+    async getLLM7GPT5ChatResponse(message, aiMessage) {
         try {
-            const url = '/api/llm7/gpt-5-mini';
+            const url = '/api/llm7/gpt-5-chat';
             
             const requestBody = {
                 message: message
@@ -1347,167 +1344,6 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
             
         } catch (error) {
             console.error('Gemini API Error:', error);
-            
-            // Provide specific error messages based on error type
-            let errorMessage = '';
-            if (error.message.includes('HTTP error! status: 400')) {
-                errorMessage = '❌ Yêu cầu không hợp lệ. Vui lòng thử lại với câu hỏi khác.';
-            } else if (error.message.includes('HTTP error! status: 401')) {
-                errorMessage = '🔑 API key không hợp lệ. Vui lòng kiểm tra cấu hình.';
-            } else if (error.message.includes('HTTP error! status: 403')) {
-                errorMessage = '🚫 Không có quyền truy cập API. Vui lòng kiểm tra API key.';
-            } else if (error.message.includes('HTTP error! status: 429')) {
-                errorMessage = '⏰ API đã đạt giới hạn sử dụng. Vui lòng thử lại sau vài phút.';
-            } else if (error.message.includes('HTTP error! status: 500')) {
-                errorMessage = '🔧 Lỗi server. Vui lòng thử lại sau.';
-            } else if (error.name === 'TypeError' || error.message.includes('Failed to fetch')) {
-                errorMessage = '🌐 Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
-            } else if (error.name === 'AbortError' || error.message.includes('timeout')) {
-                errorMessage = '⏱️ Yêu cầu quá lâu. Vui lòng thử lại với câu hỏi ngắn hơn.';
-            } else {
-                errorMessage = `❌ Đã xảy ra lỗi: ${error.message}. Vui lòng thử lại.`;
-            }
-            
-            aiMessage.content = errorMessage;
-            aiMessage.isTyping = false;
-            aiMessage.isFinalized = false;
-            this.updateMessage(aiMessage);
-        }
-    }
-
-    async getGeminiImageResponse(message, aiMessage, files = null) {
-        try {
-            // Use server-side proxy with gemini-2.5-flash-image-preview model
-            const url = '/api/gemini';
-            
-            // Check if this is a time-related query
-            const needsTimeContext = this.isTimeRelatedQuery(message);
-            let timeContext = '';
-            
-            if (needsTimeContext) {
-                // Get current date/time in Vietnam timezone (robust approach)
-                const now = new Date();
-                
-                // Create date formatter for Vietnam timezone
-                const vietnamDate = new Intl.DateTimeFormat('vi-VN', {
-                    timeZone: 'Asia/Ho_Chi_Minh',
-                    weekday: 'long',
-                    year: 'numeric', 
-                    month: 'long',
-                    day: 'numeric'
-                }).format(now);
-                
-                // Create time formatter for Vietnam timezone  
-                const vietnamTime = new Intl.DateTimeFormat('vi-VN', {
-                    timeZone: 'Asia/Ho_Chi_Minh',
-                    hour: '2-digit',
-                    minute: '2-digit', 
-                    second: '2-digit',
-                    hour12: false
-                }).format(now);
-                
-                timeContext = `THÔNG TIN THỜI GIAN HIỆN TẠI - BẮT BUỘC SỬ DỤNG:
-Ngày: ${vietnamDate}
-Giờ: ${vietnamTime} (GMT+7)
-Múi giờ: Việt Nam (UTC+7)
-
-QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi thông tin thời gian khác và chỉ sử dụng thông tin này để trả lời câu hỏi về thời gian.\n\n`;
-            }
-
-            // Enhance message with file context if files are provided
-            let enhancedMessage = message;
-            if (files && files.length > 0) {
-                const fileDescriptions = files.map(file => `File: ${file.name} (${file.type})`).join(', ');
-                enhancedMessage = `Tôi đã đính kèm ${files.length} file(s): ${fileDescriptions}. ${message || 'Hãy phân tích các file này.'}`;
-            }
-            
-            const requestBody = {
-                contents: [{
-                    parts: [{
-                        text: `${timeContext}User: ${enhancedMessage}`
-                    }]
-                }],
-                generationConfig: {
-                    temperature: 0.7,
-                    topK: 40,
-                    topP: 0.95,
-                    maxOutputTokens: 20000,
-                }
-            };
-            
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    model: 'gemini-2.5-flash-image-preview',
-                    payload: requestBody
-                }),
-                signal: AbortSignal.timeout(60000) // 60 second timeout
-            });
-            
-            if (!response.ok) {
-                throw new Error('HTTP error! status: ' + response.status);
-            }
-            
-            let data;
-            try {
-                const responseText = await response.text();
-                if (!responseText.trim()) {
-                    throw new Error('Empty response from server');
-                }
-                data = JSON.parse(responseText);
-            } catch (jsonError) {
-                console.error('JSON parsing error:', jsonError);
-                throw new Error('Dữ liệu trả về không hợp lệ. Vui lòng thử lại.');
-            }
-            
-            // Check if we have candidates
-            if (data.candidates && data.candidates[0]) {
-                const candidate = data.candidates[0];
-                
-                // Handle successful responses with text content
-                if (candidate.content && candidate.content.parts && candidate.content.parts[0] && candidate.content.parts[0].text) {
-                    const aiResponse = candidate.content.parts[0].text.trim();
-                    if (aiResponse) {
-                        aiMessage.content = aiResponse;
-                        aiMessage.isTyping = false;
-                        aiMessage.isFinalized = false;
-                        this.updateMessage(aiMessage);
-                        return;
-                    }
-                }
-                
-                // Handle MAX_TOKENS and other finish reasons
-                if (candidate.finishReason) {
-                    let errorMessage = '';
-                    switch (candidate.finishReason) {
-                        case 'MAX_TOKENS':
-                            errorMessage = '⚠️ Câu trả lời đã đạt giới hạn tối đa (8192 tokens). Nếu cần phản hồi dài hơn, vui lòng chia nhỏ câu hỏi.';
-                            break;
-                        case 'SAFETY':
-                            errorMessage = '⚠️ Nội dung không phù hợp với chính sách an toàn. Vui lòng thử lại với câu hỏi khác.';
-                            break;
-                        case 'RECITATION':
-                            errorMessage = '⚠️ Nội dung có thể vi phạm bản quyền. Vui lòng thử lại với câu hỏi khác.';
-                            break;
-                        default:
-                            errorMessage = `⚠️ API dừng với lý do: ${candidate.finishReason}. Vui lòng thử lại.`;
-                    }
-                    
-                    aiMessage.content = errorMessage;
-                    aiMessage.isTyping = false;
-                    aiMessage.isFinalized = false;
-                    this.updateMessage(aiMessage);
-                    return;
-                }
-            }
-            
-            throw new Error('Không nhận được phản hồi hợp lệ từ AI');
-            
-        } catch (error) {
-            console.error('Gemini Image Preview API Error:', error);
             
             // Provide specific error messages based on error type
             let errorMessage = '';
@@ -2193,9 +2029,8 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
         const modelNames = {
             'nexorax1': 'Gemini Flash 2.5',
             'nexorax2': 'Tìm kiếm với AI',
-            'gpt-5-mini': 'GPT-5 Mini',
-            'gemini-search': 'Gemini Search',
-            'gemini-image': 'Gemini Image Preview'
+            'gpt-5-chat': 'GPT-5 Chat',
+            'gemini-search': 'Gemini Search'
         };
         
         this.showNotification('Đã chuyển sang ' + (modelNames[modelType] || modelType) + '!', 'success');

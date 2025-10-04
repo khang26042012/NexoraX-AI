@@ -94,8 +94,8 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.handle_serpapi_search()
         elif self.path == '/api/search-with-ai':
             self.handle_search_with_ai()
-        elif self.path == '/api/llm7/gpt-5-mini':
-            self.handle_llm7_gpt5mini()
+        elif self.path == '/api/llm7/gpt-5-chat':
+            self.handle_llm7_gpt5chat()
         elif self.path == '/api/llm7/gemini-search':
             self.handle_llm7_gemini_search()
         elif self.path == '/api/enhance-prompt':
@@ -437,8 +437,8 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             logger.error(f"Exception args: {e.args}")
             self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
 
-    def handle_llm7_gpt5mini(self):
-        """Handle GPT-5-mini requests via LLM7.io"""
+    def handle_llm7_gpt5chat(self):
+        """Handle GPT-5-chat requests via LLM7.io"""
         try:
             # Get API key from config
             api_key = get_api_key('llm7')
@@ -460,14 +460,14 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self._send_json_error(400, "Message không được để trống", "MISSING_MESSAGE")
                 return
             
-            # Build LLM7.io API URL for GPT-5-mini
+            # Build LLM7.io API URL for GPT-5-chat
             llm7_url = "https://api.llm7.io/v1/chat/completions"
             llm7_headers = {
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {api_key}"
             }
             llm7_payload = {
-                "model": "gpt-5-mini",
+                "model": "gpt-5-chat",
                 "messages": [
                     {"role": "user", "content": message}
                 ],
@@ -500,11 +500,11 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             
             response_json = json.dumps({
                 "reply": reply,
-                "model": "gpt-5-mini"
+                "model": "gpt-5-chat"
             }, ensure_ascii=False)
             self.wfile.write(response_json.encode('utf-8'))
             
-            logger.info("LLM7 GPT-5-mini completed successfully")
+            logger.info("LLM7 GPT-5-chat completed successfully")
             
         except urllib.error.HTTPError as e:
             try:
@@ -519,7 +519,7 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             logger.error(f"Invalid JSON in LLM7 request: {e}")
             self._send_json_error(400, "Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra định dạng JSON.", "INVALID_JSON")
         except Exception as e:
-            logger.error(f"LLM7 GPT-5-mini error: {e}")
+            logger.error(f"LLM7 GPT-5-chat error: {e}")
             logger.error(f"Exception type: {type(e)}")
             logger.error(f"Exception args: {e.args}")
             self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
