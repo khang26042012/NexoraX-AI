@@ -738,16 +738,22 @@ body.dark-mode .ai-message .message-content {
 .message-content h1, .message-content h2, .message-content h3, 
 .message-content h4, .message-content h5, .message-content h6 {
     font-weight: bold;
-    margin: 0.75rem 0 0.5rem 0;
+    margin: 1.5rem 0 1rem 0;
 }
 
-.message-content h1 { font-size: 1.5rem; }
-.message-content h2 { font-size: 1.3rem; }
-.message-content h3 { font-size: 1.1rem; }
+.message-content h1:first-child,
+.message-content h2:first-child,
+.message-content h3:first-child {
+    margin-top: 0.5rem;
+}
+
+.message-content h1 { font-size: 1.5rem; line-height: 1.4; }
+.message-content h2 { font-size: 1.3rem; line-height: 1.4; }
+.message-content h3 { font-size: 1.1rem; line-height: 1.4; }
 
 .message-content p {
-    margin: 0.25rem 0;
-    line-height: 1.5;
+    margin: 1rem 0;
+    line-height: 1.8;
 }
 
 .message-content p:first-child {
@@ -767,13 +773,13 @@ body.dark-mode .ai-message .message-content {
 }
 
 .message-content ul, .message-content ol {
-    margin: 0.5rem 0;
-    padding-left: 1.5rem;
+    margin: 1rem 0;
+    padding-left: 1.75rem;
 }
 
 .message-content li {
-    margin: 0.25rem 0;
-    line-height: 1.5;
+    margin: 0.6rem 0;
+    line-height: 1.8;
 }
 
 .message-content code {
