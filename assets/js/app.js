@@ -1,13 +1,23 @@
 class NexoraXChat {
     constructor() {
-        // Configure marked.js for better markdown rendering
+        // Configure marked.js for better markdown rendering with syntax highlighting
         if (typeof marked !== 'undefined') {
             marked.setOptions({
                 breaks: true,
                 gfm: true,
                 headerIds: false,
                 mangle: false,
-                sanitize: false
+                sanitize: false,
+                highlight: function(code, lang) {
+                    if (lang && typeof hljs !== 'undefined' && hljs.getLanguage(lang)) {
+                        try {
+                            return hljs.highlight(code, { language: lang }).value;
+                        } catch (err) {
+                            console.error('Highlight error:', err);
+                        }
+                    }
+                    return code;
+                }
             });
         }
         

@@ -823,6 +823,336 @@ body.dark-mode .ai-message .message-content {
     color: #9ca3af;
 }
 
+/* ========== ENHANCED MARKDOWN STYLES ========== */
+
+/* Tables */
+.message-content table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1rem 0;
+    overflow: hidden;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+}
+
+.message-content table thead {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+}
+
+.message-content table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+    border-bottom: 2px solid #2563eb;
+}
+
+.message-content table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 14px;
+}
+
+.message-content table tbody tr:hover {
+    background: #f8fafc;
+    transition: background 0.2s ease;
+}
+
+.message-content table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Dark mode for tables */
+.dark .message-content table {
+    background: #1e293b;
+    border-color: #374151;
+}
+
+.dark .message-content table thead {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+}
+
+.dark .message-content table th {
+    border-bottom-color: #1d4ed8;
+}
+
+.dark .message-content table td {
+    border-bottom-color: #374151;
+}
+
+.dark .message-content table tbody tr:hover {
+    background: #374151;
+}
+
+/* Task Lists / Checkboxes */
+.message-content input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    margin-top: 2px;
+    cursor: pointer;
+    accent-color: #3b82f6;
+    border-radius: 4px;
+}
+
+.message-content ul.contains-task-list,
+.message-content ul:has(input[type="checkbox"]) {
+    list-style: none;
+    padding-left: 0;
+}
+
+.message-content .task-list-item,
+.message-content li:has(input[type="checkbox"]) {
+    display: flex;
+    align-items: flex-start;
+    padding: 6px 0;
+    gap: 8px;
+}
+
+/* Strikethrough */
+.message-content del,
+.message-content s {
+    text-decoration: line-through;
+    color: #9ca3af;
+}
+
+.dark .message-content del,
+.dark .message-content s {
+    color: #6b7280;
+}
+
+/* Enhanced Code Blocks with Syntax Highlighting */
+.message-content pre {
+    position: relative;
+    background-color: #1e293b !important;
+    padding: 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 1rem 0;
+    border: 1px solid #334155;
+}
+
+.message-content pre code {
+    background-color: transparent !important;
+    padding: 0;
+    color: #e2e8f0;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    display: block;
+}
+
+/* Inline code */
+.message-content code {
+    background-color: #f1f5f9;
+    color: #dc2626;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'Courier New', monospace;
+    font-size: 0.9em;
+    border: 1px solid #e2e8f0;
+}
+
+.dark .message-content code {
+    background-color: #1e293b;
+    color: #f87171;
+    border-color: #334155;
+}
+
+/* Enhanced Blockquotes */
+.message-content blockquote {
+    border-left: 4px solid #3b82f6;
+    padding: 12px 20px;
+    margin: 1rem 0;
+    background: #f8fafc;
+    border-radius: 4px;
+    font-style: italic;
+    color: #475569;
+}
+
+.dark .message-content blockquote {
+    background: #1e293b;
+    color: #cbd5e1;
+    border-left-color: #3b82f6;
+}
+
+/* Horizontal Rules */
+.message-content hr {
+    border: none;
+    border-top: 2px solid #e5e7eb;
+    margin: 2rem 0;
+}
+
+.dark .message-content hr {
+    border-top-color: #374151;
+}
+
+/* Links */
+.message-content a {
+    color: #3b82f6;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.message-content a:hover {
+    color: #2563eb;
+    border-bottom-color: #2563eb;
+}
+
+.dark .message-content a {
+    color: #60a5fa;
+}
+
+.dark .message-content a:hover {
+    color: #93c5fd;
+    border-bottom-color: #93c5fd;
+}
+
+/* Images */
+.message-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 1rem 0;
+    border: 1px solid #e5e7eb;
+}
+
+.dark .message-content img {
+    border-color: #374151;
+}
+
+/* Kbd (Keyboard) tags */
+.message-content kbd {
+    display: inline-block;
+    padding: 3px 8px;
+    font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+    font-size: 0.85em;
+    color: #1f2937;
+    background: linear-gradient(to bottom, #f9fafb, #f3f4f6);
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.1), inset 0 0 0 2px #ffffff;
+    white-space: nowrap;
+}
+
+.dark .message-content kbd {
+    color: #f3f4f6;
+    background: linear-gradient(to bottom, #374151, #1f2937);
+    border-color: #4b5563;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.3), inset 0 0 0 2px rgba(255,255,255,0.1);
+}
+
+/* Mark (Highlight) tags */
+.message-content mark {
+    background: #fef08a;
+    color: #854d0e;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+.dark .message-content mark {
+    background: #713f12;
+    color: #fef08a;
+}
+
+/* Sub and Sup */
+.message-content sub,
+.message-content sup {
+    font-size: 0.75em;
+    line-height: 0;
+    position: relative;
+    vertical-align: baseline;
+}
+
+.message-content sub {
+    bottom: -0.25em;
+}
+
+.message-content sup {
+    top: -0.5em;
+}
+
+/* Details/Summary (Collapsible) */
+.message-content details {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px;
+    margin: 1rem 0;
+    background: #f9fafb;
+}
+
+.message-content details summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: #3b82f6;
+    user-select: none;
+    padding: 4px 0;
+}
+
+.message-content details summary:hover {
+    color: #2563eb;
+}
+
+.message-content details[open] {
+    padding-bottom: 16px;
+}
+
+.message-content details[open] summary {
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.dark .message-content details {
+    background: #1e293b;
+    border-color: #374151;
+}
+
+.dark .message-content details[open] summary {
+    border-bottom-color: #374151;
+}
+
+/* Footnotes */
+.message-content .footnotes {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 2px solid #e5e7eb;
+    font-size: 0.9em;
+    color: #6b7280;
+}
+
+.dark .message-content .footnotes {
+    border-top-color: #374151;
+    color: #9ca3af;
+}
+
+/* Definition Lists */
+.message-content dl {
+    margin: 1rem 0;
+}
+
+.message-content dt {
+    font-weight: 600;
+    margin-top: 1rem;
+    color: #1f2937;
+}
+
+.message-content dd {
+    margin-left: 2rem;
+    color: #6b7280;
+}
+
+.dark .message-content dt {
+    color: #f3f4f6;
+}
+
+.dark .message-content dd {
+    color: #9ca3af;
+}
+
 @keyframes slideInUp {
     from { 
         opacity: 0; 
