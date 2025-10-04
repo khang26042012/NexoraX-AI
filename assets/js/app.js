@@ -974,31 +974,38 @@ class NexoraXChat {
     async getImageGenerationResponse(message, aiMessage) {
         try {
             // Step 1: Enhance prompt with AI (expand Vietnamese abbreviations)
-            aiMessage.content = '🔄 Đang xử lý prompt với AI (nhận diện viết tắt tiếng Việt)...';
-            this.updateMessage(aiMessage);
+            // If this fails, we'll fallback to original prompt
+            let enhancedPrompt = message;
             
-            const enhanceUrl = '/api/enhance-prompt';
-            const enhanceResponse = await fetch(enhanceUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ prompt: message }),
-                signal: AbortSignal.timeout(60000)
-            });
-            
-            if (!enhanceResponse.ok) {
-                const errorData = await enhanceResponse.json();
-                throw new Error(errorData.error || 'HTTP error! status: ' + enhanceResponse.status);
+            try {
+                aiMessage.content = '🔄 Đang xử lý prompt với AI (nhận diện viết tắt tiếng Việt)...';
+                this.updateMessage(aiMessage);
+                
+                const enhanceUrl = '/api/enhance-prompt';
+                const enhanceResponse = await fetch(enhanceUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ prompt: message }),
+                    signal: AbortSignal.timeout(30000)
+                });
+                
+                if (enhanceResponse.ok) {
+                    const enhanceData = await enhanceResponse.json();
+                    enhancedPrompt = enhanceData.enhanced_prompt || message;
+                    
+                    console.log('Prompt enhanced:', {
+                        original: message,
+                        enhanced: enhancedPrompt
+                    });
+                } else {
+                    console.warn('Enhance prompt failed, using original prompt');
+                }
+            } catch (enhanceError) {
+                console.warn('Enhance prompt error, using original prompt:', enhanceError);
+                // Continue with original prompt
             }
-            
-            const enhanceData = await enhanceResponse.json();
-            const enhancedPrompt = enhanceData.enhanced_prompt || message;
-            
-            console.log('Prompt enhanced:', {
-                original: message,
-                enhanced: enhancedPrompt
-            });
             
             // Step 2: Generate image with Pollinations AI
             aiMessage.content = `✅ Prompt đã xử lý: "${enhancedPrompt}"\n\n🎨 Đang tạo ảnh với Pollinations AI...`;
