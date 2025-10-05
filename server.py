@@ -128,10 +128,16 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             # Build Gemini API URL
             gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
             
+            # Get payload - supports both old and new format
+            payload = request_data.get('payload', {})
+            
+            # The payload now contains the full conversation history in 'contents' array
+            # No need to modify - frontend already sends it in correct format
+            
             # Prepare request for Gemini API
             gemini_request = urllib.request.Request(
                 gemini_url,
-                data=json.dumps(request_data.get('payload', {})).encode('utf-8'),
+                data=json.dumps(payload).encode('utf-8'),
                 headers={'Content-Type': 'application/json'}
             )
             
@@ -352,15 +358,30 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             # Step 2: Create enhanced prompt for Gemini
             enhanced_prompt = self._create_search_enhanced_prompt(user_query, search_context)
             
+            # Support conversation history - check if provided
+            conversation_history = request_data.get('conversation_history', [])
+            
             # Step 3: Send to Gemini Flash 2.5
             gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_key}"
             
-            gemini_payload = {
-                "contents": [{
+            # Build contents array with conversation history + enhanced prompt
+            contents = []
+            if conversation_history:
+                # Use conversation history if provided
+                contents = conversation_history.copy()
+                # Update the last message with enhanced prompt
+                if contents:
+                    contents[-1]["parts"][0]["text"] = enhanced_prompt
+            else:
+                # Fallback to old format for backward compatibility
+                contents = [{
                     "parts": [{
                         "text": enhanced_prompt
                     }]
-                }],
+                }]
+            
+            gemini_payload = {
+                "contents": contents,
                 "generationConfig": {
                     "temperature": 0.7,
                     "topK": 40,
@@ -466,12 +487,25 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {api_key}"
             }
+            
+            # Support conversation history - check if messages array is provided
+            conversation_messages = request_data.get('messages', [])
+            
+            # Build messages array with system prompt and conversation history
+            messages = [
+                {"role": "system", "content": "Bạn là trợ lý AI thân thiện và vui tính. Hãy sử dụng emoji một cách tự nhiên trong câu trả lời để làm cho cuộc trò chuyện sinh động và thú vị hơn. Đừng lạm dụng emoji, chỉ dùng khi phù hợp với ngữ cảnh. 😊"}
+            ]
+            
+            # Add conversation history if provided
+            if conversation_messages:
+                messages.extend(conversation_messages)
+            else:
+                # Fallback to old format for backward compatibility
+                messages.append({"role": "user", "content": message})
+            
             llm7_payload = {
                 "model": "gpt-5-chat",
-                "messages": [
-                    {"role": "system", "content": "Bạn là trợ lý AI thân thiện và vui tính. Hãy sử dụng emoji một cách tự nhiên trong câu trả lời để làm cho cuộc trò chuyện sinh động và thú vị hơn. Đừng lạm dụng emoji, chỉ dùng khi phù hợp với ngữ cảnh. 😊"},
-                    {"role": "user", "content": message}
-                ],
+                "messages": messages,
                 "temperature": 0.7
             }
             
@@ -554,12 +588,25 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {api_key}"
             }
+            
+            # Support conversation history - check if messages array is provided
+            conversation_messages = request_data.get('messages', [])
+            
+            # Build messages array with system prompt and conversation history
+            messages = [
+                {"role": "system", "content": "Bạn là trợ lý AI tìm kiếm thông minh và thân thiện. Hãy sử dụng emoji một cách tự nhiên trong câu trả lời để làm cho thông tin dễ hiểu và thú vị hơn. Đừng lạm dụng emoji, chỉ dùng khi phù hợp với ngữ cảnh. 🔍"}
+            ]
+            
+            # Add conversation history if provided
+            if conversation_messages:
+                messages.extend(conversation_messages)
+            else:
+                # Fallback to old format for backward compatibility
+                messages.append({"role": "user", "content": message})
+            
             llm7_payload = {
                 "model": "gemini-search",
-                "messages": [
-                    {"role": "system", "content": "Bạn là trợ lý AI tìm kiếm thông minh và thân thiện. Hãy sử dụng emoji một cách tự nhiên trong câu trả lời để làm cho thông tin dễ hiểu và thú vị hơn. Đừng lạm dụng emoji, chỉ dùng khi phù hợp với ngữ cảnh. 🔍"},
-                    {"role": "user", "content": message}
-                ],
+                "messages": messages,
                 "temperature": 0.7
             }
             

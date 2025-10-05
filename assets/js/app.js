@@ -918,12 +918,49 @@ class NexoraXChat {
         return query || normalized;
     }
 
+    // Prepare conversation history for Gemini API format
+    // Converts local format to: {role: "user"/"model", parts: [{text: "..."}]}
+    prepareConversationHistoryGemini(messages, limit = 20) {
+        // Get the last N messages (excluding the current AI response which is still typing)
+        // Messages array: [..., user_msg, ai_typing_msg]
+        // We want all messages except the last one (ai_typing_msg)
+        const historyMessages = messages.slice(0, -1); // Exclude last message (AI typing placeholder)
+        const recentMessages = historyMessages.slice(-limit); // Get last N messages
+        
+        return recentMessages.map(msg => ({
+            role: msg.role === 'assistant' ? 'model' : 'user',
+            parts: [{
+                text: msg.content
+            }]
+        }));
+    }
+
+    // Prepare conversation history for LLM7 API format
+    // Converts local format to: {role: "user"/"assistant", content: "..."}
+    prepareConversationHistoryLLM7(messages, limit = 15) {
+        // Get the last N messages (excluding the current AI response which is still typing)
+        // Messages array: [..., user_msg, ai_typing_msg]
+        // We want all messages except the last one (ai_typing_msg)
+        const historyMessages = messages.slice(0, -1); // Exclude last message (AI typing placeholder)
+        const recentMessages = historyMessages.slice(-limit); // Get last N messages
+        
+        return recentMessages.map(msg => ({
+            role: msg.role, // Already in correct format (user/assistant)
+            content: msg.content
+        }));
+    }
+
     async getLLM7GPT5ChatResponse(message, aiMessage) {
         try {
             const url = '/api/llm7/gpt-5-chat';
             
+            // Get conversation history (limit to last 15 messages to avoid token limit)
+            const chat = this.chats[this.currentChatId];
+            const conversationHistory = this.prepareConversationHistoryLLM7(chat.messages, 15);
+            
             const requestBody = {
-                message: message
+                message: message,
+                messages: conversationHistory  // Send full conversation history
             };
             
             const response = await fetch(url, {
@@ -1083,8 +1120,13 @@ class NexoraXChat {
         try {
             const url = '/api/llm7/gemini-search';
             
+            // Get conversation history (limit to last 15 messages to avoid token limit)
+            const chat = this.chats[this.currentChatId];
+            const conversationHistory = this.prepareConversationHistoryLLM7(chat.messages, 15);
+            
             const requestBody = {
-                message: message
+                message: message,
+                messages: conversationHistory  // Send full conversation history
             };
             
             const response = await fetch(url, {
@@ -1139,8 +1181,13 @@ class NexoraXChat {
         try {
             const url = '/api/search-with-ai';
             
+            // Get conversation history (limit to last 10 messages for search to reduce processing time)
+            const chat = this.chats[this.currentChatId];
+            const conversationHistory = this.prepareConversationHistoryGemini(chat.messages, 10);
+            
             const requestBody = {
-                query: message
+                query: message,
+                conversation_history: conversationHistory  // Send conversation history
             };
             
             const response = await fetch(url, {
@@ -1275,12 +1322,20 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
                 enhancedMessage = `Tôi đã đính kèm ${files.length} file(s): ${fileDescriptions}. ${message || 'Hãy phân tích các file này.'}`;
             }
             
+            // Get conversation history (limit to last 20 messages to avoid token limit)
+            const chat = this.chats[this.currentChatId];
+            const conversationHistory = this.prepareConversationHistoryGemini(chat.messages, 20);
+            
+            // Build contents array with conversation history
+            let contents = conversationHistory;
+            
+            // If we have time context, prepend it to the first message
+            if (timeContext && contents.length > 0) {
+                contents[0].parts[0].text = timeContext + contents[0].parts[0].text;
+            }
+            
             const requestBody = {
-                contents: [{
-                    parts: [{
-                        text: `${timeContext}User: ${enhancedMessage}`
-                    }]
-                }],
+                contents: contents,
                 generationConfig: {
                     temperature: 0.7,
                     topK: 40,
