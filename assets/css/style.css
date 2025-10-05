@@ -1595,33 +1595,68 @@ html, body {
 }
 
 .dark .border-gray-200\/50 {
-    border-color: rgba(55, 65, 81, 0.5) !important;
+    border-color: rgba(38, 38, 38, 0.5) !important;
+}
+
+/* Dark mode cho toggle buttons */
+.dark #sidebarToggle,
+.dark #desktopSidebarToggle {
+    background-color: #1e1e1e !important;
+}
+
+.dark #sidebarToggle svg,
+.dark #desktopSidebarToggle svg {
+    color: #a3a3a3 !important;
 }
 
 /* Dark mode cho modals */
 .dark #settingsContent, .dark #aboutContent, .dark #clearAllContent, .dark #feedbackContent {
-    background-color: #1a1a2e !important;
-    color: #f1f5f9 !important;
+    background-color: #141414 !important;
+    color: #f5f5f5 !important;
 }
 
 /* Dark mode cho dynamic modals */
 .dark .bg-white {
-    background-color: #1a1a2e !important;
+    background-color: #141414 !important;
 }
 
 .dark .text-gray-900 {
-    color: #f1f5f9 !important;
+    color: #f5f5f5 !important;
 }
 
 .dark .text-gray-600 {
-    color: #cbd5e1 !important;
+    color: #a3a3a3 !important;
 }
 
 /* Dark mode cho message bubbles */
 .dark .message-bubble .bg-white {
-    background-color: #1e293b !important;
-    color: #f1f5f9 !important;
-    border-color: #374151 !important;
+    background-color: #1e1e1e !important;
+    color: #f5f5f5 !important;
+    border-color: #262626 !important;
+}
+
+/* Dark mode cho home screen */
+.dark #homeScreen {
+    background-color: #0a0a0a !important;
+}
+
+.dark .home-container {
+    background-color: #0a0a0a !important;
+}
+
+/* Dark mode cho settings button container ở sidebar */
+.dark .sidebar > div:last-child {
+    background-color: #141414 !important;
+    border-color: #262626 !important;
+}
+
+.dark #settingsBtn {
+    color: #a3a3a3 !important;
+}
+
+.dark #settingsBtn:hover {
+    color: #f5f5f5 !important;
+    background-color: #1e1e1e !important;
 }
 
 /* Nút sidebar toggle mobile và desktop */
