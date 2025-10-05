@@ -2758,3 +2758,85 @@ body.dark-mode .image-generation-result img {
         max-width: 100%;
     }
 }
+/* Dark mode fixes for input and buttons */
+.dark #homeInput,
+.dark #chatInput {
+    color: #e5e7eb;
+}
+
+.dark #homeInput::placeholder,
+.dark #chatInput::placeholder {
+    color: #9ca3af;
+}
+
+/* Fix blue borders in dark mode */
+.dark .shadow-\[0_0\.25rem_1\.25rem_hsla\(0\,0\%\,0\%\,3\.5\%\)\,0_0_0_0\.5px_hsla\(0\,0\%\,0\%\,15\%\)\]:focus-within {
+    box-shadow: 0 0.25rem 1.25rem hsla(0,0%,100%,7.5%), 0 0 0 0.5px hsla(0,0%,100%,30%) !important;
+}
+
+.dark .!box-content {
+    background: #1f2937 !important;
+}
+
+/* Upload and config buttons dark mode */
+.dark #homeUploadBtn,
+.dark #chatUploadBtn,
+.dark #homeConfigBtn,
+.dark #chatConfigBtn {
+    background: transparent;
+}
+
+.dark #homeUploadBtn:hover,
+.dark #chatUploadBtn:hover,
+.dark #homeConfigBtn:hover,
+.dark #chatConfigBtn:hover {
+    background: #374151;
+}
+
+.dark #homeUploadBtn svg,
+.dark #chatUploadBtn svg,
+.dark #homeConfigBtn svg,
+.dark #chatConfigBtn svg {
+    color: #9ca3af;
+}
+
+/* Config dropdown dark mode */
+.dark #homeConfigDropdown,
+.dark #chatConfigDropdown {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+.dark .config-option {
+    color: #e5e7eb;
+}
+
+.dark .config-option:hover {
+    background: #374151;
+}
+
+.dark .config-option svg {
+    color: #9ca3af;
+}
+
+/* File preview dark mode */
+.dark #homeFilePreview > div,
+.dark #chatFilePreview > div {
+    background: #374151;
+}
+
+.dark #homeFilePreview span,
+.dark #chatFilePreview span {
+    color: #e5e7eb;
+}
+
+/* Send button - keep blue in dark mode but adjust shade */
+.dark #homeSendBtn,
+.dark #sendBtn {
+    background: #2563eb;
+}
+
+.dark #homeSendBtn:hover,
+.dark #sendBtn:hover {
+    background: #1d4ed8;
+}

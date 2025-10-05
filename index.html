@@ -105,31 +105,59 @@
                     <fieldset class="flex w-full min-w-0 flex-col">
                         <div class="!box-content flex flex-col bg-white mx-2 md:mx-0 items-stretch transition-all duration-200 relative cursor-text z-10 rounded-2xl border border-transparent shadow-[0_0.25rem_1.25rem_hsla(0,0%,0%,3.5%),0_0_0_0.5px_hsla(0,0%,0%,15%)] hover:shadow-[0_0.25rem_1.25rem_hsla(0,0%,0%,3.5%),0_0_0_0.5px_hsla(0,0%,0%,30%)] focus-within:shadow-[0_0.25rem_1.25rem_hsla(0,0%,0%,7.5%),0_0_0_0.5px_hsla(0,0%,0%,30%)]">
                             <div class="flex flex-col gap-3.5 m-3.5">
+                                <!-- File Preview Area (appears above input when files selected) -->
+                                <div id="homeFilePreview" class="hidden flex-wrap gap-2"></div>
                                 <!-- Main input row -->
                                 <div class="flex gap-2.5 w-full items-center">
                                     <div class="relative flex-1 flex items-center gap-2 shrink min-w-0">
-                                        <input 
-                                            type="text" 
+                                        <textarea 
                                             id="homeInput" 
-                                            class="flex-1 border-none outline-none bg-transparent text-base text-gray-900 placeholder-gray-500 resize-none min-h-6" 
-                                            placeholder="Hỏi hoặc tạo ảnh (VD: Tạo ảnh TPHCM ban đêm đẹp)..."
+                                            class="flex-1 border-none outline-none bg-transparent text-base text-gray-900 placeholder-gray-500 resize-none min-h-6 max-h-32 overflow-y-auto" 
+                                            placeholder="Reply to NexoraX"
                                             autocomplete="off"
-                                        >
+                                            rows="1"
+                                        ></textarea>
                                     </div>
                                 </div>
-                                <!-- Bottom row with controls and send button -->
+                                <!-- Bottom row with buttons -->
                                 <div class="flex items-center justify-between">
+                                    <!-- Left side: Upload and Config buttons -->
                                     <div class="flex items-center gap-2">
-                                        <!-- Model Selector -->
-                                        <select id="homeModelSelector" class="text-xs px-2 py-1 rounded-md border border-gray-300 hover:bg-gray-50 transition-colors bg-white text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 min-w-[60px]">
-                                            <option value="nexorax1">✨ Gemini</option>
-                                            <option value="nexorax2">🔍 Search</option>
-                                            <option value="gpt-5-chat">💬 GPT-5 Chat</option>
-                                            <option value="gemini-search">🌐 Gemini Search</option>
-                                            <option value="image-gen">🎨 Image Generator</option>
-                                        </select>
+                                        <button id="homeUploadBtn" class="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-gray-100 transition-colors" title="Upload ảnh hoặc file">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600">
+                                                <path d="M12 5v14"/>
+                                                <path d="M5 12h14"/>
+                                            </svg>
+                                        </button>
+                                        <input type="file" id="homeFileInput" class="hidden" multiple accept="image/*,.pdf,.doc,.docx,.txt">
+                                        
+                                        <div class="relative">
+                                            <button id="homeConfigBtn" class="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-gray-100 transition-colors" title="Tùy chọn nâng cao">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600">
+                                                    <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/>
+                                                    <circle cx="12" cy="12" r="3"/>
+                                                </svg>
+                                            </button>
+                                            <div id="homeConfigDropdown" class="hidden absolute bottom-full left-0 mb-2 bg-white rounded-lg shadow-lg border border-gray-200 py-1 min-w-[200px] z-20">
+                                                <button class="config-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2" data-action="image-gen">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                                        <circle cx="9" cy="9" r="2"/>
+                                                        <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                                                    </svg>
+                                                    <span>Tạo ảnh với Pollinations</span>
+                                                </button>
+                                                <button class="config-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2" data-action="search">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <circle cx="11" cy="11" r="8"/>
+                                                        <path d="m21 21-4.3-4.3"/>
+                                                    </svg>
+                                                    <span>Tìm kiếm với Gemini Search</span>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <!-- New Send Button - Blue Circle with Up Arrow -->
+                                    <!-- Right side: Send button -->
                                     <button id="homeSendBtn" class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-700 transition-colors shadow-lg">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-icon lucide-arrow-up text-white">
                                             <path d="m5 12 7-7 7 7"/>
@@ -190,31 +218,59 @@
                     <fieldset class="flex w-full min-w-0 flex-col">
                         <div class="!box-content flex flex-col bg-white mx-2 md:mx-0 items-stretch transition-all duration-200 relative cursor-text z-10 rounded-2xl border border-transparent shadow-[0_0.25rem_1.25rem_hsla(0,0%,0%,3.5%),0_0_0_0.5px_hsla(0,0%,0%,15%)] hover:shadow-[0_0.25rem_1.25rem_hsla(0,0%,0%,3.5%),0_0_0_0.5px_hsla(0,0%,0%,30%)] focus-within:shadow-[0_0.25rem_1.25rem_hsla(0,0%,0%,7.5%),0_0_0_0.5px_hsla(0,0%,0%,30%)]">
                             <div class="flex flex-col gap-3.5 m-3.5">
+                                <!-- File Preview Area (appears above input when files selected) -->
+                                <div id="chatFilePreview" class="hidden flex-wrap gap-2"></div>
                                 <!-- Main input row -->
                                 <div class="flex gap-2.5 w-full items-center">
                                     <div class="relative flex-1 flex items-center gap-2 shrink min-w-0">
-                                        <input 
-                                            type="text" 
+                                        <textarea 
                                             id="chatInput" 
-                                            class="flex-1 border-none outline-none bg-transparent text-base text-gray-900 placeholder-gray-500 resize-none min-h-6" 
-                                            placeholder="Nhập tin nhắn..."
+                                            class="flex-1 border-none outline-none bg-transparent text-base text-gray-900 placeholder-gray-500 resize-none min-h-6 max-h-32 overflow-y-auto" 
+                                            placeholder="Reply to NexoraX"
                                             autocomplete="off"
-                                        >
+                                            rows="1"
+                                        ></textarea>
                                     </div>
                                 </div>
-                                <!-- Bottom row with controls and send button -->
+                                <!-- Bottom row with buttons -->
                                 <div class="flex items-center justify-between">
+                                    <!-- Left side: Upload and Config buttons -->
                                     <div class="flex items-center gap-2">
-                                        <!-- Model Selector -->
-                                        <select id="chatModelSelector" class="text-xs px-2 py-1 rounded-md border border-gray-300 hover:bg-gray-50 transition-colors bg-white text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 min-w-[60px]">
-                                            <option value="nexorax1">✨ Gemini</option>
-                                            <option value="nexorax2">🔍 Search</option>
-                                            <option value="gpt-5-chat">💬 GPT-5 Chat</option>
-                                            <option value="gemini-search">🌐 Gemini Search</option>
-                                            <option value="image-gen">🎨 Image Generator</option>
-                                        </select>
+                                        <button id="chatUploadBtn" class="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-gray-100 transition-colors" title="Upload ảnh hoặc file">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600">
+                                                <path d="M12 5v14"/>
+                                                <path d="M5 12h14"/>
+                                            </svg>
+                                        </button>
+                                        <input type="file" id="chatFileInput" class="hidden" multiple accept="image/*,.pdf,.doc,.docx,.txt">
+                                        
+                                        <div class="relative">
+                                            <button id="chatConfigBtn" class="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-gray-100 transition-colors" title="Tùy chọn nâng cao">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600">
+                                                    <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/>
+                                                    <circle cx="12" cy="12" r="3"/>
+                                                </svg>
+                                            </button>
+                                            <div id="chatConfigDropdown" class="hidden absolute bottom-full left-0 mb-2 bg-white rounded-lg shadow-lg border border-gray-200 py-1 min-w-[200px] z-20">
+                                                <button class="config-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2" data-action="image-gen">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                                        <circle cx="9" cy="9" r="2"/>
+                                                        <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                                                    </svg>
+                                                    <span>Tạo ảnh với Pollinations</span>
+                                                </button>
+                                                <button class="config-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2" data-action="search">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <circle cx="11" cy="11" r="8"/>
+                                                        <path d="m21 21-4.3-4.3"/>
+                                                    </svg>
+                                                    <span>Tìm kiếm với Gemini Search</span>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <!-- New Send Button - Blue Circle with Up Arrow -->
+                                    <!-- Right side: Send button -->
                                     <button id="sendBtn" class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-700 transition-colors shadow-lg">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-icon lucide-arrow-up text-white">
                                             <path d="m5 12 7-7 7 7"/>
@@ -271,7 +327,7 @@
                         </div>
                         <div class="settings-item-content">
                             <div class="settings-item-title">Model AI</div>
-                            <div class="settings-item-subtitle">Gemini Flash 2.5</div>
+                            <div class="settings-item-subtitle" id="currentModelDisplay">Gpt-5</div>
                         </div>
                         <div class="settings-item-arrow">
                             <svg id="modelArrow" class="w-5 h-5 text-gray-400 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -283,10 +339,58 @@
                     <!-- Model Options -->
                     <div id="modelOptions" class="model-options hidden">
                         <label class="model-option">
-                            <input type="radio" name="aiModel" value="gemini-flash" class="model-radio" checked>
+                            <input type="radio" name="aiModel" value="gpt-5-chat" class="model-radio" checked>
+                            <div class="model-option-content">
+                                <div class="model-name">💬 Gpt-5</div>
+                                <div class="model-description">Model AI mạnh mẽ, phù hợp mọi tác vụ</div>
+                            </div>
+                            <div class="model-check">
+                                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                        </label>
+                        <label class="model-option">
+                            <input type="radio" name="aiModel" value="nexorax1" class="model-radio">
                             <div class="model-option-content">
                                 <div class="model-name">⚡ Gemini Flash 2.5</div>
                                 <div class="model-description">Tốc độ cao, thông minh, phù hợp mọi tác vụ</div>
+                            </div>
+                            <div class="model-check">
+                                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                        </label>
+                        <label class="model-option">
+                            <input type="radio" name="aiModel" value="nexorax2" class="model-radio">
+                            <div class="model-option-content">
+                                <div class="model-name">🔍 Search</div>
+                                <div class="model-description">Tìm kiếm thông tin trên web</div>
+                            </div>
+                            <div class="model-check">
+                                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                        </label>
+                        <label class="model-option">
+                            <input type="radio" name="aiModel" value="gemini-search" class="model-radio">
+                            <div class="model-option-content">
+                                <div class="model-name">🌐 Gemini Search</div>
+                                <div class="model-description">Tìm kiếm nâng cao với Gemini</div>
+                            </div>
+                            <div class="model-check">
+                                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                        </label>
+                        <label class="model-option">
+                            <input type="radio" name="aiModel" value="image-gen" class="model-radio">
+                            <div class="model-option-content">
+                                <div class="model-name">🎨 Image Generator</div>
+                                <div class="model-description">Tạo ảnh từ mô tả văn bản</div>
                             </div>
                             <div class="model-check">
                                 <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">

@@ -36,8 +36,8 @@ class NexoraXChat {
         // API calls now go through server-side proxy - no client-side key needed
         this.isDarkMode = localStorage.getItem('nexorax_dark_mode') === 'true';
         this.currentRating = 0;
-        // Model selection: nexorax1 (Gemini) or nexorax2 (Search)
-        this.selectedModel = localStorage.getItem('nexorax_selected_model') || 'nexorax1';
+        // Model selection: gpt-5-chat is default
+        this.selectedModel = localStorage.getItem('nexorax_selected_model') || 'gpt-5-chat';
         localStorage.setItem('nexorax_selected_model', this.selectedModel);
         this.selectedFiles = new Map(); // Store selected files with their data
         
@@ -2107,10 +2107,23 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
         
         const modelNames = {
             'nexorax1': 'Gemini Flash 2.5',
-            'nexorax2': 'Tìm kiếm với AI',
-            'gpt-5-chat': 'GPT-5 Chat',
-            'gemini-search': 'Gemini Search'
+            'nexorax2': 'Search',
+            'gpt-5-chat': 'Gpt-5',
+            'gemini-search': 'Gemini Search',
+            'image-gen': 'Image Generator'
         };
+        
+        // Update settings display
+        const currentModelDisplay = document.getElementById('currentModelDisplay');
+        if (currentModelDisplay) {
+            currentModelDisplay.textContent = modelNames[modelType] || modelType;
+        }
+        
+        // Update radio buttons in settings
+        const modelRadio = document.querySelector('input[name="aiModel"][value="' + modelType + '"]');
+        if (modelRadio) {
+            modelRadio.checked = true;
+        }
         
         this.showNotification('Đã chuyển sang ' + (modelNames[modelType] || modelType) + '!', 'success');
     }
@@ -2122,6 +2135,25 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
         }
         if (this.chatModelSelector) {
             this.chatModelSelector.value = this.selectedModel;
+        }
+        
+        // Update radio buttons in settings to match current selection
+        const modelRadio = document.querySelector('input[name="aiModel"][value="' + this.selectedModel + '"]');
+        if (modelRadio) {
+            modelRadio.checked = true;
+        }
+        
+        // Update settings display
+        const modelNames = {
+            'nexorax1': 'Gemini Flash 2.5',
+            'nexorax2': 'Search',
+            'gpt-5-chat': 'Gpt-5',
+            'gemini-search': 'Gemini Search',
+            'image-gen': 'Image Generator'
+        };
+        const currentModelDisplay = document.getElementById('currentModelDisplay');
+        if (currentModelDisplay) {
+            currentModelDisplay.textContent = modelNames[this.selectedModel] || this.selectedModel;
         }
     }
     
@@ -2555,3 +2587,173 @@ class TypingEffect {
 
 // Initialize the app
 const app = new NexoraXChat();
+// Auto-expand textarea functionality
+function setupTextareaAutoExpand() {
+    const homeInput = document.getElementById('homeInput');
+    const chatInput = document.getElementById('chatInput');
+    
+    function autoExpand(textarea) {
+        if (!textarea) return;
+        textarea.style.height = 'auto';
+        textarea.style.height = Math.min(textarea.scrollHeight, 128) + 'px';
+    }
+    
+    if (homeInput) {
+        homeInput.addEventListener('input', () => autoExpand(homeInput));
+        autoExpand(homeInput);
+    }
+    
+    if (chatInput) {
+        chatInput.addEventListener('input', () => autoExpand(chatInput));
+        autoExpand(chatInput);
+    }
+}
+
+// Setup upload button handlers
+function setupUploadHandlers() {
+    const homeUploadBtn = document.getElementById('homeUploadBtn');
+    const homeFileInput = document.getElementById('homeFileInput');
+    const chatUploadBtn = document.getElementById('chatUploadBtn');
+    const chatFileInput = document.getElementById('chatFileInput');
+    
+    if (homeUploadBtn && homeFileInput) {
+        homeUploadBtn.addEventListener('click', () => homeFileInput.click());
+        homeFileInput.addEventListener('change', (e) => handleFilePreview(e.target.files, 'home'));
+    }
+    
+    if (chatUploadBtn && chatFileInput) {
+        chatUploadBtn.addEventListener('click', () => chatFileInput.click());
+        chatFileInput.addEventListener('change', (e) => handleFilePreview(e.target.files, 'chat'));
+    }
+}
+
+// Handle file preview
+function handleFilePreview(files, context) {
+    if (!files || files.length === 0) return;
+    
+    const previewId = context === 'home' ? 'homeFilePreview' : 'chatFilePreview';
+    const previewEl = document.getElementById(previewId);
+    
+    if (!previewEl) return;
+    
+    previewEl.classList.remove('hidden');
+    
+    Array.from(files).forEach((file, index) => {
+        const isImage = file.type.startsWith('image/');
+        const fileDiv = document.createElement('div');
+        fileDiv.className = 'relative bg-gray-100 rounded-lg p-2 flex items-center gap-2 max-w-xs';
+        
+        if (isImage) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                fileDiv.innerHTML = `
+                    <img src="${e.target.result}" alt="${file.name}" class="w-12 h-12 object-cover rounded">
+                    <span class="text-xs text-gray-700 truncate flex-1">${file.name}</span>
+                    <button class="remove-file p-1 hover:bg-gray-200 rounded" data-index="${index}">
+                        <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                `;
+                previewEl.appendChild(fileDiv);
+            };
+            reader.readAsDataURL(file);
+        } else {
+            fileDiv.innerHTML = `
+                <div class="w-12 h-12 bg-blue-100 rounded flex items-center justify-center">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <span class="text-xs text-gray-700 truncate flex-1">${file.name}</span>
+                <button class="remove-file p-1 hover:bg-gray-200 rounded" data-index="${index}">
+                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            `;
+            previewEl.appendChild(fileDiv);
+        }
+    });
+    
+    // Remove file handler
+    previewEl.addEventListener('click', (e) => {
+        if (e.target.closest('.remove-file')) {
+            e.target.closest('.remove-file').parentElement.remove();
+            if (previewEl.children.length === 0) {
+                previewEl.classList.add('hidden');
+            }
+        }
+    });
+}
+
+// Setup config dropdown handlers
+function setupConfigHandlers() {
+    const homeConfigBtn = document.getElementById('homeConfigBtn');
+    const homeConfigDropdown = document.getElementById('homeConfigDropdown');
+    const chatConfigBtn = document.getElementById('chatConfigBtn');
+    const chatConfigDropdown = document.getElementById('chatConfigDropdown');
+    
+    function toggleDropdown(dropdown) {
+        if (!dropdown) return;
+        dropdown.classList.toggle('hidden');
+    }
+    
+    if (homeConfigBtn && homeConfigDropdown) {
+        homeConfigBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleDropdown(homeConfigDropdown);
+            if (chatConfigDropdown) chatConfigDropdown.classList.add('hidden');
+        });
+        
+        homeConfigDropdown.querySelectorAll('.config-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                const action = e.currentTarget.getAttribute('data-action');
+                handleConfigAction(action, 'home');
+                homeConfigDropdown.classList.add('hidden');
+            });
+        });
+    }
+    
+    if (chatConfigBtn && chatConfigDropdown) {
+        chatConfigBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleDropdown(chatConfigDropdown);
+            if (homeConfigDropdown) homeConfigDropdown.classList.add('hidden');
+        });
+        
+        chatConfigDropdown.querySelectorAll('.config-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                const action = e.currentTarget.getAttribute('data-action');
+                handleConfigAction(action, 'chat');
+                chatConfigDropdown.classList.add('hidden');
+            });
+        });
+    }
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', (e) => {
+        if (homeConfigDropdown && !homeConfigBtn.contains(e.target)) {
+            homeConfigDropdown.classList.add('hidden');
+        }
+        if (chatConfigDropdown && !chatConfigBtn.contains(e.target)) {
+            chatConfigDropdown.classList.add('hidden');
+        }
+    });
+}
+
+// Handle config actions
+function handleConfigAction(action, context) {
+    if (action === 'image-gen') {
+        app.changeModel('image-gen');
+    } else if (action === 'search') {
+        app.changeModel('gemini-search');
+    }
+}
+
+// Initialize all new features
+setTimeout(() => {
+    setupTextareaAutoExpand();
+    setupUploadHandlers();
+    setupConfigHandlers();
+}, 100);
