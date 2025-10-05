@@ -2726,3 +2726,35 @@ body.dark-mode .typing-cursor {
     background-color: #4b5563 !important;
     border-color: #9ca3af !important;
 }
+
+/* ======================== */
+/* Image Generation Result Styling */
+/* ======================== */
+
+/* Container for generated images */
+.image-generation-result {
+    max-width: 500px;
+    margin: 8px 0;
+    width: 100%;
+}
+
+.image-generation-result img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark mode support for image shadows */
+.dark .image-generation-result img,
+body.dark-mode .image-generation-result img {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive design for mobile */
+@media (max-width: 768px) {
+    .image-generation-result {
+        max-width: 100%;
+    }
+}
