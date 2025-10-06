@@ -1675,7 +1675,7 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
         const cursor = document.createElement('span');
         cursor.classList.add('typing-cursor');
         
-        // Type character by character with improved timing
+        // Type character by character with consistent 40ms speed
         for (let i = 0; i < text.length; i++) {
             // Check if cancelled
             if (element.dataset.cancelled === 'true') {
@@ -1688,26 +1688,16 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
             element.innerHTML = this.formatMessage(currentText);
             element.appendChild(cursor);
             
+            // Smooth scroll to bottom
             this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
             
-            // Adjust speed based on character type for natural feeling
-            let delay = 20; // Base delay for smooth typing
-            const char = text[i];
-            
-            if (char === '.' || char === '!' || char === '?') {
-                delay = 400; // Longer pause after sentences
-            } else if (char === ',' || char === ';' || char === ':') {
-                delay = 150; // Medium pause after punctuation
-            } else if (char === ' ') {
-                delay = 40; // Quick for spaces
-            } else if (char === '\n') {
-                delay = 250; // Pause for new lines
-            }
+            // Consistent 40ms delay for all characters
+            const delay = 40;
             
             await new Promise(resolve => setTimeout(resolve, delay));
         }
         
-        // Final cleanup
+        // Final cleanup - render complete message
         element.innerHTML = this.formatMessage(currentText);
         element.classList.remove('ai-typing');
         
@@ -1716,7 +1706,7 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
             if (cursor.parentElement) {
                 cursor.remove();
             }
-        }, 1000);
+        }, 500);
         
         // Clean up dataset
         element.dataset.typewriterActive = 'false';
