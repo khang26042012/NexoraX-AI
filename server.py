@@ -506,17 +506,20 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             llm7_payload = {
                 "model": "gpt-5-chat",
                 "messages": messages,
-                "temperature": 0.7
+                "temperature": 0.5,
+                "max_tokens": 2048,
+                "top_p": 0.9
             }
             
-            # Make request to LLM7.io
+            # Make request to LLM7.io with optimized timeout for faster response
             llm7_request = urllib.request.Request(
                 llm7_url,
                 data=json.dumps(llm7_payload).encode('utf-8'),
                 headers=llm7_headers
             )
             
-            with urllib.request.urlopen(llm7_request, timeout=REQUEST_TIMEOUT) as response:
+            # Reduced timeout for GPT-5 (60s instead of 120s)
+            with urllib.request.urlopen(llm7_request, timeout=60) as response:
                 llm7_response = response.read().decode('utf-8')
                 llm7_data = json.loads(llm7_response)
             
