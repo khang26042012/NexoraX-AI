@@ -2790,6 +2790,28 @@ body.dark-mode .image-generation-result img {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
+/* Sidebar toggle button - more visible in dark mode */
+.dark #sidebarToggle,
+.dark #desktopSidebarToggle {
+    background: #262626 !important;
+    border: 1px solid #404040 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+}
+
+.dark #sidebarToggle:hover,
+.dark #desktopSidebarToggle:hover {
+    background: #2a2a2a !important;
+    border-color: #525252 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark #mobilePanelLeftIcon,
+.dark #mobilePanelRightIcon,
+.dark #desktopPanelLeftIcon,
+.dark #desktopPanelRightIcon {
+    color: #e5e5e5 !important;
+}
+
 /* Responsive design for mobile */
 @media (max-width: 768px) {
     .image-generation-result {
@@ -2807,9 +2829,17 @@ body.dark-mode .image-generation-result img {
     color: #6b7280;
 }
 
-/* Fix blue borders in dark mode */
+/* Fix borders in dark mode - remove blue border on focus */
+.dark .shadow-\[0_0\.25rem_1\.25rem_hsla\(0\,0\%\,0\%\,3\.5\%\)\,0_0_0_0\.5px_hsla\(0\,0\%\,0\%\,15\%\)\] {
+    box-shadow: 0 0.25rem 1.25rem hsla(0,0%,100%,7.5%), 0 0 0 0.5px hsla(0,0%,100%,20%) !important;
+}
+
+.dark .shadow-\[0_0\.25rem_1\.25rem_hsla\(0\,0\%\,0\%\,3\.5\%\)\,0_0_0_0\.5px_hsla\(0\,0\%\,0\%\,15\%\)\]:hover {
+    box-shadow: 0 0.25rem 1.25rem hsla(0,0%,100%,7.5%), 0 0 0 0.5px hsla(0,0%,100%,25%) !important;
+}
+
 .dark .shadow-\[0_0\.25rem_1\.25rem_hsla\(0\,0\%\,0\%\,3\.5\%\)\,0_0_0_0\.5px_hsla\(0\,0\%\,0\%\,15\%\)\]:focus-within {
-    box-shadow: 0 0.25rem 1.25rem hsla(0,0%,100%,7.5%), 0 0 0 0.5px hsla(0,0%,100%,30%) !important;
+    box-shadow: 0 0.25rem 1.25rem hsla(0,0%,100%,10%), 0 0 0 0.5px hsla(0,0%,100%,30%) !important;
 }
 
 .dark .!box-content {
