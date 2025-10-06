@@ -41,6 +41,9 @@ class NexoraXChat {
         localStorage.setItem('nexorax_selected_model', this.selectedModel);
         this.selectedFiles = new Map(); // Store selected files with their data
         
+        // Dual Chat Mode
+        this.dualChatMode = localStorage.getItem('nexorax_dual_chat_mode') === 'true';
+        
         // Speech recognition setup
         this.speechRecognition = null;
         this.isRecording = false;
@@ -51,6 +54,7 @@ class NexoraXChat {
         this.initializeSpeechRecognition();
         this.loadTheme();
         this.loadModelSelection();
+        this.loadDualModeState();
         this.initializeDesktopSidebar();
         this.renderChatList();
     }
@@ -269,6 +273,17 @@ class NexoraXChat {
         
         // Voice recording event listeners
         this.setupVoiceRecordingListeners();
+        
+        // Dual Chat Mode Toggle
+        const homeDualModeBtn = document.getElementById('homeDualModeBtn');
+        if (homeDualModeBtn) {
+            homeDualModeBtn.addEventListener('click', () => this.toggleDualMode());
+        }
+        
+        const chatDualModeBtn = document.getElementById('chatDualModeBtn');
+        if (chatDualModeBtn) {
+            chatDualModeBtn.addEventListener('click', () => this.toggleDualMode());
+        }
         
         // Quick suggestions
         document.querySelectorAll('.quick-suggestion').forEach(suggestion => {
@@ -780,27 +795,31 @@ class NexoraXChat {
         // Clear selected files after sending
         this.clearSelectedFiles();
         
-        const aiMessage = {
-            id: Date.now() + 1,
-            role: 'assistant',
-            content: '',
-            timestamp: new Date().toISOString(),
-            isTyping: true
-        };
-        
-        chat.messages.push(aiMessage);
-        this.renderMessage(aiMessage);
-        this.scrollToBottom();
-        
-        try {
-            await this.getAIResponse(trimmedMessage, aiMessage, attachedFiles);
-        } catch (error) {
-            console.error('Error getting AI response:', error);
-            aiMessage.content = "Xin lỗi, đã có lỗi xảy ra. Vui lòng thử lại.";
-            aiMessage.isTyping = false;
-            this.updateMessage(aiMessage);
-        } finally {
-            this.saveChats();
+        if (this.dualChatMode) {
+            await this.getDualChatResponses(trimmedMessage, attachedFiles);
+        } else {
+            const aiMessage = {
+                id: Date.now() + 1,
+                role: 'assistant',
+                content: '',
+                timestamp: new Date().toISOString(),
+                isTyping: true
+            };
+            
+            chat.messages.push(aiMessage);
+            this.renderMessage(aiMessage);
+            this.scrollToBottom();
+            
+            try {
+                await this.getAIResponse(trimmedMessage, aiMessage, attachedFiles);
+            } catch (error) {
+                console.error('Error getting AI response:', error);
+                aiMessage.content = "Xin lỗi, đã có lỗi xảy ra. Vui lòng thử lại.";
+                aiMessage.isTyping = false;
+                this.updateMessage(aiMessage);
+            } finally {
+                this.saveChats();
+            }
         }
     }
     
@@ -827,6 +846,79 @@ class NexoraXChat {
             console.error('AI Response Error:', error);
             this.handleAIError(aiMessage);
         }
+    }
+
+    async getDualChatResponses(message, attachedFiles) {
+        const chat = this.chats[this.currentChatId];
+        if (!chat) return;
+        
+        const gpt5Message = {
+            id: Date.now() + 1,
+            role: 'assistant',
+            content: '',
+            timestamp: new Date().toISOString(),
+            isTyping: true,
+            model: 'gpt-5'
+        };
+        
+        const geminiMessage = {
+            id: Date.now() + 2,
+            role: 'assistant',
+            content: '',
+            timestamp: new Date().toISOString(),
+            isTyping: true,
+            model: 'gemini'
+        };
+        
+        chat.messages.push(gpt5Message, geminiMessage);
+        this.renderMessage(gpt5Message);
+        this.renderMessage(geminiMessage);
+        this.scrollToBottom();
+        
+        try {
+            await Promise.allSettled([
+                this.getLLM7GPT5ChatResponse(message, gpt5Message).catch(error => {
+                    console.error('GPT-5 Error in dual mode:', error);
+                    gpt5Message.content = 'Xin lỗi, GPT-5 gặp lỗi. Vui lòng thử lại.';
+                    gpt5Message.isTyping = false;
+                    this.updateMessage(gpt5Message);
+                }),
+                this.getGeminiResponse(message, geminiMessage, attachedFiles).catch(error => {
+                    console.error('Gemini Error in dual mode:', error);
+                    geminiMessage.content = 'Xin lỗi, Gemini gặp lỗi. Vui lòng thử lại.';
+                    geminiMessage.isTyping = false;
+                    this.updateMessage(geminiMessage);
+                })
+            ]);
+        } finally {
+            this.saveChats();
+        }
+    }
+
+    renderDualChatLayout(chat) {
+        this.messagesContainer.innerHTML = '';
+        this.messagesContainer.classList.add('dual-chat-mode');
+        
+        const dualLayoutHtml = `
+            <div class="dual-chat-container">
+                <div class="dual-chat-panel">
+                    <div class="dual-chat-panel-header">
+                        <span>GPT-5</span>
+                    </div>
+                    <div class="dual-chat-panel-messages" id="gpt5Panel"></div>
+                </div>
+                <div class="dual-chat-panel">
+                    <div class="dual-chat-panel-header">
+                        <span>Gemini Flash 2.5</span>
+                    </div>
+                    <div class="dual-chat-panel-messages" id="geminiPanel"></div>
+                </div>
+            </div>
+        `;
+        
+        this.messagesContainer.innerHTML = dualLayoutHtml;
+        
+        chat.messages.forEach(message => this.renderMessage(message));
     }
 
     // Detect if message is asking about current time/date (narrow detection)
@@ -1583,7 +1675,25 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
                 '</div>';
         }
         
-        this.messagesContainer.appendChild(messageDiv);
+        // Check if dual chat mode is active
+        if (this.messagesContainer.classList.contains('dual-chat-mode')) {
+            const gpt5Panel = document.getElementById('gpt5Panel');
+            const geminiPanel = document.getElementById('geminiPanel');
+            
+            if (message.role === 'user') {
+                // User messages appear in both panels
+                const clonedMessage = messageDiv.cloneNode(true);
+                if (gpt5Panel) gpt5Panel.appendChild(messageDiv);
+                if (geminiPanel) geminiPanel.appendChild(clonedMessage);
+            } else if (message.model === 'gpt-5' && gpt5Panel) {
+                gpt5Panel.appendChild(messageDiv);
+            } else if (message.model === 'gemini' && geminiPanel) {
+                geminiPanel.appendChild(messageDiv);
+            }
+        } else {
+            this.messagesContainer.appendChild(messageDiv);
+        }
+        
         this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
     }
     
@@ -1847,8 +1957,13 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
         this.currentChatId = chatId;
         this.showChatScreen();
         
-        this.messagesContainer.innerHTML = '';
-        chat.messages.forEach(message => this.renderMessage(message));
+        if (this.dualChatMode) {
+            this.renderDualChatLayout(chat);
+        } else {
+            this.messagesContainer.innerHTML = '';
+            chat.messages.forEach(message => this.renderMessage(message));
+        }
+        
         this.renderChatList();
         
         if (window.innerWidth < 1024) {
@@ -1900,6 +2015,36 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
                 item.style.display = 'none';
             }
         });
+    }
+    
+    toggleDualMode() {
+        this.dualChatMode = !this.dualChatMode;
+        localStorage.setItem('nexorax_dual_chat_mode', this.dualChatMode);
+        
+        const homeDualModeBtn = document.getElementById('homeDualModeBtn');
+        const chatDualModeBtn = document.getElementById('chatDualModeBtn');
+        
+        if (this.dualChatMode) {
+            if (homeDualModeBtn) homeDualModeBtn.classList.add('active');
+            if (chatDualModeBtn) chatDualModeBtn.classList.add('active');
+            if (this.messagesContainer) this.messagesContainer.classList.add('dual-chat-mode');
+            this.showNotification('Đã bật chế độ Dual Chat! 🎯', 'success');
+        } else {
+            if (homeDualModeBtn) homeDualModeBtn.classList.remove('active');
+            if (chatDualModeBtn) chatDualModeBtn.classList.remove('active');
+            if (this.messagesContainer) this.messagesContainer.classList.remove('dual-chat-mode');
+            this.showNotification('Đã tắt chế độ Dual Chat', 'info');
+        }
+        
+        if (this.currentChatId && this.chats[this.currentChatId]) {
+            const chat = this.chats[this.currentChatId];
+            if (this.dualChatMode) {
+                this.renderDualChatLayout(chat);
+            } else {
+                this.messagesContainer.innerHTML = '';
+                chat.messages.forEach(message => this.renderMessage(message));
+            }
+        }
     }
     
     toggleTheme() {
@@ -2144,6 +2289,21 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
         const currentModelDisplay = document.getElementById('currentModelDisplay');
         if (currentModelDisplay) {
             currentModelDisplay.textContent = modelNames[this.selectedModel] || this.selectedModel;
+        }
+    }
+    
+    loadDualModeState() {
+        const homeDualModeBtn = document.getElementById('homeDualModeBtn');
+        const chatDualModeBtn = document.getElementById('chatDualModeBtn');
+        
+        if (this.dualChatMode) {
+            if (homeDualModeBtn) homeDualModeBtn.classList.add('active');
+            if (chatDualModeBtn) chatDualModeBtn.classList.add('active');
+            if (this.messagesContainer) this.messagesContainer.classList.add('dual-chat-mode');
+        } else {
+            if (homeDualModeBtn) homeDualModeBtn.classList.remove('active');
+            if (chatDualModeBtn) chatDualModeBtn.classList.remove('active');
+            if (this.messagesContainer) this.messagesContainer.classList.remove('dual-chat-mode');
         }
     }
     
