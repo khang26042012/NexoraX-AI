@@ -779,6 +779,11 @@ class NexoraXChat {
         const trimmedMessage = message?.trim() || '';
         const attachedFiles = null; // File upload functionality removed
         
+        // Setup dual chat layout if in dual mode and not yet setup
+        if (this.dualChatMode && !document.getElementById('gpt5Panel')) {
+            this.renderDualChatLayout(chat);
+        }
+        
         const userMessage = {
             id: Date.now(),
             role: 'user',
@@ -1635,7 +1640,15 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
     scrollToBottom() {
         if (this.messagesContainer) {
             setTimeout(() => {
-                this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+                // In dual mode, scroll both panels
+                if (this.messagesContainer.classList.contains('dual-chat-mode')) {
+                    const gpt5Panel = document.getElementById('gpt5Panel');
+                    const geminiPanel = document.getElementById('geminiPanel');
+                    if (gpt5Panel) gpt5Panel.scrollTop = gpt5Panel.scrollHeight;
+                    if (geminiPanel) geminiPanel.scrollTop = geminiPanel.scrollHeight;
+                } else {
+                    this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+                }
             }, 100);
         }
     }
@@ -1737,7 +1750,22 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
     }
     
     updateMessage(message) {
-        const messageElement = this.messagesContainer.querySelector('[data-message-id="' + message.id + '"]');
+        // Find message element - check in dual chat panels if in dual mode
+        let messageElement;
+        if (this.messagesContainer.classList.contains('dual-chat-mode')) {
+            // In dual mode, search within the appropriate panel
+            if (message.model === 'gpt-5') {
+                const gpt5Panel = document.getElementById('gpt5Panel');
+                messageElement = gpt5Panel?.querySelector('[data-message-id="' + message.id + '"]');
+            } else if (message.model === 'gemini') {
+                const geminiPanel = document.getElementById('geminiPanel');
+                messageElement = geminiPanel?.querySelector('[data-message-id="' + message.id + '"]');
+            }
+        } else {
+            // In normal mode, search in messagesContainer
+            messageElement = this.messagesContainer.querySelector('[data-message-id="' + message.id + '"]');
+        }
+        
         if (messageElement) {
             const contentElement = messageElement.querySelector('.message-content');
             if (message.isTyping) {
@@ -1755,7 +1783,16 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
                     contentElement.innerHTML = this.formatMessage(message.content);
                 }
             }
-            this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+            
+            // Scroll to bottom of appropriate container
+            if (this.messagesContainer.classList.contains('dual-chat-mode')) {
+                const panel = messageElement.closest('.dual-chat-panel-messages');
+                if (panel) {
+                    panel.scrollTop = panel.scrollHeight;
+                }
+            } else {
+                this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+            }
         }
     }
     

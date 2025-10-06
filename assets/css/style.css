@@ -2981,6 +2981,10 @@ body.dark-mode .image-generation-result img {
     flex-direction: column;
     gap: 16px;
     overflow-y: auto;
+    padding: 16px;
+    padding-bottom: 80px;
+    background: #ffffff;
+    border-radius: 0 0 12px 12px;
 }
 
 /* Dark mode for dual chat */
@@ -2990,6 +2994,10 @@ body.dark-mode .image-generation-result img {
 
 .dark .dual-chat-panel-header.gemini {
     background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+.dark .dual-chat-panel-messages {
+    background: #1f2937;
 }
 
 /* Responsive - ensure minimum height on small screens */
