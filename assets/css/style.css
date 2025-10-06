@@ -2929,20 +2929,30 @@ body.dark-mode .image-generation-result img {
     background: #3b82f6 !important;
 }
 
-/* Dual chat layout */
+/* Dual chat layout - Vertical split (top/bottom) */
 #messagesContainer.dual-chat-mode {
     display: flex;
+    flex-direction: column;
     gap: 16px;
     align-items: stretch;
+    height: 100%;
+}
+
+.dual-chat-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    height: 100%;
+    flex: 1;
 }
 
 /* Each panel in dual chat */
 .dual-chat-panel {
     flex: 1;
-    min-width: 0;
+    min-height: 0;
     display: flex;
     flex-direction: column;
-    height: 100%;
+    overflow: hidden;
 }
 
 .dual-chat-panel-header {
@@ -2982,14 +2992,10 @@ body.dark-mode .image-generation-result img {
     background: linear-gradient(135deg, #059669 0%, #047857 100%);
 }
 
-/* Responsive - mobile stacks panels vertically */
+/* Responsive - ensure minimum height on small screens */
 @media (max-width: 768px) {
-    #messagesContainer.dual-chat-mode {
-        flex-direction: column;
-    }
-    
     .dual-chat-panel {
-        min-height: 300px;
+        min-height: 250px;
     }
 }
 
