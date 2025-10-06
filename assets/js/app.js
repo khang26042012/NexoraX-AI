@@ -1657,8 +1657,8 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
             return;
         }
         
-        // Cancel any existing typewriter effect
-        if (element.dataset.typewriterActive) {
+        // Cancel any existing typewriter effect that is actually running
+        if (element.dataset.typewriterActive === 'true') {
             element.dataset.cancelled = 'true';
             return;
         }
@@ -1708,9 +1708,9 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
             }
         }, 500);
         
-        // Clean up dataset
-        element.dataset.typewriterActive = 'false';
-        element.dataset.cancelled = 'false';
+        // Clean up dataset - remove attributes instead of setting to 'false'
+        delete element.dataset.typewriterActive;
+        delete element.dataset.cancelled;
         
         if (onComplete) onComplete();
     }
