@@ -2985,12 +2985,8 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
             userAvatar.textContent = firstLetter;
         }
         
-        // Add logout button listener if not already added
-        const logoutBtn = document.getElementById('logoutBtn');
-        if (logoutBtn && !logoutBtn.hasAttribute('data-listener')) {
-            logoutBtn.setAttribute('data-listener', 'true');
-            logoutBtn.addEventListener('click', () => this.handleLogout());
-        }
+        // Setup user menu dropdown
+        this.setupUserMenuDropdown();
     }
     
     updateUIForLoggedOutUser() {
@@ -3004,6 +3000,51 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
             userProfileSection.classList.add('hidden');
             settingsBtn.classList.remove('hidden');
         }
+    }
+    
+    setupUserMenuDropdown() {
+        const userMenuBtn = document.getElementById('userMenuBtn');
+        const userDropdownMenu = document.getElementById('userDropdownMenu');
+        const settingsBtnFromMenu = document.getElementById('settingsBtnFromMenu');
+        const logoutBtnFromMenu = document.getElementById('logoutBtnFromMenu');
+        
+        if (!userMenuBtn || !userDropdownMenu) return;
+        
+        // Toggle dropdown on menu button click
+        if (!userMenuBtn.hasAttribute('data-listener')) {
+            userMenuBtn.setAttribute('data-listener', 'true');
+            userMenuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                userDropdownMenu.classList.toggle('hidden');
+            });
+        }
+        
+        // Settings button handler
+        if (settingsBtnFromMenu && !settingsBtnFromMenu.hasAttribute('data-listener')) {
+            settingsBtnFromMenu.setAttribute('data-listener', 'true');
+            settingsBtnFromMenu.addEventListener('click', () => {
+                userDropdownMenu.classList.add('hidden');
+                // Trigger settings modal (using existing settings button logic)
+                const settingsBtn = document.getElementById('settingsBtn');
+                if (settingsBtn) settingsBtn.click();
+            });
+        }
+        
+        // Logout button handler
+        if (logoutBtnFromMenu && !logoutBtnFromMenu.hasAttribute('data-listener')) {
+            logoutBtnFromMenu.setAttribute('data-listener', 'true');
+            logoutBtnFromMenu.addEventListener('click', () => {
+                userDropdownMenu.classList.add('hidden');
+                this.handleLogout();
+            });
+        }
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!userDropdownMenu.contains(e.target) && !userMenuBtn.contains(e.target)) {
+                userDropdownMenu.classList.add('hidden');
+            }
+        });
     }
     
     validateEmail(email) {
