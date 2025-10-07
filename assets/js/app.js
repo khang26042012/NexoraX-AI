@@ -2961,14 +2961,49 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
     }
     
     updateUIForLoggedInUser(username) {
-        // You can add UI updates here if needed
-        // For example, show username in sidebar, enable features, etc.
         console.log('User logged in:', username);
+        
+        // Show user profile section
+        const userProfileSection = document.getElementById('userProfileSection');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const userDisplayName = document.getElementById('userDisplayName');
+        const userAvatar = document.getElementById('userAvatar');
+        
+        if (userProfileSection && settingsBtn) {
+            userProfileSection.classList.remove('hidden');
+            settingsBtn.classList.add('hidden');
+        }
+        
+        // Update username display
+        if (userDisplayName) {
+            userDisplayName.textContent = username;
+        }
+        
+        // Update avatar with first letter of username
+        if (userAvatar) {
+            const firstLetter = username.charAt(0).toUpperCase();
+            userAvatar.textContent = firstLetter;
+        }
+        
+        // Add logout button listener if not already added
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn && !logoutBtn.hasAttribute('data-listener')) {
+            logoutBtn.setAttribute('data-listener', 'true');
+            logoutBtn.addEventListener('click', () => this.handleLogout());
+        }
     }
     
     updateUIForLoggedOutUser() {
-        // Reset UI to logged out state
         console.log('User logged out');
+        
+        // Hide user profile section
+        const userProfileSection = document.getElementById('userProfileSection');
+        const settingsBtn = document.getElementById('settingsBtn');
+        
+        if (userProfileSection && settingsBtn) {
+            userProfileSection.classList.add('hidden');
+            settingsBtn.classList.remove('hidden');
+        }
     }
     
     validateEmail(email) {

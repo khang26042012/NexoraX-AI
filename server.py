@@ -44,8 +44,11 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 ACCOUNTS_FILE = 'acc.txt'
+SESSIONS_FILE = 'sessions_store.json'
 file_lock = threading.Lock()
 sessions = {}
+
+SESSION_EXPIRY_HOURS = 168  # 7 days
 
 def load_users():
     """Load users from acc.txt and return dict {username: password}"""
@@ -84,6 +87,44 @@ def authenticate_user(username, password):
     users = load_users()
     return users.get(username) == password
 
+def load_sessions():
+    """Load sessions from JSON file and clean expired ones"""
+    try:
+        with file_lock:
+            if os.path.exists(SESSIONS_FILE):
+                with open(SESSIONS_FILE, 'r', encoding='utf-8') as f:
+                    stored_sessions = json.load(f)
+                    
+                # Clean expired sessions
+                current_time = time.time()
+                valid_sessions = {}
+                for session_id, data in stored_sessions.items():
+                    if current_time < data.get('expires_at', 0):
+                        # Keep full session data with expiry
+                        valid_sessions[session_id] = {
+                            'username': data['username'],
+                            'expires_at': data['expires_at']
+                        }
+                    else:
+                        logger.info(f"Removed expired session for user: {data.get('username')}")
+                
+                return valid_sessions
+    except Exception as e:
+        logger.error(f"Error loading sessions: {e}")
+    return {}
+
+def save_sessions():
+    """Save current sessions to JSON file preserving expiry timestamps"""
+    try:
+        with file_lock:
+            # Sessions are already in correct format with username and expires_at
+            with open(SESSIONS_FILE, 'w', encoding='utf-8') as f:
+                json.dump(sessions, f, indent=2)
+        return True
+    except Exception as e:
+        logger.error(f"Error saving sessions: {e}")
+        return False
+
 def generate_session_id():
     """Generate random session ID"""
     return secrets.token_urlsafe(32)
@@ -91,19 +132,35 @@ def generate_session_id():
 def create_session(username):
     """Create new session and return session_id"""
     session_id = generate_session_id()
-    sessions[session_id] = username
+    sessions[session_id] = {
+        'username': username,
+        'expires_at': time.time() + (SESSION_EXPIRY_HOURS * 3600)
+    }
+    save_sessions()  # Persist to file
     logger.info(f"Session created for user: {username}")
     return session_id
 
 def get_user_from_session(session_id):
-    """Get username from session_id"""
-    return sessions.get(session_id)
+    """Get username from session_id, checking expiry"""
+    session_data = sessions.get(session_id)
+    if not session_data:
+        return None
+    
+    # Check if session has expired
+    if time.time() >= session_data.get('expires_at', 0):
+        # Session expired, remove it
+        delete_session(session_id)
+        logger.info(f"Session expired for user: {session_data.get('username')}")
+        return None
+    
+    return session_data.get('username')
 
 def delete_session(session_id):
     """Delete session"""
     if session_id in sessions:
-        username = sessions[session_id]
+        username = sessions[session_id].get('username', 'Unknown')
         del sessions[session_id]
+        save_sessions()  # Persist to file
         logger.info(f"Session deleted for user: {username}")
         return True
     return False
@@ -1097,7 +1154,7 @@ Hãy xử lý prompt sau:"""
                     self.end_headers()
                     
                     response_json = json.dumps({
-                        "logged_in": True,
+                        "valid": True,
                         "username": username,
                         "session_id": session_id
                     }, ensure_ascii=False)
@@ -1110,7 +1167,7 @@ Hãy xử lý prompt sau:"""
             self.end_headers()
             
             response_json = json.dumps({
-                "logged_in": False,
+                "valid": False,
                 "username": None
             }, ensure_ascii=False)
             self.wfile.write(response_json.encode('utf-8'))
@@ -1306,5 +1363,10 @@ if __name__ == "__main__":
     if missing_files:
         logger.error(f"Missing required files: {', '.join(missing_files)}")
         sys.exit(1)
+    
+    # Load existing sessions from file
+    logger.info("Loading existing sessions...")
+    sessions.update(load_sessions())
+    logger.info(f"Loaded {len(sessions)} active session(s)")
     
     run_server(port)
