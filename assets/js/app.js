@@ -57,6 +57,9 @@ class NexoraXChat {
         this.loadDualModeState();
         this.initializeDesktopSidebar();
         this.renderChatList();
+        
+        // Authentication - check session on load
+        this.checkUserSession();
     }
     
     migrateLocalStorageKeys() {
@@ -91,6 +94,7 @@ class NexoraXChat {
         this.aboutModal = document.getElementById('aboutModal');
         this.clearAllModal = document.getElementById('clearAllModal');
         this.feedbackModal = document.getElementById('feedbackModal');
+        this.authModal = document.getElementById('authModal');
         // Search removed
         
         // Scroll buttons removed
@@ -300,6 +304,9 @@ class NexoraXChat {
                 this.homeInput.setSelectionRange(len, len);
             });
         });
+        
+        // Authentication event listeners
+        this.setupAuthEventListeners();
         
         // Quick model selector buttons
         const homeQuickModelBtn = document.getElementById('homeQuickModelBtn');
@@ -2616,6 +2623,361 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
                 }
             }, 300);
         }, 3000);
+    }
+    
+    // ================================
+    // AUTHENTICATION METHODS
+    // ================================
+    
+    setupAuthEventListeners() {
+        // Close auth modal
+        const closeAuthModal = document.getElementById('closeAuthModal');
+        if (closeAuthModal) {
+            closeAuthModal.addEventListener('click', () => this.hideAuthModal());
+        }
+        
+        // Tab switching with indicator animation
+        const loginTab = document.getElementById('loginTab');
+        const signupTab = document.getElementById('signupTab');
+        const loginForm = document.getElementById('loginForm');
+        const signupForm = document.getElementById('signupForm');
+        const tabIndicator = document.getElementById('tabIndicator');
+        
+        if (loginTab && signupTab && loginForm && signupForm && tabIndicator) {
+            loginTab.addEventListener('click', () => {
+                // Update tab styles
+                loginTab.classList.add('text-blue-600');
+                loginTab.classList.remove('text-gray-600');
+                signupTab.classList.remove('text-blue-600');
+                signupTab.classList.add('text-gray-600');
+                
+                // Update indicator position (move to login tab)
+                tabIndicator.style.transform = 'translateX(0)';
+                tabIndicator.style.width = '64px';
+                
+                // Show/hide forms
+                loginForm.classList.remove('hidden');
+                signupForm.classList.add('hidden');
+            });
+            
+            signupTab.addEventListener('click', () => {
+                // Update tab styles
+                signupTab.classList.add('text-blue-600');
+                signupTab.classList.remove('text-gray-600');
+                loginTab.classList.remove('text-blue-600');
+                loginTab.classList.add('text-gray-600');
+                
+                // Update indicator position (move to signup tab)
+                tabIndicator.style.transform = 'translateX(84px)';
+                tabIndicator.style.width = '64px';
+                
+                // Show/hide forms
+                signupForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+            });
+        }
+        
+        // Toggle username signup expandable section
+        const toggleUsernameSignup = document.getElementById('toggleUsernameSignup');
+        const backToEmailSignup = document.getElementById('backToEmailSignup');
+        const signupEmailForm = document.getElementById('signupEmailForm');
+        const signupUsernameForm = document.getElementById('signupUsernameForm');
+        
+        if (toggleUsernameSignup && backToEmailSignup && signupEmailForm && signupUsernameForm) {
+            toggleUsernameSignup.addEventListener('click', () => {
+                signupEmailForm.classList.add('hidden');
+                signupUsernameForm.classList.remove('hidden');
+                toggleUsernameSignup.parentElement.classList.add('hidden');
+            });
+            
+            backToEmailSignup.addEventListener('click', () => {
+                signupUsernameForm.classList.add('hidden');
+                signupEmailForm.classList.remove('hidden');
+                toggleUsernameSignup.parentElement.classList.remove('hidden');
+            });
+        }
+        
+        // Login button
+        const loginBtn = document.getElementById('loginBtn');
+        if (loginBtn) {
+            loginBtn.addEventListener('click', () => this.handleLogin());
+        }
+        
+        // Login with Enter key
+        const loginUsername = document.getElementById('loginUsername');
+        const loginPassword = document.getElementById('loginPassword');
+        if (loginUsername && loginPassword) {
+            [loginUsername, loginPassword].forEach(input => {
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.handleLogin();
+                    }
+                });
+            });
+        }
+        
+        // Signup with email
+        const signupEmailBtn = document.getElementById('signupEmailBtn');
+        if (signupEmailBtn) {
+            signupEmailBtn.addEventListener('click', () => this.handleSignup('email'));
+        }
+        
+        // Signup with username only
+        const signupUsernameBtn = document.getElementById('signupUsernameBtn');
+        if (signupUsernameBtn) {
+            signupUsernameBtn.addEventListener('click', () => this.handleSignup('username'));
+        }
+        
+        // Signup with Enter key
+        const signupInputs = [
+            'signupEmail', 'signupEmailUsername', 'signupEmailPassword',
+            'signupUsernameOnly', 'signupUsernamePassword'
+        ];
+        signupInputs.forEach(id => {
+            const input = document.getElementById(id);
+            if (input) {
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        const emailForm = document.getElementById('signupEmailForm');
+                        if (emailForm && !emailForm.classList.contains('hidden')) {
+                            this.handleSignup('email');
+                        } else {
+                            this.handleSignup('username');
+                        }
+                    }
+                });
+            }
+        });
+    }
+    
+    async checkUserSession() {
+        const session = this.loadSession();
+        
+        if (!session || !session.session_id || !session.username) {
+            // No valid session, show auth modal after a delay
+            setTimeout(() => this.showAuthModal(), 500);
+            return;
+        }
+        
+        // Verify session with server
+        try {
+            const response = await fetch(`/api/auth/check-session?session_id=${session.session_id}`);
+            const data = await response.json();
+            
+            if (data.valid) {
+                this.updateUIForLoggedInUser(session.username);
+            } else {
+                // Session expired
+                localStorage.removeItem('nexorax_session_id');
+                localStorage.removeItem('nexorax_username');
+                setTimeout(() => this.showAuthModal(), 500);
+            }
+        } catch (error) {
+            console.error('Error checking session:', error);
+            setTimeout(() => this.showAuthModal(), 500);
+        }
+    }
+    
+    showAuthModal() {
+        if (!this.authModal) return;
+        
+        this.authModal.classList.remove('hidden');
+        setTimeout(() => {
+            const authContent = document.getElementById('authContent');
+            if (authContent) {
+                authContent.classList.remove('scale-95', 'opacity-0');
+                authContent.classList.add('scale-100', 'opacity-100');
+            }
+        }, 10);
+    }
+    
+    hideAuthModal() {
+        const authContent = document.getElementById('authContent');
+        if (authContent) {
+            authContent.classList.add('scale-95', 'opacity-0');
+            authContent.classList.remove('scale-100', 'opacity-100');
+        }
+        
+        setTimeout(() => {
+            if (this.authModal) {
+                this.authModal.classList.add('hidden');
+            }
+        }, 300);
+    }
+    
+    async handleSignup(type) {
+        let username, password, email = null;
+        
+        if (type === 'email') {
+            email = document.getElementById('signupEmail').value.trim();
+            username = document.getElementById('signupEmailUsername').value.trim();
+            password = document.getElementById('signupEmailPassword').value.trim();
+            
+            if (!email || !username || !password) {
+                this.showNotification('Vui lòng điền đầy đủ thông tin!', 'error');
+                return;
+            }
+            
+            if (!this.validateEmail(email)) {
+                this.showNotification('Email không hợp lệ!', 'error');
+                return;
+            }
+        } else {
+            username = document.getElementById('signupUsernameOnly').value.trim();
+            password = document.getElementById('signupUsernamePassword').value.trim();
+            
+            if (!username || !password) {
+                this.showNotification('Vui lòng điền đầy đủ thông tin!', 'error');
+                return;
+            }
+        }
+        
+        if (!this.validatePassword(password)) {
+            this.showNotification('Mật khẩu phải có ít nhất 6 ký tự!', 'error');
+            return;
+        }
+        
+        try {
+            const requestBody = { username, password };
+            if (email) {
+                requestBody.email = email;
+            }
+            
+            const response = await fetch('/api/auth/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                this.showNotification(`Đăng ký thành công! Chào mừng ${username} 🎉`, 'success');
+                this.saveSession(data.session_id, username);
+                this.updateUIForLoggedInUser(username);
+                this.hideAuthModal();
+                
+                // Clear inputs
+                if (type === 'email') {
+                    document.getElementById('signupEmail').value = '';
+                    document.getElementById('signupEmailUsername').value = '';
+                    document.getElementById('signupEmailPassword').value = '';
+                } else {
+                    document.getElementById('signupUsernameOnly').value = '';
+                    document.getElementById('signupUsernamePassword').value = '';
+                }
+            } else {
+                this.showNotification(data.error || 'Đăng ký thất bại!', 'error');
+            }
+        } catch (error) {
+            console.error('Signup error:', error);
+            this.showNotification('Lỗi kết nối! Vui lòng thử lại.', 'error');
+        }
+    }
+    
+    async handleLogin() {
+        const username = document.getElementById('loginUsername').value.trim();
+        const password = document.getElementById('loginPassword').value.trim();
+        
+        if (!username || !password) {
+            this.showNotification('Vui lòng điền đầy đủ thông tin!', 'error');
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                this.showNotification(`Đăng nhập thành công! Chào ${username} 👋`, 'success');
+                this.saveSession(data.session_id, username);
+                this.updateUIForLoggedInUser(username);
+                this.hideAuthModal();
+                
+                // Clear inputs
+                document.getElementById('loginUsername').value = '';
+                document.getElementById('loginPassword').value = '';
+            } else {
+                this.showNotification(data.error || 'Đăng nhập thất bại!', 'error');
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            this.showNotification('Lỗi kết nối! Vui lòng thử lại.', 'error');
+        }
+    }
+    
+    async handleLogout() {
+        const session = this.loadSession();
+        
+        if (!session || !session.session_id) {
+            this.showNotification('Bạn chưa đăng nhập!', 'error');
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/auth/logout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ session_id: session.session_id })
+            });
+            
+            if (response.ok) {
+                localStorage.removeItem('nexorax_session_id');
+                localStorage.removeItem('nexorax_username');
+                this.showNotification('Đã đăng xuất!', 'success');
+                
+                // Show auth modal again
+                setTimeout(() => this.showAuthModal(), 1000);
+                
+                // Update UI
+                this.updateUIForLoggedOutUser();
+            } else {
+                this.showNotification('Đăng xuất thất bại!', 'error');
+            }
+        } catch (error) {
+            console.error('Logout error:', error);
+            this.showNotification('Lỗi kết nối! Vui lòng thử lại.', 'error');
+        }
+    }
+    
+    saveSession(session_id, username) {
+        localStorage.setItem('nexorax_session_id', session_id);
+        localStorage.setItem('nexorax_username', username);
+    }
+    
+    loadSession() {
+        const session_id = localStorage.getItem('nexorax_session_id');
+        const username = localStorage.getItem('nexorax_username');
+        
+        if (session_id && username) {
+            return { session_id, username };
+        }
+        return null;
+    }
+    
+    updateUIForLoggedInUser(username) {
+        // You can add UI updates here if needed
+        // For example, show username in sidebar, enable features, etc.
+        console.log('User logged in:', username);
+    }
+    
+    updateUIForLoggedOutUser() {
+        // Reset UI to logged out state
+        console.log('User logged out');
+    }
+    
+    validateEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+    
+    validatePassword(password) {
+        return password.length >= 6;
     }
 }
 

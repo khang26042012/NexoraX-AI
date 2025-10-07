@@ -16,6 +16,8 @@ import urllib.request
 import urllib.parse
 import urllib.error
 import time
+import secrets
+import threading
 
 # Import configuration
 try:
@@ -40,6 +42,71 @@ except ImportError:
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+ACCOUNTS_FILE = 'acc.txt'
+file_lock = threading.Lock()
+sessions = {}
+
+def load_users():
+    """Load users from acc.txt and return dict {username: password}"""
+    users = {}
+    try:
+        with file_lock:
+            if os.path.exists(ACCOUNTS_FILE):
+                with open(ACCOUNTS_FILE, 'r', encoding='utf-8') as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and '|' in line:
+                            username, password = line.split('|', 1)
+                            users[username] = password
+    except Exception as e:
+        logger.error(f"Error loading users: {e}")
+    return users
+
+def save_user(username, password):
+    """Append new user to acc.txt"""
+    try:
+        with file_lock:
+            with open(ACCOUNTS_FILE, 'a', encoding='utf-8') as f:
+                f.write(f"{username}|{password}\n")
+        return True
+    except Exception as e:
+        logger.error(f"Error saving user: {e}")
+        return False
+
+def check_user_exists(username):
+    """Check if username already exists"""
+    users = load_users()
+    return username in users
+
+def authenticate_user(username, password):
+    """Verify username and password"""
+    users = load_users()
+    return users.get(username) == password
+
+def generate_session_id():
+    """Generate random session ID"""
+    return secrets.token_urlsafe(32)
+
+def create_session(username):
+    """Create new session and return session_id"""
+    session_id = generate_session_id()
+    sessions[session_id] = username
+    logger.info(f"Session created for user: {username}")
+    return session_id
+
+def get_user_from_session(session_id):
+    """Get username from session_id"""
+    return sessions.get(session_id)
+
+def delete_session(session_id):
+    """Delete session"""
+    if session_id in sessions:
+        username = sessions[session_id]
+        del sessions[session_id]
+        logger.info(f"Session deleted for user: {username}")
+        return True
+    return False
 
 class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     """Custom HTTP request handler for NexoraX AI application"""
@@ -102,6 +169,12 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.handle_enhance_prompt()
         elif self.path == '/api/pollinations/generate':
             self.handle_pollinations_generate()
+        elif self.path == '/api/auth/signup':
+            self.handle_auth_signup()
+        elif self.path == '/api/auth/login':
+            self.handle_auth_login()
+        elif self.path == '/api/auth/logout':
+            self.handle_auth_logout()
         else:
             self._send_json_error(404, "API endpoint không tồn tại", "NOT_FOUND")
 
@@ -869,6 +942,183 @@ Hãy xử lý prompt sau:"""
             logger.error(f"Exception args: {e.args}")
             self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
 
+    def handle_auth_signup(self):
+        """Handle user signup"""
+        try:
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            request_data = json.loads(post_data.decode('utf-8'))
+            
+            username = request_data.get('username', '').strip()
+            password = request_data.get('password', '').strip()
+            
+            if not username or not password:
+                self._send_json_error(400, "Username và password không được để trống", "MISSING_CREDENTIALS")
+                return
+            
+            if '|' in username or '|' in password:
+                self._send_json_error(400, "Username và password không được chứa ký tự '|'", "INVALID_CREDENTIALS")
+                return
+            
+            if check_user_exists(username):
+                self._send_json_error(400, "Username đã tồn tại", "USERNAME_EXISTS")
+                return
+            
+            if save_user(username, password):
+                session_id = create_session(username)
+                
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self._send_cors_headers()
+                self.end_headers()
+                
+                response_json = json.dumps({
+                    "success": True,
+                    "session_id": session_id,
+                    "username": username
+                }, ensure_ascii=False)
+                self.wfile.write(response_json.encode('utf-8'))
+                
+                logger.info(f"User registered successfully: {username}")
+            else:
+                self._send_json_error(500, "Lỗi khi lưu thông tin người dùng", "SAVE_ERROR")
+                
+        except json.JSONDecodeError as e:
+            logger.error(f"Invalid JSON in signup request: {e}")
+            self._send_json_error(400, "Dữ liệu gửi lên không hợp lệ", "INVALID_JSON")
+        except Exception as e:
+            logger.error(f"Signup error: {e}")
+            self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
+
+    def handle_auth_login(self):
+        """Handle user login"""
+        try:
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            request_data = json.loads(post_data.decode('utf-8'))
+            
+            username = request_data.get('username', '').strip()
+            password = request_data.get('password', '').strip()
+            
+            if not username or not password:
+                self._send_json_error(400, "Username và password không được để trống", "MISSING_CREDENTIALS")
+                return
+            
+            if authenticate_user(username, password):
+                session_id = create_session(username)
+                
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self._send_cors_headers()
+                self.end_headers()
+                
+                response_json = json.dumps({
+                    "success": True,
+                    "session_id": session_id,
+                    "username": username
+                }, ensure_ascii=False)
+                self.wfile.write(response_json.encode('utf-8'))
+                
+                logger.info(f"User logged in successfully: {username}")
+            else:
+                self._send_json_error(401, "Username hoặc password không đúng", "INVALID_CREDENTIALS")
+                
+        except json.JSONDecodeError as e:
+            logger.error(f"Invalid JSON in login request: {e}")
+            self._send_json_error(400, "Dữ liệu gửi lên không hợp lệ", "INVALID_JSON")
+        except Exception as e:
+            logger.error(f"Login error: {e}")
+            self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
+
+    def handle_auth_logout(self):
+        """Handle user logout"""
+        try:
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            request_data = json.loads(post_data.decode('utf-8'))
+            
+            session_id = request_data.get('session_id', '').strip()
+            
+            if not session_id:
+                self._send_json_error(400, "Session ID không được để trống", "MISSING_SESSION_ID")
+                return
+            
+            if delete_session(session_id):
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self._send_cors_headers()
+                self.end_headers()
+                
+                response_json = json.dumps({
+                    "success": True,
+                    "message": "Đăng xuất thành công"
+                }, ensure_ascii=False)
+                self.wfile.write(response_json.encode('utf-8'))
+            else:
+                self._send_json_error(400, "Session không hợp lệ hoặc đã hết hạn", "INVALID_SESSION")
+                
+        except json.JSONDecodeError as e:
+            logger.error(f"Invalid JSON in logout request: {e}")
+            self._send_json_error(400, "Dữ liệu gửi lên không hợp lệ", "INVALID_JSON")
+        except Exception as e:
+            logger.error(f"Logout error: {e}")
+            self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
+
+    def handle_auth_check_session(self):
+        """Handle check session status"""
+        try:
+            session_id = None
+            
+            if 'Cookie' in self.headers:
+                cookies = self.headers['Cookie']
+                for cookie in cookies.split(';'):
+                    if 'session_id=' in cookie:
+                        session_id = cookie.split('session_id=')[1].strip()
+                        break
+            
+            if not session_id and 'Authorization' in self.headers:
+                auth_header = self.headers['Authorization']
+                if auth_header.startswith('Bearer '):
+                    session_id = auth_header[7:].strip()
+            
+            if 'session_id' in self.path:
+                from urllib.parse import parse_qs, urlparse
+                parsed = urlparse(self.path)
+                query_params = parse_qs(parsed.query)
+                if 'session_id' in query_params:
+                    session_id = query_params['session_id'][0]
+            
+            if session_id:
+                username = get_user_from_session(session_id)
+                if username:
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'application/json')
+                    self._send_cors_headers()
+                    self.end_headers()
+                    
+                    response_json = json.dumps({
+                        "logged_in": True,
+                        "username": username,
+                        "session_id": session_id
+                    }, ensure_ascii=False)
+                    self.wfile.write(response_json.encode('utf-8'))
+                    return
+            
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self._send_cors_headers()
+            self.end_headers()
+            
+            response_json = json.dumps({
+                "logged_in": False,
+                "username": None
+            }, ensure_ascii=False)
+            self.wfile.write(response_json.encode('utf-8'))
+                
+        except Exception as e:
+            logger.error(f"Check session error: {e}")
+            self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
+
     def _format_search_context_for_ai(self, serpapi_data, query):
         """Format SerpAPI data into context for AI processing"""
         context_parts = []
@@ -941,6 +1191,11 @@ Vui lòng trả lời:"""
         """Handle GET requests with proper MIME types and caching"""
         # Log all requests
         logger.info(f"GET {self.path} from {self.client_address[0]}")
+        
+        # Handle check-session endpoint
+        if self.path.startswith('/api/auth/check-session'):
+            self.handle_auth_check_session()
+            return
         
         # Handle root path
         if self.path == '/':
