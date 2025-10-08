@@ -82,8 +82,8 @@ def get_allowed_origins():
         
     return [origin for origin in origins if origin]
 
-# Request timeout (seconds) - Increased for Pro users with unlimited tokens
-REQUEST_TIMEOUT = 120
+# Request timeout (seconds) - Optimized for better performance
+REQUEST_TIMEOUT = 30
 
 # Maximum file upload size (bytes)
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB

@@ -47,6 +47,7 @@ ACCOUNTS_FILE = 'acc.txt'
 SESSIONS_FILE = 'sessions_store.json'
 RATE_LIMIT_FILE = 'rate_limit_store.json'
 file_lock = threading.Lock()
+users = {}
 sessions = {}
 rate_limits = {}
 
@@ -71,11 +72,12 @@ def load_users():
     return users
 
 def save_user(username, password):
-    """Append new user to acc.txt"""
+    """Append new user to acc.txt and update in-memory cache"""
     try:
         with file_lock:
             with open(ACCOUNTS_FILE, 'a', encoding='utf-8') as f:
                 f.write(f"{username}|{password}\n")
+            users[username] = password
         return True
     except Exception as e:
         logger.error(f"Error saving user: {e}")
@@ -126,12 +128,10 @@ def validate_password(password):
 
 def check_user_exists(username):
     """Check if username already exists"""
-    users = load_users()
     return username in users
 
 def authenticate_user(username, password):
     """Verify username and password"""
-    users = load_users()
     return users.get(username) == password
 
 def load_sessions():
@@ -1646,6 +1646,11 @@ if __name__ == "__main__":
     if missing_files:
         logger.error(f"Missing required files: {', '.join(missing_files)}")
         sys.exit(1)
+    
+    # Load users from file once at startup
+    logger.info("Loading users...")
+    users.update(load_users())
+    logger.info(f"Loaded {len(users)} user(s)")
     
     # Load existing sessions from file
     logger.info("Loading existing sessions...")
