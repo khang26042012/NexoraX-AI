@@ -77,6 +77,49 @@ def save_user(username, password):
         logger.error(f"Error saving user: {e}")
         return False
 
+def validate_username(username):
+    """Validate username format and strength"""
+    if not username:
+        return False, "Username không được để trống"
+    
+    if len(username) < 3:
+        return False, "Username phải có ít nhất 3 ký tự"
+    
+    if len(username) > 30:
+        return False, "Username không được vượt quá 30 ký tự"
+    
+    if '|' in username:
+        return False, "Username không được chứa ký tự '|'"
+    
+    import re
+    if not re.match(r'^[a-zA-Z0-9_]+$', username):
+        return False, "Username chỉ được chứa chữ cái, số và dấu gạch dưới"
+    
+    return True, "Valid"
+
+def validate_password(password):
+    """Validate password strength"""
+    if not password:
+        return False, "Password không được để trống"
+    
+    if len(password) < 6:
+        return False, "Password phải có ít nhất 6 ký tự"
+    
+    if len(password) > 100:
+        return False, "Password không được vượt quá 100 ký tự"
+    
+    if '|' in password:
+        return False, "Password không được chứa ký tự '|'"
+    
+    import re
+    has_letter = bool(re.search(r'[a-zA-Z]', password))
+    has_number = bool(re.search(r'[0-9]', password))
+    
+    if not (has_letter and has_number):
+        return False, "Password phải chứa cả chữ và số"
+    
+    return True, "Valid"
+
 def check_user_exists(username):
     """Check if username already exists"""
     users = load_users()
@@ -1013,8 +1056,14 @@ Hãy xử lý prompt sau:"""
                 self._send_json_error(400, "Username và password không được để trống", "MISSING_CREDENTIALS")
                 return
             
-            if '|' in username or '|' in password:
-                self._send_json_error(400, "Username và password không được chứa ký tự '|'", "INVALID_CREDENTIALS")
+            valid_username, username_msg = validate_username(username)
+            if not valid_username:
+                self._send_json_error(400, username_msg, "INVALID_USERNAME")
+                return
+            
+            valid_password, password_msg = validate_password(password)
+            if not valid_password:
+                self._send_json_error(400, password_msg, "INVALID_PASSWORD")
                 return
             
             if check_user_exists(username):
@@ -1059,6 +1108,13 @@ Hãy xử lý prompt sau:"""
             
             if not username or not password:
                 self._send_json_error(400, "Username và password không được để trống", "MISSING_CREDENTIALS")
+                return
+            
+            valid_username, _ = validate_username(username)
+            valid_password, _ = validate_password(password)
+            
+            if not valid_username or not valid_password:
+                self._send_json_error(401, "Username hoặc password không đúng", "INVALID_CREDENTIALS")
                 return
             
             if authenticate_user(username, password):
