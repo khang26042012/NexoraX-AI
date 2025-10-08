@@ -2751,25 +2751,16 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
     }
     
     async checkUserSession() {
-        const session = this.loadSession();
-        
-        if (!session || !session.session_id || !session.username) {
-            // No valid session, show auth modal after a delay
-            setTimeout(() => this.showAuthModal(), 500);
-            return;
-        }
-        
-        // Verify session with server
         try {
-            const response = await fetch(`/api/auth/check-session?session_id=${session.session_id}`);
+            const response = await fetch('/api/auth/check-session', {
+                method: 'GET',
+                credentials: 'include'
+            });
             const data = await response.json();
             
-            if (data.valid) {
-                this.updateUIForLoggedInUser(session.username);
+            if (data.valid && data.username) {
+                this.updateUIForLoggedInUser(data.username);
             } else {
-                // Session expired
-                localStorage.removeItem('nexorax_session_id');
-                localStorage.removeItem('nexorax_username');
                 setTimeout(() => this.showAuthModal(), 500);
             }
         } catch (error) {
@@ -2846,6 +2837,7 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
             const response = await fetch('/api/auth/signup', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify(requestBody)
             });
             
@@ -2853,7 +2845,6 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
             
             if (response.ok) {
                 this.showNotification(`Đăng ký thành công! Chào mừng ${username} 🎉`, 'success');
-                this.saveSession(data.session_id, username);
                 this.updateUIForLoggedInUser(username);
                 this.hideAuthModal();
                 
@@ -2878,6 +2869,7 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
     async handleLogin() {
         const username = document.getElementById('loginUsername').value.trim();
         const password = document.getElementById('loginPassword').value.trim();
+        const rememberMe = document.getElementById('rememberMe')?.checked || false;
         
         if (!username || !password) {
             this.showNotification('Vui lòng điền đầy đủ thông tin!', 'error');
@@ -2888,20 +2880,23 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
             const response = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
+                credentials: 'include',
+                body: JSON.stringify({ username, password, remember_me: rememberMe })
             });
             
             const data = await response.json();
             
             if (response.ok) {
                 this.showNotification(`Đăng nhập thành công! Chào ${username} 👋`, 'success');
-                this.saveSession(data.session_id, username);
                 this.updateUIForLoggedInUser(username);
                 this.hideAuthModal();
                 
                 // Clear inputs
                 document.getElementById('loginUsername').value = '';
                 document.getElementById('loginPassword').value = '';
+                if (document.getElementById('rememberMe')) {
+                    document.getElementById('rememberMe').checked = false;
+                }
             } else {
                 this.showNotification(data.error || 'Đăng nhập thất bại!', 'error');
             }
@@ -2912,29 +2907,19 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
     }
     
     async handleLogout() {
-        const session = this.loadSession();
-        
-        if (!session || !session.session_id) {
-            this.showNotification('Bạn chưa đăng nhập!', 'error');
-            return;
-        }
-        
         try {
             const response = await fetch('/api/auth/logout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ session_id: session.session_id })
+                credentials: 'include',
+                body: JSON.stringify({})
             });
             
             if (response.ok) {
-                localStorage.removeItem('nexorax_session_id');
-                localStorage.removeItem('nexorax_username');
                 this.showNotification('Đã đăng xuất!', 'success');
                 
-                // Show auth modal again
                 setTimeout(() => this.showAuthModal(), 1000);
                 
-                // Update UI
                 this.updateUIForLoggedOutUser();
             } else {
                 this.showNotification('Đăng xuất thất bại!', 'error');
@@ -2945,20 +2930,6 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
         }
     }
     
-    saveSession(session_id, username) {
-        localStorage.setItem('nexorax_session_id', session_id);
-        localStorage.setItem('nexorax_username', username);
-    }
-    
-    loadSession() {
-        const session_id = localStorage.getItem('nexorax_session_id');
-        const username = localStorage.getItem('nexorax_username');
-        
-        if (session_id && username) {
-            return { session_id, username };
-        }
-        return null;
-    }
     
     updateUIForLoggedInUser(username) {
         console.log('User logged in:', username);

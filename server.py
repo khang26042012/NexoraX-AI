@@ -176,15 +176,17 @@ def generate_session_id():
     """Generate random session ID"""
     return secrets.token_urlsafe(32)
 
-def create_session(username):
+def create_session(username, remember_me=False):
     """Create new session and return session_id"""
     session_id = generate_session_id()
+    expiry_hours = (30 * 24) if remember_me else SESSION_EXPIRY_HOURS
     sessions[session_id] = {
         'username': username,
-        'expires_at': time.time() + (SESSION_EXPIRY_HOURS * 3600)
+        'expires_at': time.time() + (expiry_hours * 3600),
+        'remember_me': remember_me
     }
     save_sessions()  # Persist to file
-    logger.info(f"Session created for user: {username}")
+    logger.info(f"Session created for user: {username} (Remember me: {remember_me})")
     return session_id
 
 def get_user_from_session(session_id):
@@ -1201,17 +1203,25 @@ Hãy xử lý prompt sau:"""
                 return
             
             if save_user(username, password):
-                session_id = create_session(username)
+                remember_me = request_data.get('remember_me', False)
+                session_id = create_session(username, remember_me=remember_me)
                 
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self._send_cors_headers()
+                
+                max_age = (30 * 24 * 3600) if remember_me else (7 * 24 * 3600)
+                cookie_value = f"session_id={session_id}; Path=/; HttpOnly; SameSite=Lax; Max-Age={max_age}"
+                if os.getenv('REPLIT_DOMAIN') or os.getenv('RENDER'):
+                    cookie_value += "; Secure"
+                self.send_header('Set-Cookie', cookie_value)
+                
                 self.end_headers()
                 
                 response_json = json.dumps({
                     "success": True,
-                    "session_id": session_id,
-                    "username": username
+                    "username": username,
+                    "remember_me": remember_me
                 }, ensure_ascii=False)
                 self.wfile.write(response_json.encode('utf-8'))
                 
@@ -1254,17 +1264,25 @@ Hãy xử lý prompt sau:"""
             
             if authenticate_user(username, password):
                 clear_rate_limit(username)
-                session_id = create_session(username)
+                remember_me = request_data.get('remember_me', False)
+                session_id = create_session(username, remember_me=remember_me)
                 
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self._send_cors_headers()
+                
+                max_age = (30 * 24 * 3600) if remember_me else (7 * 24 * 3600)
+                cookie_value = f"session_id={session_id}; Path=/; HttpOnly; SameSite=Lax; Max-Age={max_age}"
+                if os.getenv('REPLIT_DOMAIN') or os.getenv('RENDER'):
+                    cookie_value += "; Secure"
+                self.send_header('Set-Cookie', cookie_value)
+                
                 self.end_headers()
                 
                 response_json = json.dumps({
                     "success": True,
-                    "session_id": session_id,
-                    "username": username
+                    "username": username,
+                    "remember_me": remember_me
                 }, ensure_ascii=False)
                 self.wfile.write(response_json.encode('utf-8'))
                 
@@ -1288,29 +1306,44 @@ Hãy xử lý prompt sau:"""
     def handle_auth_logout(self):
         """Handle user logout"""
         try:
-            content_length = int(self.headers['Content-Length'])
-            post_data = self.rfile.read(content_length)
-            request_data = json.loads(post_data.decode('utf-8'))
+            session_id = None
             
-            session_id = request_data.get('session_id', '').strip()
+            if 'Cookie' in self.headers:
+                cookies = self.headers['Cookie']
+                for cookie in cookies.split(';'):
+                    if 'session_id=' in cookie:
+                        session_id = cookie.split('session_id=')[1].strip()
+                        break
+            
+            if not session_id:
+                content_length = int(self.headers.get('Content-Length', 0))
+                if content_length > 0:
+                    post_data = self.rfile.read(content_length)
+                    request_data = json.loads(post_data.decode('utf-8'))
+                    session_id = request_data.get('session_id', '').strip()
             
             if not session_id:
                 self._send_json_error(400, "Session ID không được để trống", "MISSING_SESSION_ID")
                 return
             
-            if delete_session(session_id):
-                self.send_response(200)
-                self.send_header('Content-Type', 'application/json')
-                self._send_cors_headers()
-                self.end_headers()
-                
-                response_json = json.dumps({
-                    "success": True,
-                    "message": "Đăng xuất thành công"
-                }, ensure_ascii=False)
-                self.wfile.write(response_json.encode('utf-8'))
-            else:
-                self._send_json_error(400, "Session không hợp lệ hoặc đã hết hạn", "INVALID_SESSION")
+            delete_session(session_id)
+            
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self._send_cors_headers()
+            
+            cookie_value = "session_id=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0"
+            if os.getenv('REPLIT_DOMAIN') or os.getenv('RENDER'):
+                cookie_value += "; Secure"
+            self.send_header('Set-Cookie', cookie_value)
+            
+            self.end_headers()
+            
+            response_json = json.dumps({
+                "success": True,
+                "message": "Đăng xuất thành công"
+            }, ensure_ascii=False)
+            self.wfile.write(response_json.encode('utf-8'))
                 
         except json.JSONDecodeError as e:
             logger.error(f"Invalid JSON in logout request: {e}")
