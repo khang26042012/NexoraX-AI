@@ -837,16 +837,24 @@ class NexoraXChat {
     
     async getAIResponse(message, aiMessage, files = null) {
         try {
+            // Define all LLM7 models
+            const llm7Models = [
+                'gpt-5-chat', 'gemini-search', 'deepseek-v3.1', 'deepseek-reasoning',
+                'gemini-2.5-flash-lite', 'mistral-small-3.1-24b-instruct-2503', 
+                'nova-fast', 'gpt-5-mini', 'gpt-5-nano-2025-08-07', 
+                'gpt-o4-mini-2025-04-16', 'qwen2.5-coder-32b-instruct', 
+                'roblox-rp', 'bidara', 'rtist', 'mistral-medium-2508', 
+                'mistral-small-2503', 'open-mixtral-8x7b', 
+                'Steelskull/L3.3-MS-Nevoria-70b', 'gemma-2-2b-it'
+            ];
+            
             // Check selected model to determine which endpoint to use
             if (this.selectedModel === 'nexorax2') {
                 // Use search-enhanced AI model (SerpAPI + Gemini)
                 return await this.getSearchEnhancedResponse(message, aiMessage);
-            } else if (this.selectedModel === 'gpt-5-chat') {
-                // Use LLM7.io for GPT-5 Chat
-                return await this.getLLM7GPT5ChatResponse(message, aiMessage);
-            } else if (this.selectedModel === 'gemini-search') {
-                // Use LLM7.io for Gemini Search
-                return await this.getLLM7GeminiSearchResponse(message, aiMessage);
+            } else if (llm7Models.includes(this.selectedModel)) {
+                // Use LLM7.io for all LLM7 models
+                return await this.getLLM7Response(this.selectedModel, message, aiMessage);
             } else if (this.selectedModel === 'image-gen') {
                 // Use Pollinations AI for image generation
                 return await this.getImageGenerationResponse(message, aiMessage);
@@ -1270,6 +1278,65 @@ class NexoraXChat {
             console.error('LLM7 Gemini Search Error:', error);
             
             let errorMessage = 'Xin lỗi, đã có lỗi xảy ra khi gọi Gemini Search.';
+            if (error.message) {
+                errorMessage += ` Chi tiết: ${error.message}`;
+            }
+            errorMessage += ' Vui lòng thử lại hoặc chọn model khác.';
+            
+            aiMessage.content = errorMessage;
+            aiMessage.isTyping = false;
+            this.updateMessage(aiMessage);
+        }
+    }
+
+    async getLLM7Response(modelId, message, aiMessage) {
+        try {
+            const url = '/api/llm7/chat';
+            
+            // Get conversation history (limit to last 15 messages to avoid token limit)
+            const chat = this.chats[this.currentChatId];
+            const conversationHistory = this.prepareConversationHistoryLLM7(chat.messages, 15);
+            
+            const requestBody = {
+                model: modelId,
+                message: message,
+                messages: conversationHistory
+            };
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody),
+                signal: AbortSignal.timeout(120000)
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'HTTP error! status: ' + response.status);
+            }
+            
+            const data = await response.json();
+            console.log(`LLM7 ${modelId} response:`, data);
+            
+            // Extract response
+            let responseText = '';
+            if (data.reply) {
+                responseText = data.reply;
+            } else {
+                responseText = JSON.stringify(data);
+            }
+            
+            // Update AI message with response
+            aiMessage.content = responseText;
+            aiMessage.isTyping = false;
+            this.updateMessage(aiMessage);
+            
+        } catch (error) {
+            console.error(`LLM7 ${modelId} Error:`, error);
+            
+            let errorMessage = `Xin lỗi, đã có lỗi xảy ra khi gọi ${modelId}.`;
             if (error.message) {
                 errorMessage += ` Chi tiết: ${error.message}`;
             }
@@ -2289,7 +2356,24 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
             'nexorax2': 'Search',
             'gpt-5-chat': 'Gpt-5',
             'gemini-search': 'Gemini Search',
-            'image-gen': 'Image Generator'
+            'image-gen': 'Image Generator',
+            'deepseek-v3.1': 'DeepSeek V3.1',
+            'deepseek-reasoning': 'DeepSeek Reasoning',
+            'gemini-2.5-flash-lite': 'Gemini 2.5 Flash Lite',
+            'mistral-small-3.1-24b-instruct-2503': 'Mistral Small 3.1',
+            'nova-fast': 'Nova Fast',
+            'gpt-5-mini': 'GPT-5 Mini',
+            'gpt-5-nano-2025-08-07': 'GPT-5 Nano',
+            'gpt-o4-mini-2025-04-16': 'GPT-O4 Mini',
+            'qwen2.5-coder-32b-instruct': 'Qwen Coder',
+            'roblox-rp': 'Roblox RP',
+            'bidara': 'Bidara',
+            'rtist': 'Rtist',
+            'mistral-medium-2508': 'Mistral Medium',
+            'mistral-small-2503': 'Mistral Small',
+            'open-mixtral-8x7b': 'Open Mixtral 8x7B',
+            'Steelskull/L3.3-MS-Nevoria-70b': 'MS Nevoria 70B',
+            'gemma-2-2b-it': 'Gemma 2 2B'
         };
         
         // Update settings display
@@ -2328,7 +2412,24 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
             'nexorax2': 'Search',
             'gpt-5-chat': 'Gpt-5',
             'gemini-search': 'Gemini Search',
-            'image-gen': 'Image Generator'
+            'image-gen': 'Image Generator',
+            'deepseek-v3.1': 'DeepSeek V3.1',
+            'deepseek-reasoning': 'DeepSeek Reasoning',
+            'gemini-2.5-flash-lite': 'Gemini 2.5 Flash Lite',
+            'mistral-small-3.1-24b-instruct-2503': 'Mistral Small 3.1',
+            'nova-fast': 'Nova Fast',
+            'gpt-5-mini': 'GPT-5 Mini',
+            'gpt-5-nano-2025-08-07': 'GPT-5 Nano',
+            'gpt-o4-mini-2025-04-16': 'GPT-O4 Mini',
+            'qwen2.5-coder-32b-instruct': 'Qwen Coder',
+            'roblox-rp': 'Roblox RP',
+            'bidara': 'Bidara',
+            'rtist': 'Rtist',
+            'mistral-medium-2508': 'Mistral Medium',
+            'mistral-small-2503': 'Mistral Small',
+            'open-mixtral-8x7b': 'Open Mixtral 8x7B',
+            'Steelskull/L3.3-MS-Nevoria-70b': 'MS Nevoria 70B',
+            'gemma-2-2b-it': 'Gemma 2 2B'
         };
         const currentModelDisplay = document.getElementById('currentModelDisplay');
         if (currentModelDisplay) {

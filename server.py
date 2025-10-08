@@ -422,6 +422,8 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.handle_llm7_gpt5chat()
         elif self.path == '/api/llm7/gemini-search':
             self.handle_llm7_gemini_search()
+        elif self.path == '/api/llm7/chat':
+            self.handle_llm7_chat()
         elif self.path == '/api/enhance-prompt':
             self.handle_enhance_prompt()
         elif self.path == '/api/pollinations/generate':
@@ -986,6 +988,108 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self._send_json_error(400, "Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra định dạng JSON.", "INVALID_JSON")
         except Exception as e:
             logger.error(f"LLM7 Gemini-search error: {e}")
+            logger.error(f"Exception type: {type(e)}")
+            logger.error(f"Exception args: {e.args}")
+            self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
+
+    def handle_llm7_chat(self):
+        """Generic handler for all LLM7 models via LLM7.io"""
+        try:
+            # Get API key from config
+            api_key = get_api_key('llm7')
+            logger.info(f"LLM7 API Key configured: {'Yes' if api_key else 'No'}")
+            if not api_key:
+                self._send_json_error(500, 
+                    "LLM7 API key chưa được cấu hình. Vui lòng kiểm tra config.py",
+                    "API_KEY_MISSING")
+                return
+            
+            # Read request body
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            request_data = json.loads(post_data.decode('utf-8'))
+            
+            # Extract model and message from request
+            model_id = request_data.get('model', 'gpt-5-chat')
+            message = request_data.get('message', '')
+            if not message:
+                self._send_json_error(400, "Message không được để trống", "MISSING_MESSAGE")
+                return
+            
+            # Build LLM7.io API URL
+            llm7_url = "https://api.llm7.io/v1/chat/completions"
+            llm7_headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {api_key}"
+            }
+            
+            # Support conversation history - check if messages array is provided
+            conversation_messages = request_data.get('messages', [])
+            
+            # Build messages array with system prompt and conversation history
+            messages = [
+                {"role": "system", "content": "Bạn là trợ lý AI thân thiện và vui tính. Hãy sử dụng emoji một cách tự nhiên trong câu trả lời để làm cho cuộc trò chuyện sinh động và thú vị hơn. Đừng lạm dụng emoji, chỉ dùng khi phù hợp với ngữ cảnh. 😊"}
+            ]
+            
+            # Add conversation history if provided
+            if conversation_messages:
+                messages.extend(conversation_messages)
+            else:
+                # Fallback to old format for backward compatibility
+                messages.append({"role": "user", "content": message})
+            
+            llm7_payload = {
+                "model": model_id,
+                "messages": messages,
+                "temperature": 0.7
+            }
+            
+            # Make request to LLM7.io
+            llm7_request = urllib.request.Request(
+                llm7_url,
+                data=json.dumps(llm7_payload).encode('utf-8'),
+                headers=llm7_headers
+            )
+            
+            with urllib.request.urlopen(llm7_request, timeout=REQUEST_TIMEOUT) as response:
+                llm7_response = response.read().decode('utf-8')
+                llm7_data = json.loads(llm7_response)
+            
+            # Extract response
+            reply = ""
+            if "choices" in llm7_data and len(llm7_data["choices"]) > 0:
+                reply = llm7_data["choices"][0]["message"]["content"]
+            else:
+                reply = str(llm7_data)
+            
+            # Return response to client
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self._send_cors_headers()
+            self.end_headers()
+            
+            response_json = json.dumps({
+                "reply": reply,
+                "model": model_id
+            }, ensure_ascii=False)
+            self.wfile.write(response_json.encode('utf-8'))
+            
+            logger.info(f"LLM7 {model_id} completed successfully")
+            
+        except urllib.error.HTTPError as e:
+            try:
+                error_body = e.read().decode('utf-8')
+                self._send_json_error(e.code, f"LLM7 API lỗi: {error_body}", "UPSTREAM_ERROR")
+            except:
+                self._send_json_error(e.code, f"LLM7 API lỗi: {e.reason}", "UPSTREAM_ERROR")
+        except urllib.error.URLError as e:
+            logger.error(f"LLM7 connection error: {e}")
+            self._send_json_error(502, "Không thể kết nối đến LLM7 API", "CONNECTION_ERROR")
+        except json.JSONDecodeError as e:
+            logger.error(f"Invalid JSON in LLM7 request: {e}")
+            self._send_json_error(400, "Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra định dạng JSON.", "INVALID_JSON")
+        except Exception as e:
+            logger.error(f"LLM7 chat error: {e}")
             logger.error(f"Exception type: {type(e)}")
             logger.error(f"Exception args: {e.args}")
             self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
