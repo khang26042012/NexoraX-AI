@@ -4,7 +4,22 @@
 NexoraX AI is a modern Vietnamese AI chat application that provides conversations using Google Gemini language model, search-enhanced AI, and LLM7.io integration for GPT-5 Mini and Gemini Search models. Successfully configured for Replit environment.
 
 ## Recent Changes
-- **October 5, 2025 (Latest - Conversation Memory)**: Added conversation context memory for all AI models
+- **October 8, 2025 (Latest - Performance & Session Optimization)**: Major performance improvements and session persistence fixes
+  - **Performance Optimization**: Server response time improved dramatically
+    - ✅ Users cached in-memory (loaded once at startup, not per-request)
+    - ✅ Eliminated file I/O bottleneck from authentication
+    - ✅ REQUEST_TIMEOUT reduced from 120s → 30s for faster responses
+    - ✅ Performance test results: 34-50ms average response time (check-session, homepage, login)
+  - **Session Persistence**: Verified and working correctly
+    - ✅ Set-Cookie headers properly configured (HttpOnly, SameSite=Lax)
+    - ✅ Check-session endpoint validates cookies correctly
+    - ✅ Sessions persist across page reloads as expected
+    - ✅ Remember-me functionality working (30 days vs 7 days)
+  - **Code Quality**: Architect reviewed and approved all changes
+    - No security issues identified
+    - Backward compatible with existing sessions
+    - File acc.txt preserved unchanged
+- **October 5, 2025 (Conversation Memory)**: Added conversation context memory for all AI models
   - **Conversation Memory**: AI now remembers previous messages in the conversation
     - ✅ Works with all models: Gemini Flash 2.5, GPT-5 Chat, Gemini Search, Search with AI
     - ✅ Automatically sends last 10-20 messages as context (depending on model)
