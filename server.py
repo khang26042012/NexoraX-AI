@@ -305,6 +305,39 @@ def clear_rate_limit(username):
         save_rate_limits()
         logger.info(f"Rate limit cleared for user: {username}")
 
+def cleanup_expired_data():
+    """Background task to cleanup expired sessions and rate limits"""
+    while True:
+        try:
+            time.sleep(3600)
+            
+            current_time = time.time()
+            expired_sessions = []
+            for session_id, data in list(sessions.items()):
+                if current_time >= data.get('expires_at', 0):
+                    expired_sessions.append(session_id)
+            
+            for session_id in expired_sessions:
+                delete_session(session_id)
+            
+            if expired_sessions:
+                logger.info(f"Cleaned up {len(expired_sessions)} expired session(s)")
+            
+            expired_limits = []
+            for username, data in list(rate_limits.items()):
+                if current_time >= data.get('locked_until', 0) and current_time - data.get('last_attempt', 0) >= RATE_LIMIT_WINDOW:
+                    expired_limits.append(username)
+            
+            for username in expired_limits:
+                del rate_limits[username]
+            
+            if expired_limits:
+                save_rate_limits()
+                logger.info(f"Cleaned up {len(expired_limits)} expired rate limit(s)")
+                
+        except Exception as e:
+            logger.error(f"Error in cleanup task: {e}")
+
 class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     """Custom HTTP request handler for NexoraX AI application"""
     
@@ -1479,6 +1512,10 @@ def run_server(port=5000):
     
     # Allow reuse of socket address to prevent "Address already in use" errors
     socketserver.TCPServer.allow_reuse_address = True
+    
+    cleanup_thread = threading.Thread(target=cleanup_expired_data, daemon=True)
+    cleanup_thread.start()
+    logger.info("Background cleanup task started")
     
     try:
         with socketserver.TCPServer(("0.0.0.0", port), handler) as httpd:
