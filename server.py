@@ -147,10 +147,11 @@ def load_sessions():
                 valid_sessions = {}
                 for session_id, data in stored_sessions.items():
                     if current_time < data.get('expires_at', 0):
-                        # Keep full session data with expiry
+                        # Keep full session data including remember_me flag
                         valid_sessions[session_id] = {
                             'username': data['username'],
-                            'expires_at': data['expires_at']
+                            'expires_at': data['expires_at'],
+                            'remember_me': data.get('remember_me', False)
                         }
                     else:
                         logger.info(f"Removed expired session for user: {data.get('username')}")
@@ -306,6 +307,30 @@ def clear_rate_limit(username):
         del rate_limits[username]
         save_rate_limits()
         logger.info(f"Rate limit cleared for user: {username}")
+
+def rotate_session(old_session_id):
+    """Rotate session ID for security. Returns new session_id or None"""
+    if old_session_id not in sessions:
+        return None
+    
+    old_session_data = sessions[old_session_id]
+    username = old_session_data.get('username')
+    remember_me = old_session_data.get('remember_me', False)
+    
+    new_session_id = generate_session_id()
+    expiry_hours = (30 * 24) if remember_me else SESSION_EXPIRY_HOURS
+    
+    sessions[new_session_id] = {
+        'username': username,
+        'expires_at': time.time() + (expiry_hours * 3600),
+        'remember_me': remember_me
+    }
+    
+    del sessions[old_session_id]
+    save_sessions()
+    
+    logger.info(f"Session rotated for user: {username}")
+    return new_session_id
 
 def cleanup_expired_data():
     """Background task to cleanup expired sessions and rate limits"""
@@ -1379,15 +1404,38 @@ Hãy xử lý prompt sau:"""
             if session_id:
                 username = get_user_from_session(session_id)
                 if username:
+                    rotated = False
+                    session_data = sessions.get(session_id)
+                    if session_data and session_data is not None:
+                        current_time = time.time()
+                        expires_at = session_data.get('expires_at', 0)
+                        total_duration = (30 * 24 * 3600) if session_data.get('remember_me') else (SESSION_EXPIRY_HOURS * 3600)
+                        time_remaining = expires_at - current_time
+                        
+                        if time_remaining < (total_duration * 0.25):
+                            new_session_id = rotate_session(session_id)
+                            if new_session_id:
+                                session_id = new_session_id
+                                rotated = True
+                    
                     self.send_response(200)
                     self.send_header('Content-Type', 'application/json')
                     self._send_cors_headers()
+                    
+                    if rotated and session_data is not None:
+                        remember_me = session_data.get('remember_me', False)
+                        max_age = (30 * 24 * 3600) if remember_me else (7 * 24 * 3600)
+                        cookie_value = f"session_id={session_id}; Path=/; HttpOnly; SameSite=Lax; Max-Age={max_age}"
+                        if os.getenv('REPLIT_DOMAIN') or os.getenv('RENDER'):
+                            cookie_value += "; Secure"
+                        self.send_header('Set-Cookie', cookie_value)
+                    
                     self.end_headers()
                     
                     response_json = json.dumps({
                         "valid": True,
                         "username": username,
-                        "session_id": session_id
+                        "rotated": rotated
                     }, ensure_ascii=False)
                     self.wfile.write(response_json.encode('utf-8'))
                     return
