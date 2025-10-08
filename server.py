@@ -45,10 +45,14 @@ logger = logging.getLogger(__name__)
 
 ACCOUNTS_FILE = 'acc.txt'
 SESSIONS_FILE = 'sessions_store.json'
+RATE_LIMIT_FILE = 'rate_limit_store.json'
 file_lock = threading.Lock()
 sessions = {}
+rate_limits = {}
 
 SESSION_EXPIRY_HOURS = 168  # 7 days
+MAX_LOGIN_ATTEMPTS = 5
+RATE_LIMIT_WINDOW = 300  # 5 minutes in seconds
 
 def load_users():
     """Load users from acc.txt and return dict {username: password}"""
@@ -207,6 +211,99 @@ def delete_session(session_id):
         logger.info(f"Session deleted for user: {username}")
         return True
     return False
+
+def load_rate_limits():
+    """Load rate limits from JSON file and clean expired ones"""
+    try:
+        with file_lock:
+            if os.path.exists(RATE_LIMIT_FILE):
+                with open(RATE_LIMIT_FILE, 'r', encoding='utf-8') as f:
+                    stored_limits = json.load(f)
+                    
+                current_time = time.time()
+                valid_limits = {}
+                for username, data in stored_limits.items():
+                    if current_time < data.get('locked_until', 0) or current_time - data.get('last_attempt', 0) < RATE_LIMIT_WINDOW:
+                        valid_limits[username] = data
+                
+                return valid_limits
+    except Exception as e:
+        logger.error(f"Error loading rate limits: {e}")
+    return {}
+
+def save_rate_limits():
+    """Save rate limits to JSON file"""
+    try:
+        with file_lock:
+            with open(RATE_LIMIT_FILE, 'w', encoding='utf-8') as f:
+                json.dump(rate_limits, f, indent=2)
+        return True
+    except Exception as e:
+        logger.error(f"Error saving rate limits: {e}")
+        return False
+
+def check_rate_limit(username):
+    """Check if user is rate limited. Returns (is_limited, message, wait_time)"""
+    if username not in rate_limits:
+        return False, "", 0
+    
+    current_time = time.time()
+    user_limit = rate_limits[username]
+    
+    if current_time < user_limit.get('locked_until', 0):
+        wait_time = int(user_limit['locked_until'] - current_time)
+        return True, f"Tài khoản tạm khóa. Vui lòng thử lại sau {wait_time} giây", wait_time
+    
+    if current_time - user_limit.get('last_attempt', 0) >= RATE_LIMIT_WINDOW:
+        del rate_limits[username]
+        save_rate_limits()
+        return False, "", 0
+    
+    return False, "", 0
+
+def record_failed_attempt(username):
+    """Record a failed login attempt with exponential backoff"""
+    current_time = time.time()
+    
+    if username not in rate_limits:
+        rate_limits[username] = {
+            'attempts': 1,
+            'last_attempt': current_time,
+            'locked_until': 0
+        }
+    else:
+        if current_time - rate_limits[username].get('last_attempt', 0) >= RATE_LIMIT_WINDOW:
+            rate_limits[username] = {
+                'attempts': 1,
+                'last_attempt': current_time,
+                'locked_until': 0
+            }
+        else:
+            rate_limits[username]['attempts'] += 1
+            rate_limits[username]['last_attempt'] = current_time
+    
+    attempts = rate_limits[username]['attempts']
+    
+    if attempts >= MAX_LOGIN_ATTEMPTS:
+        if attempts <= 7:
+            lockout_duration = 60
+        elif attempts <= 10:
+            lockout_duration = 300
+        else:
+            lockout_duration = 1800
+        
+        rate_limits[username]['locked_until'] = current_time + lockout_duration
+        logger.warning(f"User {username} locked out for {lockout_duration}s after {attempts} failed attempts")
+    
+    save_rate_limits()
+    return attempts
+
+def clear_rate_limit(username):
+    """Clear rate limit for successful login"""
+    if username in rate_limits:
+        del rate_limits[username]
+        save_rate_limits()
+        logger.info(f"Rate limit cleared for user: {username}")
 
 class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     """Custom HTTP request handler for NexoraX AI application"""
@@ -1117,7 +1214,13 @@ Hãy xử lý prompt sau:"""
                 self._send_json_error(401, "Username hoặc password không đúng", "INVALID_CREDENTIALS")
                 return
             
+            is_limited, limit_message, wait_time = check_rate_limit(username)
+            if is_limited:
+                self._send_json_error(429, limit_message, "RATE_LIMITED")
+                return
+            
             if authenticate_user(username, password):
+                clear_rate_limit(username)
                 session_id = create_session(username)
                 
                 self.send_response(200)
@@ -1134,7 +1237,13 @@ Hãy xử lý prompt sau:"""
                 
                 logger.info(f"User logged in successfully: {username}")
             else:
-                self._send_json_error(401, "Username hoặc password không đúng", "INVALID_CREDENTIALS")
+                attempts = record_failed_attempt(username)
+                remaining = MAX_LOGIN_ATTEMPTS - attempts
+                if remaining > 0:
+                    error_msg = f"Username hoặc password không đúng. Còn {remaining} lần thử"
+                else:
+                    error_msg = "Quá nhiều lần thử. Tài khoản đã bị khóa tạm thời"
+                self._send_json_error(401, error_msg, "INVALID_CREDENTIALS")
                 
         except json.JSONDecodeError as e:
             logger.error(f"Invalid JSON in login request: {e}")
@@ -1424,5 +1533,10 @@ if __name__ == "__main__":
     logger.info("Loading existing sessions...")
     sessions.update(load_sessions())
     logger.info(f"Loaded {len(sessions)} active session(s)")
+    
+    # Load rate limits from file
+    logger.info("Loading rate limits...")
+    rate_limits.update(load_rate_limits())
+    logger.info(f"Loaded {len(rate_limits)} rate limit(s)")
     
     run_server(port)
