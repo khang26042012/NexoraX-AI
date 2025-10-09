@@ -44,6 +44,10 @@ class NexoraXChat {
         // Dual Chat Mode
         this.dualChatMode = localStorage.getItem('nexorax_dual_chat_mode') === 'true';
         
+        // Dual Chat Model Selection
+        this.dualChatPrimaryModel = localStorage.getItem('nexorax_dual_primary_model') || 'gpt-5-chat';
+        this.dualChatSecondaryModel = localStorage.getItem('nexorax_dual_secondary_model') || 'bidara';
+        
         // Speech recognition setup
         this.speechRecognition = null;
         this.isRecording = false;
@@ -55,6 +59,7 @@ class NexoraXChat {
         this.loadTheme();
         this.loadModelSelection();
         this.loadDualModeState();
+        this.loadDualChatModels();
         this.initializeDesktopSidebar();
         this.renderChatList();
         
@@ -287,6 +292,25 @@ class NexoraXChat {
         const chatDualModeBtn = document.getElementById('chatDualModeBtn');
         if (chatDualModeBtn) {
             chatDualModeBtn.addEventListener('click', () => this.toggleDualMode());
+        }
+        
+        // Dual Chat Model Selectors
+        const chatPrimaryModelSelect = document.getElementById('chatPrimaryModelSelect');
+        if (chatPrimaryModelSelect) {
+            chatPrimaryModelSelect.addEventListener('change', (e) => {
+                this.dualChatPrimaryModel = e.target.value;
+                this.saveDualChatModels();
+                this.syncDualChatModelSelectors();
+            });
+        }
+        
+        const chatSecondaryModelSelect = document.getElementById('chatSecondaryModelSelect');
+        if (chatSecondaryModelSelect) {
+            chatSecondaryModelSelect.addEventListener('change', (e) => {
+                this.dualChatSecondaryModel = e.target.value;
+                this.saveDualChatModels();
+                this.syncDualChatModelSelectors();
+            });
         }
         
         // Quick suggestions
@@ -872,42 +896,42 @@ class NexoraXChat {
         const chat = this.chats[this.currentChatId];
         if (!chat) return;
         
-        const gpt5Message = {
+        const primaryMessage = {
             id: Date.now() + 1,
             role: 'assistant',
             content: '',
             timestamp: new Date().toISOString(),
             isTyping: true,
-            model: 'gpt-5'
+            model: this.dualChatPrimaryModel
         };
         
-        const geminiMessage = {
+        const secondaryMessage = {
             id: Date.now() + 2,
             role: 'assistant',
             content: '',
             timestamp: new Date().toISOString(),
             isTyping: true,
-            model: 'gemini'
+            model: this.dualChatSecondaryModel
         };
         
-        chat.messages.push(gpt5Message, geminiMessage);
-        this.renderMessage(gpt5Message);
-        this.renderMessage(geminiMessage);
+        chat.messages.push(primaryMessage, secondaryMessage);
+        this.renderMessage(primaryMessage);
+        this.renderMessage(secondaryMessage);
         this.scrollToBottom();
         
         try {
             await Promise.allSettled([
-                this.getLLM7GPT5ChatResponse(message, gpt5Message).catch(error => {
-                    console.error('GPT-5 Error in dual mode:', error);
-                    gpt5Message.content = 'Xin lỗi, GPT-5 gặp lỗi. Vui lòng thử lại.';
-                    gpt5Message.isTyping = false;
-                    this.updateMessage(gpt5Message);
+                this.getLLM7Response(this.dualChatPrimaryModel, message, primaryMessage).catch(error => {
+                    console.error(`${this.dualChatPrimaryModel} Error in dual mode:`, error);
+                    primaryMessage.content = `Xin lỗi, ${this.getModelDisplayName(this.dualChatPrimaryModel)} gặp lỗi. Vui lòng thử lại.`;
+                    primaryMessage.isTyping = false;
+                    this.updateMessage(primaryMessage);
                 }),
-                this.getGeminiResponse(message, geminiMessage, attachedFiles).catch(error => {
-                    console.error('Gemini Error in dual mode:', error);
-                    geminiMessage.content = 'Xin lỗi, Gemini gặp lỗi. Vui lòng thử lại.';
-                    geminiMessage.isTyping = false;
-                    this.updateMessage(geminiMessage);
+                this.getLLM7Response(this.dualChatSecondaryModel, message, secondaryMessage).catch(error => {
+                    console.error(`${this.dualChatSecondaryModel} Error in dual mode:`, error);
+                    secondaryMessage.content = `Xin lỗi, ${this.getModelDisplayName(this.dualChatSecondaryModel)} gặp lỗi. Vui lòng thử lại.`;
+                    secondaryMessage.isTyping = false;
+                    this.updateMessage(secondaryMessage);
                 })
             ]);
         } finally {
@@ -919,17 +943,20 @@ class NexoraXChat {
         this.messagesContainer.innerHTML = '';
         this.messagesContainer.classList.add('dual-chat-mode');
         
+        const primaryModelName = this.getModelDisplayName(this.dualChatPrimaryModel);
+        const secondaryModelName = this.getModelDisplayName(this.dualChatSecondaryModel);
+        
         const dualLayoutHtml = `
             <div class="dual-chat-container">
                 <div class="dual-chat-panel">
                     <div class="dual-chat-panel-header">
-                        <span>GPT-5</span>
+                        <span>${primaryModelName}</span>
                     </div>
                     <div class="dual-chat-panel-messages" id="gpt5Panel"></div>
                 </div>
                 <div class="dual-chat-panel">
                     <div class="dual-chat-panel-header">
-                        <span>Gemini Flash 2.5</span>
+                        <span>${secondaryModelName}</span>
                     </div>
                     <div class="dual-chat-panel-messages" id="geminiPanel"></div>
                 </div>
@@ -2134,16 +2161,34 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
         
         const homeDualModeBtn = document.getElementById('homeDualModeBtn');
         const chatDualModeBtn = document.getElementById('chatDualModeBtn');
+        const homeDualModelSelectors = document.getElementById('homeDualModelSelectors');
+        const chatDualModelSelectors = document.getElementById('chatDualModelSelectors');
         
         if (this.dualChatMode) {
             if (homeDualModeBtn) homeDualModeBtn.classList.add('active');
             if (chatDualModeBtn) chatDualModeBtn.classList.add('active');
             if (this.messagesContainer) this.messagesContainer.classList.add('dual-chat-mode');
+            if (homeDualModelSelectors) {
+                homeDualModelSelectors.classList.remove('hidden');
+                homeDualModelSelectors.classList.add('flex');
+            }
+            if (chatDualModelSelectors) {
+                chatDualModelSelectors.classList.remove('hidden');
+                chatDualModelSelectors.classList.add('flex');
+            }
             this.showNotification('Đã bật chế độ Dual Chat! 🎯', 'success');
         } else {
             if (homeDualModeBtn) homeDualModeBtn.classList.remove('active');
             if (chatDualModeBtn) chatDualModeBtn.classList.remove('active');
             if (this.messagesContainer) this.messagesContainer.classList.remove('dual-chat-mode');
+            if (homeDualModelSelectors) {
+                homeDualModelSelectors.classList.add('hidden');
+                homeDualModelSelectors.classList.remove('flex');
+            }
+            if (chatDualModelSelectors) {
+                chatDualModelSelectors.classList.add('hidden');
+                chatDualModelSelectors.classList.remove('flex');
+            }
             this.showNotification('Đã tắt chế độ Dual Chat', 'info');
         }
         
@@ -2450,6 +2495,74 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
             if (chatDualModeBtn) chatDualModeBtn.classList.remove('active');
             if (this.messagesContainer) this.messagesContainer.classList.remove('dual-chat-mode');
         }
+    }
+    
+    loadDualChatModels() {
+        const homePrimarySelect = document.getElementById('homePrimaryModelSelect');
+        const homeSecondarySelect = document.getElementById('homeSecondaryModelSelect');
+        const chatPrimarySelect = document.getElementById('chatPrimaryModelSelect');
+        const chatSecondarySelect = document.getElementById('chatSecondaryModelSelect');
+        
+        if (homePrimarySelect) homePrimarySelect.value = this.dualChatPrimaryModel;
+        if (homeSecondarySelect) homeSecondarySelect.value = this.dualChatSecondaryModel;
+        if (chatPrimarySelect) chatPrimarySelect.value = this.dualChatPrimaryModel;
+        if (chatSecondarySelect) chatSecondarySelect.value = this.dualChatSecondaryModel;
+        
+        const homeDualModelSelectors = document.getElementById('homeDualModelSelectors');
+        const chatDualModelSelectors = document.getElementById('chatDualModelSelectors');
+        
+        if (this.dualChatMode) {
+            if (homeDualModelSelectors) homeDualModelSelectors.classList.remove('hidden');
+            if (homeDualModelSelectors) homeDualModelSelectors.classList.add('flex');
+            if (chatDualModelSelectors) chatDualModelSelectors.classList.remove('hidden');
+            if (chatDualModelSelectors) chatDualModelSelectors.classList.add('flex');
+        } else {
+            if (homeDualModelSelectors) homeDualModelSelectors.classList.add('hidden');
+            if (homeDualModelSelectors) homeDualModelSelectors.classList.remove('flex');
+            if (chatDualModelSelectors) chatDualModelSelectors.classList.add('hidden');
+            if (chatDualModelSelectors) chatDualModelSelectors.classList.remove('flex');
+        }
+    }
+    
+    saveDualChatModels() {
+        localStorage.setItem('nexorax_dual_primary_model', this.dualChatPrimaryModel);
+        localStorage.setItem('nexorax_dual_secondary_model', this.dualChatSecondaryModel);
+    }
+    
+    syncDualChatModelSelectors() {
+        const chatPrimarySelect = document.getElementById('chatPrimaryModelSelect');
+        const chatSecondarySelect = document.getElementById('chatSecondaryModelSelect');
+        
+        if (chatPrimarySelect) chatPrimarySelect.value = this.dualChatPrimaryModel;
+        if (chatSecondarySelect) chatSecondarySelect.value = this.dualChatSecondaryModel;
+    }
+    
+    getModelDisplayName(modelId) {
+        const modelNames = {
+            'nexorax1': 'Gemini Flash 2.5',
+            'nexorax2': 'Search',
+            'gpt-5-chat': 'GPT-5',
+            'gemini-search': 'Gemini Search',
+            'image-gen': 'Image Generator',
+            'deepseek-v3.1': 'DeepSeek V3.1',
+            'deepseek-reasoning': 'DeepSeek Reasoning',
+            'gemini-2.5-flash-lite': 'Gemini 2.5 Flash',
+            'mistral-small-3.1-24b-instruct-2503': 'Mistral Small 3.1',
+            'nova-fast': 'Nova Fast',
+            'gpt-5-mini': 'GPT-5 Mini',
+            'gpt-5-nano-2025-08-07': 'GPT-5 Nano',
+            'gpt-o4-mini-2025-04-16': 'GPT-O4 Mini',
+            'qwen2.5-coder-32b-instruct': 'Qwen Coder',
+            'roblox-rp': 'Roblox RP',
+            'bidara': 'Bidara',
+            'rtist': 'Rtist',
+            'mistral-medium-2508': 'Mistral Medium',
+            'mistral-small-2503': 'Mistral Small',
+            'open-mixtral-8x7b': 'Mixtral 8x7B',
+            'Steelskull/L3.3-MS-Nevoria-70b': 'Nevoria 70B',
+            'gemma-2-2b-it': 'Gemma 2'
+        };
+        return modelNames[modelId] || modelId;
     }
     
     toggleModelOptions() {

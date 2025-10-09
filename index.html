@@ -329,6 +329,51 @@
                                                 <rect x="14" y="3" width="7" height="18" rx="1"/>
                                             </svg>
                                         </button>
+                                        
+                                        <!-- Dual Chat Model Selectors (shown when dual mode active) -->
+                                        <div id="chatDualModelSelectors" class="hidden items-center gap-2 ml-2 border-l pl-2 border-gray-200">
+                                            <select id="chatPrimaryModelSelect" class="text-xs border border-gray-300 rounded px-2 py-1 bg-white text-gray-700 hover:border-blue-400 focus:border-blue-500 focus:outline-none transition-colors" title="Primary Model">
+                                                <option value="gpt-5-chat">GPT-5</option>
+                                                <option value="bidara">Bidara</option>
+                                                <option value="deepseek-v3.1">DeepSeek V3.1</option>
+                                                <option value="deepseek-reasoning">DeepSeek Reasoning</option>
+                                                <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash</option>
+                                                <option value="mistral-small-3.1-24b-instruct-2503">Mistral Small 3.1</option>
+                                                <option value="nova-fast">Nova Fast</option>
+                                                <option value="gpt-5-mini">GPT-5 Mini</option>
+                                                <option value="gpt-5-nano-2025-08-07">GPT-5 Nano</option>
+                                                <option value="gpt-o4-mini-2025-04-16">GPT-O4 Mini</option>
+                                                <option value="qwen2.5-coder-32b-instruct">Qwen Coder</option>
+                                                <option value="roblox-rp">Roblox RP</option>
+                                                <option value="rtist">Rtist</option>
+                                                <option value="mistral-medium-2508">Mistral Medium</option>
+                                                <option value="mistral-small-2503">Mistral Small</option>
+                                                <option value="open-mixtral-8x7b">Mixtral 8x7B</option>
+                                                <option value="Steelskull/L3.3-MS-Nevoria-70b">Nevoria 70B</option>
+                                                <option value="gemma-2-2b-it">Gemma 2</option>
+                                            </select>
+                                            <span class="text-xs text-gray-500">vs</span>
+                                            <select id="chatSecondaryModelSelect" class="text-xs border border-gray-300 rounded px-2 py-1 bg-white text-gray-700 hover:border-blue-400 focus:border-blue-500 focus:outline-none transition-colors" title="Secondary Model">
+                                                <option value="gpt-5-chat">GPT-5</option>
+                                                <option value="bidara" selected>Bidara</option>
+                                                <option value="deepseek-v3.1">DeepSeek V3.1</option>
+                                                <option value="deepseek-reasoning">DeepSeek Reasoning</option>
+                                                <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash</option>
+                                                <option value="mistral-small-3.1-24b-instruct-2503">Mistral Small 3.1</option>
+                                                <option value="nova-fast">Nova Fast</option>
+                                                <option value="gpt-5-mini">GPT-5 Mini</option>
+                                                <option value="gpt-5-nano-2025-08-07">GPT-5 Nano</option>
+                                                <option value="gpt-o4-mini-2025-04-16">GPT-O4 Mini</option>
+                                                <option value="qwen2.5-coder-32b-instruct">Qwen Coder</option>
+                                                <option value="roblox-rp">Roblox RP</option>
+                                                <option value="rtist">Rtist</option>
+                                                <option value="mistral-medium-2508">Mistral Medium</option>
+                                                <option value="mistral-small-2503">Mistral Small</option>
+                                                <option value="open-mixtral-8x7b">Mixtral 8x7B</option>
+                                                <option value="Steelskull/L3.3-MS-Nevoria-70b">Nevoria 70B</option>
+                                                <option value="gemma-2-2b-it">Gemma 2</option>
+                                            </select>
+                                        </div>
                                     </div>
                                     <!-- Right side: Send button -->
                                     <button id="sendBtn" class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-700 transition-colors shadow-lg">
