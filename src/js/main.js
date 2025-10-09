@@ -9,10 +9,7 @@
 
 import { NexoraXChat } from './chat-app.js';
 
-// Khởi tạo app khi DOM ready
-document.addEventListener('DOMContentLoaded', () => {
-    // Tạo instance của NexoraXChat
-    window.app = new NexoraXChat();
-    
-    console.log('NexoraX AI Chat initialized successfully!');
-});
+// Khởi tạo app - ES6 modules tự động defer nên không cần DOMContentLoaded
+window.app = new NexoraXChat();
+
+console.log('NexoraX AI Chat initialized successfully!');
