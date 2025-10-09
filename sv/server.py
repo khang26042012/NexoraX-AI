@@ -24,7 +24,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 try:
-    from config.config import get_api_key, check_config, get_allowed_origins, REQUEST_TIMEOUT
+    from config import get_api_key, check_config, get_allowed_origins, REQUEST_TIMEOUT
 except ImportError:
     # Fallback nếu không có config.py
     def get_api_key(service):

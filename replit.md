@@ -4,7 +4,16 @@
 NexoraX AI is a modern Vietnamese AI chat application that provides conversations using Google Gemini language model, search-enhanced AI, and LLM7.io integration for GPT-5 Mini and Gemini Search models. Successfully configured for Replit environment.
 
 ## Recent Changes
-- **October 8, 2025 (Latest - Performance & Session Optimization)**: Major performance improvements and session persistence fixes
+- **October 9, 2025 (Latest - Critical Bug Fix)**: Fixed import error that broke API configuration
+  - **Bug Identified**: Server was importing `from config.config` but only `config.py` exists at root
+  - **Root Cause**: Previous refactor split files but incorrect import path remained
+  - **Fix Applied**: Changed import from `config.config` to `config` in sv/server.py (line 30)
+  - **Impact**: API Key Status changed from "NOT CONFIGURED" to "Configured"
+  - **Result**: ✅ All API endpoints now working correctly with proper configuration
+  - **Files Changed**: sv/server.py (1 line)
+  - **API Keys**: Preserved unchanged (as requested)
+  - **Testing**: Server logs confirm API keys loaded successfully
+- **October 8, 2025 (Performance & Session Optimization)**: Major performance improvements and session persistence fixes
   - **Performance Optimization**: Server response time improved dramatically
     - ✅ Users cached in-memory (loaded once at startup, not per-request)
     - ✅ Eliminated file I/O bottleneck from authentication
