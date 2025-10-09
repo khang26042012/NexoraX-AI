@@ -226,18 +226,18 @@ export function setupMainEventListeners(app) {
  * @param {Object} app - Instance của NexoraXChat
  */
 export function setupFileUploadListeners(app) {
-    // Home page file button
-    const homeFileBtn = document.getElementById('homeFileBtn');
-    if (homeFileBtn) {
-        homeFileBtn.addEventListener('click', () => {
+    // Home page upload button
+    const homeUploadBtn = document.getElementById('homeUploadBtn');
+    if (homeUploadBtn) {
+        homeUploadBtn.addEventListener('click', () => {
             app.homeFileInput.click();
         });
     }
     
-    // Chat page file button
-    const chatFileBtn = document.getElementById('chatFileBtn');
-    if (chatFileBtn) {
-        chatFileBtn.addEventListener('click', () => {
+    // Chat page upload button
+    const chatUploadBtn = document.getElementById('chatUploadBtn');
+    if (chatUploadBtn) {
+        chatUploadBtn.addEventListener('click', () => {
             app.chatFileInput.click();
         });
     }

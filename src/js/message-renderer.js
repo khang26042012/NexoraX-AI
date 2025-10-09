@@ -11,6 +11,7 @@
 import { formatMessage, formatFileSize } from './message-formatter.js';
 import { MODEL_NAMES } from './constants.js';
 import { scrollToBottom } from './utils.js';
+import { saveDualChatModels } from './dual-chat.js';
 
 // ===================================
 // MESSAGE RENDERING
@@ -234,7 +235,7 @@ export function renderDualChatLayout(chat, context) {
     if (primarySelect) {
         primarySelect.addEventListener('change', (e) => {
             context.dualChatPrimaryModel = e.target.value;
-            saveDualChatModels();
+            saveDualChatModels(context.dualChatPrimaryModel, context.dualChatSecondaryModel);
             renderDualChatLayout(chat, context);
         });
     }
@@ -242,7 +243,7 @@ export function renderDualChatLayout(chat, context) {
     if (secondarySelect) {
         secondarySelect.addEventListener('change', (e) => {
             context.dualChatSecondaryModel = e.target.value;
-            saveDualChatModels();
+            saveDualChatModels(context.dualChatPrimaryModel, context.dualChatSecondaryModel);
             renderDualChatLayout(chat, context);
         });
     }
