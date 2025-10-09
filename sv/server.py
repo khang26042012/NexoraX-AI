@@ -20,8 +20,11 @@ import secrets
 import threading
 
 # Import configuration
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
 try:
-    from config import get_api_key, check_config, get_allowed_origins, REQUEST_TIMEOUT
+    from config.config import get_api_key, check_config, get_allowed_origins, REQUEST_TIMEOUT
 except ImportError:
     # Fallback nếu không có config.py
     def get_api_key(service):
@@ -43,9 +46,9 @@ except ImportError:
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-ACCOUNTS_FILE = 'acc.txt'
-SESSIONS_FILE = 'sessions_store.json'
-RATE_LIMIT_FILE = 'rate_limit_store.json'
+ACCOUNTS_FILE = os.path.join(os.path.dirname(__file__), '..', 'config', 'acc.txt')
+SESSIONS_FILE = os.path.join(os.path.dirname(__file__), '..', 'config', 'sessions_store.json')
+RATE_LIMIT_FILE = os.path.join(os.path.dirname(__file__), '..', 'config', 'rate_limit_store.json')
 file_lock = threading.Lock()
 users = {}
 sessions = {}
