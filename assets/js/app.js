@@ -46,7 +46,11 @@ class NexoraXChat {
         
         // Dual Chat Model Selection
         this.dualChatPrimaryModel = localStorage.getItem('nexorax_dual_primary_model') || 'gpt-5-chat';
-        this.dualChatSecondaryModel = localStorage.getItem('nexorax_dual_secondary_model') || 'bidara';
+        this.dualChatSecondaryModel = localStorage.getItem('nexorax_dual_secondary_model') || 'nexorax1';
+        
+        // Special mode toggles
+        this.previousModelBeforeImageGen = null;
+        this.previousModelBeforeSearch = null;
         
         // Speech recognition setup
         this.speechRecognition = null;
@@ -59,7 +63,6 @@ class NexoraXChat {
         this.loadTheme();
         this.loadModelSelection();
         this.loadDualModeState();
-        this.loadDualChatModels();
         this.initializeDesktopSidebar();
         this.renderChatList();
         
@@ -294,24 +297,6 @@ class NexoraXChat {
             chatDualModeBtn.addEventListener('click', () => this.toggleDualMode());
         }
         
-        // Dual Chat Model Selectors
-        const chatPrimaryModelSelect = document.getElementById('chatPrimaryModelSelect');
-        if (chatPrimaryModelSelect) {
-            chatPrimaryModelSelect.addEventListener('change', (e) => {
-                this.dualChatPrimaryModel = e.target.value;
-                this.saveDualChatModels();
-                this.syncDualChatModelSelectors();
-            });
-        }
-        
-        const chatSecondaryModelSelect = document.getElementById('chatSecondaryModelSelect');
-        if (chatSecondaryModelSelect) {
-            chatSecondaryModelSelect.addEventListener('change', (e) => {
-                this.dualChatSecondaryModel = e.target.value;
-                this.saveDualChatModels();
-                this.syncDualChatModelSelectors();
-            });
-        }
         
         // Quick suggestions
         document.querySelectorAll('.quick-suggestion').forEach(suggestion => {
@@ -770,11 +755,59 @@ class NexoraXChat {
         this.currentChatId = null;
         this.homeInput.value = '';
         this.homeInput.focus();
+        
+        // Show dual mode button on home screen
+        const homeDualModeBtn = document.getElementById('homeDualModeBtn');
+        if (homeDualModeBtn) {
+            homeDualModeBtn.style.display = 'flex';
+        }
+        
+        // Reset all special features when starting new chat
+        // Turn off image-gen mode if active
+        if (this.selectedModel === 'image-gen') {
+            const modelToRestore = this.previousModelBeforeImageGen || 'gpt-5-chat';
+            this.changeModel(modelToRestore);
+            this.previousModelBeforeImageGen = null;
+            // Remove active styling from image-gen buttons
+            document.querySelectorAll('.config-option[data-action="image-gen"]').forEach(btn => {
+                btn.classList.remove('font-bold');
+            });
+        }
+        
+        // Turn off gemini-search mode if active
+        if (this.selectedModel === 'gemini-search') {
+            const modelToRestore = this.previousModelBeforeSearch || 'gpt-5-chat';
+            this.changeModel(modelToRestore);
+            this.previousModelBeforeSearch = null;
+            // Remove active styling from search buttons
+            document.querySelectorAll('.config-option[data-action="search"]').forEach(btn => {
+                btn.classList.remove('font-bold');
+            });
+        }
+        
+        // Turn off dual chat mode if active
+        if (this.dualChatMode) {
+            this.dualChatMode = false;
+            localStorage.setItem('nexorax_dual_chat_mode', 'false');
+            
+            const chatDualModeBtn = document.getElementById('chatDualModeBtn');
+            if (homeDualModeBtn) homeDualModeBtn.classList.remove('active');
+            if (chatDualModeBtn) chatDualModeBtn.classList.remove('active');
+            if (this.messagesContainer) this.messagesContainer.classList.remove('dual-chat-mode');
+        }
     }
     
     showChatScreen() {
         this.homeScreen.classList.add('hidden');
         this.chatScreen.classList.remove('hidden');
+        
+        // Hide dual mode button in regular chat (1 model)
+        const chatDualModeBtn = document.getElementById('chatDualModeBtn');
+        if (chatDualModeBtn && !this.dualChatMode) {
+            chatDualModeBtn.style.display = 'none';
+        } else if (chatDualModeBtn && this.dualChatMode) {
+            chatDualModeBtn.style.display = 'flex';
+        }
         this.chatInput.focus();
     }
     
@@ -861,9 +894,9 @@ class NexoraXChat {
     
     async getAIResponse(message, aiMessage, files = null) {
         try {
-            // Define all LLM7 models
+            // Define all LLM7 models (excluding special models)
             const llm7Models = [
-                'gpt-5-chat', 'gemini-search', 'deepseek-v3.1', 'deepseek-reasoning',
+                'gpt-5-chat', 'deepseek-v3.1', 'deepseek-reasoning',
                 'gemini-2.5-flash-lite', 'mistral-small-3.1-24b-instruct-2503', 
                 'nova-fast', 'gpt-5-mini', 'gpt-5-nano-2025-08-07', 
                 'gpt-o4-mini-2025-04-16', 'qwen2.5-coder-32b-instruct', 
@@ -873,15 +906,15 @@ class NexoraXChat {
             ];
             
             // Check selected model to determine which endpoint to use
-            if (this.selectedModel === 'nexorax2') {
+            if (this.selectedModel === 'image-gen') {
+                // Use Pollinations AI for image generation
+                return await this.getImageGenerationResponse(message, aiMessage);
+            } else if (this.selectedModel === 'gemini-search' || this.selectedModel === 'nexorax2') {
                 // Use search-enhanced AI model (SerpAPI + Gemini)
                 return await this.getSearchEnhancedResponse(message, aiMessage);
             } else if (llm7Models.includes(this.selectedModel)) {
                 // Use LLM7.io for all LLM7 models
                 return await this.getLLM7Response(this.selectedModel, message, aiMessage);
-            } else if (this.selectedModel === 'image-gen') {
-                // Use Pollinations AI for image generation
-                return await this.getImageGenerationResponse(message, aiMessage);
             } else {
                 // Use standard Gemini API for nexorax1
                 return await this.getGeminiResponse(message, aiMessage, files);
@@ -892,6 +925,36 @@ class NexoraXChat {
         }
     }
 
+    getModelType(modelId) {
+        // Model type mapping for correct API dispatch
+        const modelTypes = {
+            'nexorax1': 'gemini',
+            'nexorax2': 'search',
+            'gemini-search': 'search',
+            'image-gen': 'image',
+            // All LLM7 models
+            'gpt-5-chat': 'llm7',
+            'deepseek-v3.1': 'llm7',
+            'deepseek-reasoning': 'llm7',
+            'gemini-2.5-flash-lite': 'llm7',
+            'mistral-small-3.1-24b-instruct-2503': 'llm7',
+            'nova-fast': 'llm7',
+            'gpt-5-mini': 'llm7',
+            'gpt-5-nano-2025-08-07': 'llm7',
+            'gpt-o4-mini-2025-04-16': 'llm7',
+            'qwen2.5-coder-32b-instruct': 'llm7',
+            'roblox-rp': 'llm7',
+            'bidara': 'llm7',
+            'rtist': 'llm7',
+            'mistral-medium-2508': 'llm7',
+            'mistral-small-2503': 'llm7',
+            'open-mixtral-8x7b': 'llm7',
+            'Steelskull/L3.3-MS-Nevoria-70b': 'llm7',
+            'gemma-2-2b-it': 'llm7'
+        };
+        return modelTypes[modelId] || 'llm7'; // Default to llm7
+    }
+    
     async getDualChatResponses(message, attachedFiles) {
         const chat = this.chats[this.currentChatId];
         if (!chat) return;
@@ -902,7 +965,8 @@ class NexoraXChat {
             content: '',
             timestamp: new Date().toISOString(),
             isTyping: true,
-            model: this.dualChatPrimaryModel
+            model: this.dualChatPrimaryModel,
+            isPrimary: true
         };
         
         const secondaryMessage = {
@@ -911,7 +975,8 @@ class NexoraXChat {
             content: '',
             timestamp: new Date().toISOString(),
             isTyping: true,
-            model: this.dualChatSecondaryModel
+            model: this.dualChatSecondaryModel,
+            isPrimary: false
         };
         
         chat.messages.push(primaryMessage, secondaryMessage);
@@ -920,14 +985,17 @@ class NexoraXChat {
         this.scrollToBottom();
         
         try {
+            const primaryType = this.getModelType(this.dualChatPrimaryModel);
+            const secondaryType = this.getModelType(this.dualChatSecondaryModel);
+            
             await Promise.allSettled([
-                this.getLLM7Response(this.dualChatPrimaryModel, message, primaryMessage).catch(error => {
+                this.getDualModelResponse(this.dualChatPrimaryModel, primaryType, message, primaryMessage, attachedFiles).catch(error => {
                     console.error(`${this.dualChatPrimaryModel} Error in dual mode:`, error);
                     primaryMessage.content = `Xin lỗi, ${this.getModelDisplayName(this.dualChatPrimaryModel)} gặp lỗi. Vui lòng thử lại.`;
                     primaryMessage.isTyping = false;
                     this.updateMessage(primaryMessage);
                 }),
-                this.getLLM7Response(this.dualChatSecondaryModel, message, secondaryMessage).catch(error => {
+                this.getDualModelResponse(this.dualChatSecondaryModel, secondaryType, message, secondaryMessage, attachedFiles).catch(error => {
                     console.error(`${this.dualChatSecondaryModel} Error in dual mode:`, error);
                     secondaryMessage.content = `Xin lỗi, ${this.getModelDisplayName(this.dualChatSecondaryModel)} gặp lỗi. Vui lòng thử lại.`;
                     secondaryMessage.isTyping = false;
@@ -938,32 +1006,99 @@ class NexoraXChat {
             this.saveChats();
         }
     }
+    
+    async getDualModelResponse(modelId, modelType, message, aiMessage, files) {
+        if (modelType === 'gemini') {
+            return await this.getGeminiResponse(message, aiMessage, files);
+        } else if (modelType === 'search') {
+            return await this.getSearchEnhancedResponse(message, aiMessage);
+        } else if (modelType === 'llm7') {
+            return await this.getLLM7Response(modelId, message, aiMessage);
+        } else if (modelType === 'image') {
+            return await this.getImageGenerationResponse(message, aiMessage);
+        } else {
+            throw new Error(`Unknown model type: ${modelType}`);
+        }
+    }
 
     renderDualChatLayout(chat) {
         this.messagesContainer.innerHTML = '';
         this.messagesContainer.classList.add('dual-chat-mode');
         
-        const primaryModelName = this.getModelDisplayName(this.dualChatPrimaryModel);
-        const secondaryModelName = this.getModelDisplayName(this.dualChatSecondaryModel);
+        // Model options for selectors (all models except image-gen and nexorax2)
+        const modelOptions = [
+            { value: 'gpt-5-chat', label: 'GPT-5' },
+            { value: 'nexorax1', label: 'Gemini Flash 2.5' },
+            { value: 'gemini-search', label: 'Gemini Search' },
+            { value: 'bidara', label: 'Bidara' },
+            { value: 'deepseek-v3.1', label: 'DeepSeek V3.1' },
+            { value: 'deepseek-reasoning', label: 'DeepSeek Reasoning' },
+            { value: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite' },
+            { value: 'mistral-small-3.1-24b-instruct-2503', label: 'Mistral Small 3.1' },
+            { value: 'mistral-medium-2508', label: 'Mistral Medium' },
+            { value: 'mistral-small-2503', label: 'Mistral Small' },
+            { value: 'open-mixtral-8x7b', label: 'Mixtral 8x7B' },
+            { value: 'nova-fast', label: 'Nova Fast' },
+            { value: 'gpt-5-mini', label: 'GPT-5 Mini' },
+            { value: 'gpt-5-nano-2025-08-07', label: 'GPT-5 Nano' },
+            { value: 'gpt-o4-mini-2025-04-16', label: 'GPT-O4 Mini' },
+            { value: 'qwen2.5-coder-32b-instruct', label: 'Qwen Coder' },
+            { value: 'roblox-rp', label: 'Roblox RP' },
+            { value: 'rtist', label: 'Rtist' },
+            { value: 'Steelskull/L3.3-MS-Nevoria-70b', label: 'Nevoria 70B' },
+            { value: 'gemma-2-2b-it', label: 'Gemma 2' }
+        ];
+        
+        const primaryOptions = modelOptions.map(opt => 
+            `<option value="${opt.value}" ${opt.value === this.dualChatPrimaryModel ? 'selected' : ''}>${opt.label}</option>`
+        ).join('');
+        
+        const secondaryOptions = modelOptions.map(opt => 
+            `<option value="${opt.value}" ${opt.value === this.dualChatSecondaryModel ? 'selected' : ''}>${opt.label}</option>`
+        ).join('');
         
         const dualLayoutHtml = `
             <div class="dual-chat-container">
                 <div class="dual-chat-panel">
                     <div class="dual-chat-panel-header">
-                        <span>${primaryModelName}</span>
+                        <select id="dualPrimaryModelSelect" class="text-sm font-bold bg-transparent border-none outline-none cursor-pointer text-white text-center w-full hover:opacity-90 focus:opacity-100">
+                            ${primaryOptions}
+                        </select>
                     </div>
-                    <div class="dual-chat-panel-messages" id="gpt5Panel"></div>
+                    <div class="dual-chat-panel-messages" id="primaryPanel"></div>
                 </div>
                 <div class="dual-chat-panel">
                     <div class="dual-chat-panel-header">
-                        <span>${secondaryModelName}</span>
+                        <select id="dualSecondaryModelSelect" class="text-sm font-bold bg-transparent border-none outline-none cursor-pointer text-white text-center w-full hover:opacity-90 focus:opacity-100">
+                            ${secondaryOptions}
+                        </select>
                     </div>
-                    <div class="dual-chat-panel-messages" id="geminiPanel"></div>
+                    <div class="dual-chat-panel-messages" id="secondaryPanel"></div>
                 </div>
             </div>
         `;
         
         this.messagesContainer.innerHTML = dualLayoutHtml;
+        
+        // Wire up change handlers
+        const primarySelect = document.getElementById('dualPrimaryModelSelect');
+        const secondarySelect = document.getElementById('dualSecondaryModelSelect');
+        
+        if (primarySelect) {
+            primarySelect.addEventListener('change', (e) => {
+                this.dualChatPrimaryModel = e.target.value;
+                this.saveDualChatModels();
+                this.renderDualChatLayout(chat);
+            });
+        }
+        
+        if (secondarySelect) {
+            secondarySelect.addEventListener('change', (e) => {
+                this.dualChatSecondaryModel = e.target.value;
+                this.saveDualChatModels();
+                this.renderDualChatLayout(chat);
+            });
+        }
         
         chat.messages.forEach(message => this.renderMessage(message));
     }
@@ -1743,10 +1878,10 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
             setTimeout(() => {
                 // In dual mode, scroll both panels
                 if (this.messagesContainer.classList.contains('dual-chat-mode')) {
-                    const gpt5Panel = document.getElementById('gpt5Panel');
-                    const geminiPanel = document.getElementById('geminiPanel');
-                    if (gpt5Panel) gpt5Panel.scrollTop = gpt5Panel.scrollHeight;
-                    if (geminiPanel) geminiPanel.scrollTop = geminiPanel.scrollHeight;
+                    const primaryPanel = document.getElementById('primaryPanel');
+                    const secondaryPanel = document.getElementById('secondaryPanel');
+                    if (primaryPanel) primaryPanel.scrollTop = primaryPanel.scrollHeight;
+                    if (secondaryPanel) secondaryPanel.scrollTop = secondaryPanel.scrollHeight;
                 } else {
                     this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
                 }
@@ -1791,18 +1926,21 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
         
         // Check if dual chat mode is active
         if (this.messagesContainer.classList.contains('dual-chat-mode')) {
-            const gpt5Panel = document.getElementById('gpt5Panel');
-            const geminiPanel = document.getElementById('geminiPanel');
+            const primaryPanel = document.getElementById('primaryPanel');
+            const secondaryPanel = document.getElementById('secondaryPanel');
             
             if (message.role === 'user') {
                 // User messages appear in both panels
                 const clonedMessage = messageDiv.cloneNode(true);
-                if (gpt5Panel) gpt5Panel.appendChild(messageDiv);
-                if (geminiPanel) geminiPanel.appendChild(clonedMessage);
-            } else if (message.model === 'gpt-5' && gpt5Panel) {
-                gpt5Panel.appendChild(messageDiv);
-            } else if (message.model === 'gemini' && geminiPanel) {
-                geminiPanel.appendChild(messageDiv);
+                if (primaryPanel) primaryPanel.appendChild(messageDiv);
+                if (secondaryPanel) secondaryPanel.appendChild(clonedMessage);
+            } else {
+                // AI messages - route based on isPrimary flag or model match
+                if (message.isPrimary || message.model === this.dualChatPrimaryModel) {
+                    if (primaryPanel) primaryPanel.appendChild(messageDiv);
+                } else if (message.isPrimary === false || message.model === this.dualChatSecondaryModel) {
+                    if (secondaryPanel) secondaryPanel.appendChild(messageDiv);
+                }
             }
         } else {
             this.messagesContainer.appendChild(messageDiv);
@@ -1855,12 +1993,12 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
         let messageElement;
         if (this.messagesContainer.classList.contains('dual-chat-mode')) {
             // In dual mode, search within the appropriate panel
-            if (message.model === 'gpt-5') {
-                const gpt5Panel = document.getElementById('gpt5Panel');
-                messageElement = gpt5Panel?.querySelector('[data-message-id="' + message.id + '"]');
-            } else if (message.model === 'gemini') {
-                const geminiPanel = document.getElementById('geminiPanel');
-                messageElement = geminiPanel?.querySelector('[data-message-id="' + message.id + '"]');
+            if (message.isPrimary || message.model === this.dualChatPrimaryModel) {
+                const primaryPanel = document.getElementById('primaryPanel');
+                messageElement = primaryPanel?.querySelector('[data-message-id="' + message.id + '"]');
+            } else if (message.isPrimary === false || message.model === this.dualChatSecondaryModel) {
+                const secondaryPanel = document.getElementById('secondaryPanel');
+                messageElement = secondaryPanel?.querySelector('[data-message-id="' + message.id + '"]');
             }
         } else {
             // In normal mode, search in messagesContainer
@@ -2161,35 +2299,15 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
         
         const homeDualModeBtn = document.getElementById('homeDualModeBtn');
         const chatDualModeBtn = document.getElementById('chatDualModeBtn');
-        const homeDualModelSelectors = document.getElementById('homeDualModelSelectors');
-        const chatDualModelSelectors = document.getElementById('chatDualModelSelectors');
         
         if (this.dualChatMode) {
             if (homeDualModeBtn) homeDualModeBtn.classList.add('active');
             if (chatDualModeBtn) chatDualModeBtn.classList.add('active');
             if (this.messagesContainer) this.messagesContainer.classList.add('dual-chat-mode');
-            if (homeDualModelSelectors) {
-                homeDualModelSelectors.classList.remove('hidden');
-                homeDualModelSelectors.classList.add('flex');
-            }
-            if (chatDualModelSelectors) {
-                chatDualModelSelectors.classList.remove('hidden');
-                chatDualModelSelectors.classList.add('flex');
-            }
-            this.showNotification('Đã bật chế độ Dual Chat! 🎯', 'success');
         } else {
             if (homeDualModeBtn) homeDualModeBtn.classList.remove('active');
             if (chatDualModeBtn) chatDualModeBtn.classList.remove('active');
             if (this.messagesContainer) this.messagesContainer.classList.remove('dual-chat-mode');
-            if (homeDualModelSelectors) {
-                homeDualModelSelectors.classList.add('hidden');
-                homeDualModelSelectors.classList.remove('flex');
-            }
-            if (chatDualModelSelectors) {
-                chatDualModelSelectors.classList.add('hidden');
-                chatDualModelSelectors.classList.remove('flex');
-            }
-            this.showNotification('Đã tắt chế độ Dual Chat', 'info');
         }
         
         if (this.currentChatId && this.chats[this.currentChatId]) {
@@ -2385,6 +2503,14 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
     
     
     changeModel(modelType) {
+        // Save previous model before switching to special modes
+        if (modelType === 'image-gen' && this.selectedModel !== 'image-gen') {
+            this.previousModelBeforeImageGen = this.selectedModel;
+        }
+        if (modelType === 'gemini-search' && this.selectedModel !== 'gemini-search') {
+            this.previousModelBeforeSearch = this.selectedModel;
+        }
+        
         this.selectedModel = modelType;
         localStorage.setItem('nexorax_selected_model', modelType);
         
@@ -2432,8 +2558,6 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
         if (modelRadio) {
             modelRadio.checked = true;
         }
-        
-        this.showNotification('Đã chuyển sang ' + (modelNames[modelType] || modelType) + '!', 'success');
     }
     
     loadModelSelection() {
@@ -2497,44 +2621,9 @@ QUAN TRỌNG: Đây là thời gian thực tế hiện tại. Bỏ qua mọi th�
         }
     }
     
-    loadDualChatModels() {
-        const homePrimarySelect = document.getElementById('homePrimaryModelSelect');
-        const homeSecondarySelect = document.getElementById('homeSecondaryModelSelect');
-        const chatPrimarySelect = document.getElementById('chatPrimaryModelSelect');
-        const chatSecondarySelect = document.getElementById('chatSecondaryModelSelect');
-        
-        if (homePrimarySelect) homePrimarySelect.value = this.dualChatPrimaryModel;
-        if (homeSecondarySelect) homeSecondarySelect.value = this.dualChatSecondaryModel;
-        if (chatPrimarySelect) chatPrimarySelect.value = this.dualChatPrimaryModel;
-        if (chatSecondarySelect) chatSecondarySelect.value = this.dualChatSecondaryModel;
-        
-        const homeDualModelSelectors = document.getElementById('homeDualModelSelectors');
-        const chatDualModelSelectors = document.getElementById('chatDualModelSelectors');
-        
-        if (this.dualChatMode) {
-            if (homeDualModelSelectors) homeDualModelSelectors.classList.remove('hidden');
-            if (homeDualModelSelectors) homeDualModelSelectors.classList.add('flex');
-            if (chatDualModelSelectors) chatDualModelSelectors.classList.remove('hidden');
-            if (chatDualModelSelectors) chatDualModelSelectors.classList.add('flex');
-        } else {
-            if (homeDualModelSelectors) homeDualModelSelectors.classList.add('hidden');
-            if (homeDualModelSelectors) homeDualModelSelectors.classList.remove('flex');
-            if (chatDualModelSelectors) chatDualModelSelectors.classList.add('hidden');
-            if (chatDualModelSelectors) chatDualModelSelectors.classList.remove('flex');
-        }
-    }
-    
     saveDualChatModels() {
         localStorage.setItem('nexorax_dual_primary_model', this.dualChatPrimaryModel);
         localStorage.setItem('nexorax_dual_secondary_model', this.dualChatSecondaryModel);
-    }
-    
-    syncDualChatModelSelectors() {
-        const chatPrimarySelect = document.getElementById('chatPrimaryModelSelect');
-        const chatSecondarySelect = document.getElementById('chatSecondaryModelSelect');
-        
-        if (chatPrimarySelect) chatPrimarySelect.value = this.dualChatPrimaryModel;
-        if (chatSecondarySelect) chatSecondarySelect.value = this.dualChatSecondaryModel;
     }
     
     getModelDisplayName(modelId) {
@@ -3554,10 +3643,39 @@ function setupConfigHandlers() {
 
 // Handle config actions
 function handleConfigAction(action, context) {
+    // Get all config buttons for this action
+    const configButtons = document.querySelectorAll(`.config-option[data-action="${action}"]`);
+    
     if (action === 'image-gen') {
-        app.changeModel('image-gen');
+        // Toggle image generation mode
+        if (app.selectedModel === 'image-gen') {
+            // Exit image-gen mode - restore previous model
+            const modelToRestore = app.previousModelBeforeImageGen || 'gpt-5-chat';
+            app.changeModel(modelToRestore);
+            app.previousModelBeforeImageGen = null;
+            // Remove active class
+            configButtons.forEach(btn => btn.classList.remove('font-bold'));
+        } else {
+            // Enter image-gen mode
+            app.changeModel('image-gen');
+            // Add active class
+            configButtons.forEach(btn => btn.classList.add('font-bold'));
+        }
     } else if (action === 'search') {
-        app.changeModel('gemini-search');
+        // Toggle Gemini Search mode
+        if (app.selectedModel === 'gemini-search') {
+            // Exit search mode - restore previous model
+            const modelToRestore = app.previousModelBeforeSearch || 'gpt-5-chat';
+            app.changeModel(modelToRestore);
+            app.previousModelBeforeSearch = null;
+            // Remove active class
+            configButtons.forEach(btn => btn.classList.remove('font-bold'));
+        } else {
+            // Enter search mode
+            app.changeModel('gemini-search');
+            // Add active class
+            configButtons.forEach(btn => btn.classList.add('font-bold'));
+        }
     }
 }
 

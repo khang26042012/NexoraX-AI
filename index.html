@@ -329,51 +329,6 @@
                                                 <rect x="14" y="3" width="7" height="18" rx="1"/>
                                             </svg>
                                         </button>
-                                        
-                                        <!-- Dual Chat Model Selectors (shown when dual mode active) -->
-                                        <div id="chatDualModelSelectors" class="hidden items-center gap-2 ml-2 border-l pl-2 border-gray-200">
-                                            <select id="chatPrimaryModelSelect" class="text-xs border border-gray-300 rounded px-2 py-1 bg-white text-gray-700 hover:border-blue-400 focus:border-blue-500 focus:outline-none transition-colors" title="Primary Model">
-                                                <option value="gpt-5-chat">GPT-5</option>
-                                                <option value="bidara">Bidara</option>
-                                                <option value="deepseek-v3.1">DeepSeek V3.1</option>
-                                                <option value="deepseek-reasoning">DeepSeek Reasoning</option>
-                                                <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash</option>
-                                                <option value="mistral-small-3.1-24b-instruct-2503">Mistral Small 3.1</option>
-                                                <option value="nova-fast">Nova Fast</option>
-                                                <option value="gpt-5-mini">GPT-5 Mini</option>
-                                                <option value="gpt-5-nano-2025-08-07">GPT-5 Nano</option>
-                                                <option value="gpt-o4-mini-2025-04-16">GPT-O4 Mini</option>
-                                                <option value="qwen2.5-coder-32b-instruct">Qwen Coder</option>
-                                                <option value="roblox-rp">Roblox RP</option>
-                                                <option value="rtist">Rtist</option>
-                                                <option value="mistral-medium-2508">Mistral Medium</option>
-                                                <option value="mistral-small-2503">Mistral Small</option>
-                                                <option value="open-mixtral-8x7b">Mixtral 8x7B</option>
-                                                <option value="Steelskull/L3.3-MS-Nevoria-70b">Nevoria 70B</option>
-                                                <option value="gemma-2-2b-it">Gemma 2</option>
-                                            </select>
-                                            <span class="text-xs text-gray-500">vs</span>
-                                            <select id="chatSecondaryModelSelect" class="text-xs border border-gray-300 rounded px-2 py-1 bg-white text-gray-700 hover:border-blue-400 focus:border-blue-500 focus:outline-none transition-colors" title="Secondary Model">
-                                                <option value="gpt-5-chat">GPT-5</option>
-                                                <option value="bidara" selected>Bidara</option>
-                                                <option value="deepseek-v3.1">DeepSeek V3.1</option>
-                                                <option value="deepseek-reasoning">DeepSeek Reasoning</option>
-                                                <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash</option>
-                                                <option value="mistral-small-3.1-24b-instruct-2503">Mistral Small 3.1</option>
-                                                <option value="nova-fast">Nova Fast</option>
-                                                <option value="gpt-5-mini">GPT-5 Mini</option>
-                                                <option value="gpt-5-nano-2025-08-07">GPT-5 Nano</option>
-                                                <option value="gpt-o4-mini-2025-04-16">GPT-O4 Mini</option>
-                                                <option value="qwen2.5-coder-32b-instruct">Qwen Coder</option>
-                                                <option value="roblox-rp">Roblox RP</option>
-                                                <option value="rtist">Rtist</option>
-                                                <option value="mistral-medium-2508">Mistral Medium</option>
-                                                <option value="mistral-small-2503">Mistral Small</option>
-                                                <option value="open-mixtral-8x7b">Mixtral 8x7B</option>
-                                                <option value="Steelskull/L3.3-MS-Nevoria-70b">Nevoria 70B</option>
-                                                <option value="gemma-2-2b-it">Gemma 2</option>
-                                            </select>
-                                        </div>
                                     </div>
                                     <!-- Right side: Send button -->
                                     <button id="sendBtn" class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-700 transition-colors shadow-lg">
@@ -754,43 +709,77 @@
     <div id="aboutModal" class="fixed inset-0 bg-black bg-opacity-50 z-[100] hidden flex items-center justify-center p-4">
         <div id="aboutContent" class="bg-white rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto scale-95 opacity-0 transition-all duration-300">
             <div class="text-center">
-                <img src="assets/images/nexorax-logo.svg" alt="NexoraX AI" class="w-16 h-16 mx-auto mb-4 object-contain">
-                <h2 class="text-2xl font-bold text-gray-900 mb-3">🌌 Giới thiệu NexoraX</h2>
-                <div class="text-sm text-gray-600 space-y-3 text-left">
-                    <p>Xin chào bạn 👋, chào mừng đến với NexoraX – nền tảng trí tuệ nhân tạo thế hệ mới, được phát triển để trở thành người bạn đồng hành thông minh trong học tập, nghiên cứu và sáng tạo.</p>
-                    
-                    <p>Với NexoraX, bạn không chỉ đơn thuần trò chuyện cùng một AI, mà còn được trải nghiệm một hệ sinh thái học tập số hóa, nơi mỗi câu hỏi, mỗi ý tưởng đều được phản hồi nhanh chóng, chính xác và giàu tính sáng tạo.</p>
-                    
-                    <div class="mt-4">
-                        <h3 class="font-semibold text-gray-800 mb-2">🔥 Điểm nổi bật</h3>
-                        <div class="space-y-1">
-                            <p>🚀 <strong>Phản hồi nhanh – chính xác:</strong> Tích hợp các mô hình AI tiên tiến hàng đầu thế giới.</p>
-                            <p>📚 <strong>Hỗ trợ học tập toàn diện:</strong> Giải toán, viết văn, lập trình, nghiên cứu khoa học...</p>
-                            <p>🎨 <strong>Sáng tạo không giới hạn:</strong> Viết nội dung, soạn ý tưởng, thiết kế kịch bản...</p>
-                            <p>🌙 <strong>Giao diện thân thiện – hiện đại:</strong> Tối ưu cho cả học sinh, sinh viên và người dùng công nghệ.</p>
-                        </div>
+                <img src="assets/images/nexorax-logo.svg" alt="NexoraX AI" class="w-20 h-20 mx-auto mb-4 object-contain drop-shadow-2xl">
+                <h2 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">NexoraX AI</h2>
+                <p class="text-sm text-gray-500 mb-6">Trí tuệ nhân tạo thế hệ mới - Đồng hành cùng sự sáng tạo</p>
+                
+                <div class="text-sm text-gray-600 space-y-4 text-left">
+                    <div class="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-xl">
+                        <p class="leading-relaxed">
+                            <strong>NexoraX</strong> là nền tảng trí tuệ nhân tạo đa mô hình tiên tiến, tích hợp 19+ models AI hàng đầu thế giới. 
+                            Chúng tôi mang đến trải nghiệm chat thông minh với khả năng tìm kiếm web, tạo hình ảnh và so sánh đa mô hình - tất cả trong một giao diện hiện đại, mượt mà.
+                        </p>
                     </div>
                     
-                    <p class="italic">✨ Với NexoraX, bạn sẽ cảm nhận được sự kết hợp giữa tri thức – tốc độ – sáng tạo, tạo nên trải nghiệm mượt mà và đầy cảm hứng.</p>
-                    
-                    <div class="mt-4">
-                        <h3 class="font-semibold text-gray-800 mb-2">⚡ Chọn Model AI</h3>
-                        <div class="space-y-2">
-                            <div class="bg-purple-50 p-3 rounded-lg">
-                                <p class="font-medium">🔵 NexoraX (v1.0) – Gemini Flash 2.5</p>
-                                <p class="text-xs">👉 Dựa trên công nghệ Gemini Flash 2.5 mới nhất</p>
-                                <p class="text-xs">🔹 Thế mạnh: tốc độ cực nhanh, phản hồi tức thì, hiệu suất vượt trội.</p>
+                    <div class="mt-5">
+                        <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                            <span class="text-xl">🚀</span> Tính năng vượt trội
+                        </h3>
+                        <div class="grid grid-cols-1 gap-2">
+                            <div class="flex items-start gap-2 bg-white p-3 rounded-lg border border-gray-100">
+                                <span class="text-lg">💬</span>
+                                <div>
+                                    <strong class="text-gray-800">Dual Chat Mode:</strong>
+                                    <span class="text-gray-600"> So sánh 2 AI models cùng lúc, chọn câu trả lời tốt nhất</span>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-2 bg-white p-3 rounded-lg border border-gray-100">
+                                <span class="text-lg">🔍</span>
+                                <div>
+                                    <strong class="text-gray-800">Gemini Search:</strong>
+                                    <span class="text-gray-600"> Tìm kiếm thông tin real-time từ Internet với độ chính xác cao</span>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-2 bg-white p-3 rounded-lg border border-gray-100">
+                                <span class="text-lg">🎨</span>
+                                <div>
+                                    <strong class="text-gray-800">Image Generation:</strong>
+                                    <span class="text-gray-600"> Tạo hình ảnh AI chất lượng cao từ văn bản với Pollinations AI</span>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-2 bg-white p-3 rounded-lg border border-gray-100">
+                                <span class="text-lg">⚡</span>
+                                <div>
+                                    <strong class="text-gray-800">19+ AI Models:</strong>
+                                    <span class="text-gray-600"> GPT-5, DeepSeek, Gemini, Mistral và nhiều models khác</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="mt-3 text-center">
-                            <button id="goToSettingsBtn" class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 text-sm font-medium">
-                                ⚙️ Chuyển đến Cài đặt
-                            </button>
-                        </div>
                     </div>
                     
-                    <div class="mt-4 pt-3 border-t border-gray-200">
-                        <p class="text-xs text-gray-500">📌 <strong>Người phát triển / Đại diện:</strong><br>PHAN TRỌNG KHANG – Trường THCS Vĩnh Hòa</p>
+                    <div class="mt-5 bg-gradient-to-r from-purple-50 to-blue-50 p-4 rounded-xl border border-purple-100">
+                        <h3 class="font-bold text-gray-800 mb-2 flex items-center gap-2">
+                            <span class="text-xl">🎯</span> Phù hợp cho
+                        </h3>
+                        <div class="text-sm text-gray-700 space-y-1">
+                            <p>✨ Học sinh, sinh viên: Giải đáp bài tập, nghiên cứu kiến thức</p>
+                            <p>💻 Lập trình viên: Hỗ trợ code, debug và học công nghệ mới</p>
+                            <p>🎨 Nhà sáng tạo: Viết nội dung, thiết kế ý tưởng, tạo hình ảnh</p>
+                            <p>📚 Người đam mê công nghệ: Khám phá AI, thử nghiệm models</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 text-center">
+                        <button id="goToSettingsBtn" class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 text-sm font-semibold">
+                            ⚙️ Khám phá Cài đặt
+                        </button>
+                    </div>
+                    
+                    <div class="mt-5 pt-4 border-t border-gray-200">
+                        <p class="text-xs text-center text-gray-500">
+                            <strong>Phát triển bởi:</strong> PHAN TRỌNG KHANG<br>
+                            <span class="text-gray-400">Trường THCS Vĩnh Hòa • Version 2.0</span>
+                        </p>
                     </div>
                 </div>
             </div>
