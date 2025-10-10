@@ -69,12 +69,14 @@ export function renderMessage(message, context) {
         contentHtml = formatMessage(message.content);
     }
     
-    // Cấu trúc mới: wrapper chứa content và files (files ở dưới)
+    // Đưa files vào ngay trong message-content để tránh spacing
     messageDiv.innerHTML = `
         ${modelBadge}
         <div class="message-wrapper">
-            <div class="message-content">${contentHtml}</div>
-            ${filesHtml}
+            <div class="message-content">
+                ${contentHtml}
+                ${filesHtml}
+            </div>
         </div>
     `;
     
