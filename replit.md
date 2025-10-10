@@ -1,9 +1,23 @@
 # NexoraX AI - Replit Setup
 
 ## Project Overview
-NexoraX AI is a modern Vietnamese AI chat application that provides conversations using Google Gemini language model, search-enhanced AI, and LLM7.io integration for GPT-5 Mini and Gemini Search models. Successfully configured for Replit environment.
+NexoraX AI is a modern Vietnamese AI chat application that provides conversations using Google Gemini language model, search-enhanced AI, and LLM7.io integration for GPT-5 Mini and Gemini Search models. Successfully configured for Replit environment with modular ES6 architecture.
 
 ## Recent Changes
+- **October 10, 2025 (Critical Fix - Module Refactoring Issues)**: Fixed broken features after JS module split
+  - **Root Cause**: Previous refactoring split monolithic app.js into 15 modules but CSS wasn't updated
+  - **Critical CSS Fix**: Copied updated style.css from src/ to assets/ with missing sidebar rules:
+    - `#sidebar.active { transform: translateX(0) !important; }` - Makes sidebar visible
+    - Desktop sidebar collapse rules for responsive design
+  - **Code Cleanup**: 
+    - ✅ Removed duplicate `formatFileSize` from utils.js (kept in message-formatter.js)
+    - ✅ Deleted unused typing-effects.js file
+    - ✅ Removed old monolithic app.js and app.js.backup from assets/js/
+    - ✅ Consolidated directory structure (removed duplicate src/css and src/images)
+    - ✅ Updated server.py to check for src/js/main.js instead of assets/js/app.js
+  - **Result**: ✅ All features now working: sidebar, file upload, dual chat, voice input
+  - **Architecture**: Clean modular ES6 structure with 14 focused modules in src/js/
+  - **API Keys**: Preserved unchanged (as requested by user)
 - **October 9, 2025 (Latest - Critical Bug Fix)**: Fixed import error that broke API configuration
   - **Bug Identified**: Server was importing `from config.config` but only `config.py` exists at root
   - **Root Cause**: Previous refactor split files but incorrect import path remained
@@ -120,9 +134,25 @@ NexoraX AI is a modern Vietnamese AI chat application that provides conversation
 ├── config.py           # Configuration with API keys
 ├── requirements.txt    # No external dependencies needed
 ├── assets/
-│   ├── css/style.css   # Application styles
-│   ├── js/app.js       # JavaScript application logic (2300+ lines)
-│   └── images/         # Logo and images
+│   ├── css/style.css   # Application styles (3040 lines)
+│   ├── images/         # Logo and images
+│   └── js/             # (empty - old monolithic app.js removed)
+├── src/
+│   └── js/             # Modular ES6 JavaScript (14 files)
+│       ├── main.js              # Entry point
+│       ├── chat-app.js          # Main NexoraXChat class
+│       ├── ai-api.js            # AI API integrations
+│       ├── auth-manager.js      # Authentication & sessions
+│       ├── chat-manager.js      # Chat storage & operations
+│       ├── constants.js         # App constants & config
+│       ├── dual-chat.js         # Dual chat mode logic
+│       ├── event-handlers.js    # Event listener setup
+│       ├── file-upload.js       # File handling
+│       ├── message-formatter.js # Markdown & formatting
+│       ├── message-renderer.js  # Message rendering
+│       ├── ui-manager.js        # UI controls & modals
+│       ├── utils.js             # Utility functions
+│       └── voice-manager.js     # Voice input handling
 ├── attached_assets/    # User uploaded images/files  
 └── replit.md          # This file
 ```
