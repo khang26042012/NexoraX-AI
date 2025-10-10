@@ -685,67 +685,11 @@ body.dark-mode .ai-loading-text {
     word-wrap: break-word;
 }
 
-/* Model badge styling - thanh ngang với tên model ở giữa */
+/* Model badge - ẨN HOÀN TOÀN */
 .ai-message .model-badge,
 .message .model-badge,
 div.model-badge {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    font-size: 0.75rem !important;
-    font-weight: 600 !important;
-    color: #6366f1 !important;
-    margin: 12px 0 !important;
-    position: relative !important;
-    text-align: center !important;
-    background: none !important;
-    padding: 0 !important;
-    border-radius: 0 !important;
-    width: 100% !important;
-}
-
-.ai-message .model-badge::before,
-.message .model-badge::before,
-div.model-badge::before {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(to right, transparent, #d1d5db 50%, #d1d5db);
-    margin: 0 12px;
-}
-
-.ai-message .model-badge::after,
-.message .model-badge::after,
-div.model-badge::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(to left, transparent, #d1d5db 50%, #d1d5db);
-    margin: 0 12px;
-}
-
-.dark .ai-message .model-badge,
-.dark .message .model-badge,
-.dark div.model-badge,
-[data-theme="dark"] .model-badge,
-body.dark-mode .model-badge {
-    color: #a5b4fc !important;
-}
-
-.dark .ai-message .model-badge::before,
-.dark .message .model-badge::before,
-.dark div.model-badge::before,
-[data-theme="dark"] .model-badge::before,
-body.dark-mode .model-badge::before {
-    background: linear-gradient(to right, transparent, #4b5563 50%, #4b5563);
-}
-
-.dark .ai-message .model-badge::after,
-.dark .message .model-badge::after,
-.dark div.model-badge::after,
-[data-theme="dark"] .model-badge::after,
-body.dark-mode .model-badge::after {
-    background: linear-gradient(to left, transparent, #4b5563 50%, #4b5563);
+    display: none !important;
 }
 
 /* Avatar styling - HIDDEN */
