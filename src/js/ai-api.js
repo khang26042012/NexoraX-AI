@@ -21,8 +21,8 @@ import { API_ENDPOINTS, API_TIMEOUTS } from './constants.js';
  * @returns {Array} History ở định dạng Gemini
  */
 export function prepareConversationHistoryGemini(messages, limit = 20) {
-    // Lấy N messages cuối (trừ message cuối - AI typing placeholder)
-    const historyMessages = messages.slice(0, -1);
+    // Lọc bỏ typing messages và messages rỗng
+    const historyMessages = messages.filter(msg => !msg.isTyping && msg.content && msg.content.trim() !== '');
     const recentMessages = historyMessages.slice(-limit);
     
     return recentMessages.map(msg => ({
@@ -40,8 +40,8 @@ export function prepareConversationHistoryGemini(messages, limit = 20) {
  * @returns {Array} History ở định dạng LLM7
  */
 export function prepareConversationHistoryLLM7(messages, limit = 15) {
-    // Lấy N messages cuối (trừ message cuối - AI typing placeholder)
-    const historyMessages = messages.slice(0, -1);
+    // Lọc bỏ typing messages và messages rỗng
+    const historyMessages = messages.filter(msg => !msg.isTyping && msg.content && msg.content.trim() !== '');
     const recentMessages = historyMessages.slice(-limit);
     
     return recentMessages.map(msg => ({

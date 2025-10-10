@@ -5,6 +5,20 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - 10/10/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
+0. ✅ LỖI API GEMINI FLASH TRONG DUAL CHAT MODE (MỚI - 10/10/2025)
+   - Vấn đề: Gemini Flash 2.5 (nexorax1) báo lỗi "API endpoint không tồn tại" trong dual chat
+   - Nguyên nhân: Dual chat push 2 AI typing placeholders vào messages, nhưng prepareConversationHistory
+     chỉ loại bỏ 1 message cuối → AI typing placeholder rỗng vẫn trong history → Gemini API lỗi
+   
+   Giải pháp:
+   - Sửa prepareConversationHistoryGemini() trong src/js/ai-api.js (dòng 26-37):
+     * Thay đổi từ slice(0, -1) sang filter để loại bỏ TẤT CẢ typing messages
+     * Filter: !msg.isTyping && msg.content && msg.content.trim() !== ''
+     * Đảm bảo chỉ gửi messages hoàn chỉnh đến API
+   
+   - Sửa prepareConversationHistoryLLM7() trong src/js/ai-api.js (dòng 45-54):
+     * Áp dụng cùng logic filter để tránh lỗi tương tự
+
 1. ✅ LỖI SIDEBAR TOGGLE BUTTON
    - Vấn đề: Khi bật sidebar, nút toggle vẫn hiển thị và che sidebar
    - Vấn đề phụ: Khi tắt sidebar, nút toggle biến mất và không quay lại
