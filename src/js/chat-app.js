@@ -29,21 +29,21 @@ import {
     renderChatList
 } from './chat-manager.js';
 import {
-    toggleSidebar,
-    closeSidebar,
-    toggleDesktopSidebar,
-    initializeDesktopSidebar,
-    showHomeScreen,
-    showChatScreen,
-    toggleTheme,
-    loadTheme,
+    toggleSidebar as uiToggleSidebar,
+    closeSidebar as uiCloseSidebar,
+    toggleDesktopSidebar as uiToggleDesktopSidebar,
+    initializeDesktopSidebar as uiInitializeDesktopSidebar,
+    showHomeScreen as uiShowHomeScreen,
+    showChatScreen as uiShowChatScreen,
+    toggleTheme as uiToggleTheme,
+    loadTheme as uiLoadTheme,
     getCurrentTheme,
     showModal,
     hideModal,
-    showSettings,
-    hideSettings,
+    showSettings as uiShowSettings,
+    hideSettings as uiHideSettings,
     showNotification,
-    toggleModelOptions
+    toggleModelOptions as uiToggleModelOptions
 } from './ui-manager.js';
 import {
     checkUserSession,
@@ -55,26 +55,26 @@ import {
     setupUserMenuDropdown
 } from './auth-manager.js';
 import {
-    handleFileSelection,
-    clearSelectedFiles,
-    removeFile,
-    updateFilePreviewList,
-    showFilePreview,
-    hideFilePreview,
-    openImageModal,
-    closeImageModal
+    handleFileSelection as fileHandleFileSelection,
+    clearSelectedFiles as fileClearSelectedFiles,
+    removeFile as fileRemoveFile,
+    updateFilePreviewList as fileUpdateFilePreviewList,
+    showFilePreview as fileShowFilePreview,
+    hideFilePreview as fileHideFilePreview,
+    openImageModal as fileOpenImageModal,
+    closeImageModal as fileCloseImageModal
 } from './file-upload.js';
 import {
-    initializeSpeechRecognition,
-    toggleVoiceRecording
+    initializeSpeechRecognition as voiceInitializeSpeechRecognition,
+    toggleVoiceRecording as voiceToggleVoiceRecording
 } from './voice-manager.js';
 import {
     loadDualChatMode,
     saveDualChatMode,
     loadDualChatModels,
     saveDualChatModels,
-    toggleDualMode,
-    loadDualModeState
+    toggleDualMode as dualToggleDualMode,
+    loadDualModeState as dualLoadDualModeState
 } from './dual-chat.js';
 import {
     setupMainEventListeners,
@@ -173,47 +173,47 @@ export class NexoraXChat {
     // ===================================
     
     toggleSidebar() {
-        toggleSidebar(this.sidebar);
+        uiToggleSidebar(this.sidebar);
     }
     
     closeSidebar() {
-        closeSidebar(this.sidebar);
+        uiCloseSidebar(this.sidebar);
     }
     
     toggleDesktopSidebar() {
-        toggleDesktopSidebar(this.sidebar);
+        uiToggleDesktopSidebar(this.sidebar);
     }
     
     initializeDesktopSidebar() {
-        initializeDesktopSidebar(this.sidebar);
+        uiInitializeDesktopSidebar(this.sidebar);
     }
     
     showHomeScreen() {
-        showHomeScreen(this.homeScreen, this.chatScreen);
+        uiShowHomeScreen(this.homeScreen, this.chatScreen);
         this.currentChatId = null;
         this.homeInput.value = '';
         this.homeInput.focus();
     }
     
     showChatScreen() {
-        showChatScreen(this.homeScreen, this.chatScreen);
+        uiShowChatScreen(this.homeScreen, this.chatScreen);
         this.chatInput.focus();
     }
     
     toggleTheme() {
-        this.isDarkMode = toggleTheme();
+        this.isDarkMode = uiToggleTheme();
     }
     
     loadTheme() {
-        loadTheme(this.isDarkMode);
+        uiLoadTheme(this.isDarkMode);
     }
     
     showSettings() {
-        showSettings();
+        uiShowSettings();
     }
     
     hideSettings() {
-        hideSettings();
+        uiHideSettings();
     }
     
     showAbout() {
@@ -245,7 +245,7 @@ export class NexoraXChat {
     }
     
     toggleModelOptions() {
-        toggleModelOptions();
+        uiToggleModelOptions();
     }
     
     // ===================================
@@ -487,20 +487,20 @@ export class NexoraXChat {
     // ===================================
     
     async handleFileSelection(files) {
-        await handleFileSelection(files, this.selectedFiles, () => {
+        await fileHandleFileSelection(files, this.selectedFiles, () => {
             this.updateFilePreviewList();
             if (this.selectedFiles.size > 0) {
-                showFilePreview(this.filePreviewModal);
+                fileShowFilePreview(this.filePreviewModal);
             }
         });
     }
     
     clearSelectedFiles() {
-        clearSelectedFiles(this.selectedFiles, () => this.updateFilePreviewList());
+        fileClearSelectedFiles(this.selectedFiles, () => this.updateFilePreviewList());
     }
     
     removeFile(fileId) {
-        removeFile(this.selectedFiles, fileId, () => {
+        fileRemoveFile(this.selectedFiles, fileId, () => {
             this.updateFilePreviewList();
             if (this.selectedFiles.size === 0) {
                 this.hideFilePreview();
@@ -509,23 +509,23 @@ export class NexoraXChat {
     }
     
     updateFilePreviewList() {
-        updateFilePreviewList(this.selectedFiles, this.filePreviewList, (fileId) => this.removeFile(fileId));
+        fileUpdateFilePreviewList(this.selectedFiles, this.filePreviewList, (fileId) => this.removeFile(fileId));
     }
     
     showFilePreview() {
-        showFilePreview(this.filePreviewModal);
+        fileShowFilePreview(this.filePreviewModal);
     }
     
     hideFilePreview() {
-        hideFilePreview(this.filePreviewModal);
+        fileHideFilePreview(this.filePreviewModal);
     }
     
     openImageModal(imageSrc, imageTitle) {
-        openImageModal(imageSrc, imageTitle);
+        fileOpenImageModal(imageSrc, imageTitle);
     }
     
     closeImageModal() {
-        closeImageModal();
+        fileCloseImageModal();
     }
     
     // ===================================
@@ -533,11 +533,11 @@ export class NexoraXChat {
     // ===================================
     
     initializeSpeechRecognition() {
-        initializeSpeechRecognition();
+        voiceInitializeSpeechRecognition();
     }
     
     toggleVoiceRecording(inputElement, voiceButton) {
-        toggleVoiceRecording(inputElement, voiceButton);
+        voiceToggleVoiceRecording(inputElement, voiceButton);
     }
     
     // ===================================
@@ -545,11 +545,11 @@ export class NexoraXChat {
     // ===================================
     
     toggleDualMode() {
-        this.dualChatMode = toggleDualMode(this.dualChatMode, this.getContext());
+        this.dualChatMode = dualToggleDualMode(this.dualChatMode, this.getContext());
     }
     
     loadDualModeState() {
-        loadDualModeState(this.dualChatMode);
+        dualLoadDualModeState(this.dualChatMode);
     }
     
     saveDualChatModels() {

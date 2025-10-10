@@ -18,9 +18,19 @@
  * @param {Object} app - Instance của NexoraXChat
  */
 export function setupMainEventListeners(app) {
+    console.log('[DEBUG] Setting up main event listeners...', {
+        sidebar: !!app.sidebar,
+        sidebarToggle: !!app.sidebarToggle,
+        homeInput: !!app.homeInput,
+        chatInput: !!app.chatInput
+    });
+    
     // Sidebar toggle mobile
     if (app.sidebarToggle) {
-        app.sidebarToggle.addEventListener('click', () => app.toggleSidebar());
+        app.sidebarToggle.addEventListener('click', () => {
+            console.log('[DEBUG] Sidebar toggle clicked');
+            app.toggleSidebar();
+        });
     }
     
     // Sidebar toggle desktop
@@ -119,7 +129,10 @@ export function setupMainEventListeners(app) {
     });
     
     // Settings
-    document.getElementById('settingsBtn')?.addEventListener('click', () => app.showSettings());
+    document.getElementById('settingsBtn')?.addEventListener('click', () => {
+        console.log('[DEBUG] Settings button clicked');
+        app.showSettings();
+    });
     document.getElementById('cancelSettings')?.addEventListener('click', () => app.hideSettings());
     
     // About
@@ -156,8 +169,14 @@ export function setupMainEventListeners(app) {
     document.getElementById('modelToggle')?.addEventListener('click', () => app.toggleModelOptions());
     
     // Dual Chat Mode Toggle
-    document.getElementById('homeDualModeBtn')?.addEventListener('click', () => app.toggleDualMode());
-    document.getElementById('chatDualModeBtn')?.addEventListener('click', () => app.toggleDualMode());
+    document.getElementById('homeDualModeBtn')?.addEventListener('click', () => {
+        console.log('[DEBUG] Home Dual Mode button clicked');
+        app.toggleDualMode();
+    });
+    document.getElementById('chatDualModeBtn')?.addEventListener('click', () => {
+        console.log('[DEBUG] Chat Dual Mode button clicked');
+        app.toggleDualMode();
+    });
     
     // Quick suggestions
     document.querySelectorAll('.quick-suggestion').forEach(suggestion => {
@@ -226,10 +245,13 @@ export function setupMainEventListeners(app) {
  * @param {Object} app - Instance của NexoraXChat
  */
 export function setupFileUploadListeners(app) {
+    console.log('[DEBUG] Setting up file upload listeners...');
+    
     // Home page upload button
     const homeUploadBtn = document.getElementById('homeUploadBtn');
     if (homeUploadBtn) {
         homeUploadBtn.addEventListener('click', () => {
+            console.log('[DEBUG] Home upload button clicked');
             app.homeFileInput.click();
         });
     }
