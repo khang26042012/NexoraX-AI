@@ -47,6 +47,29 @@ I. ✅ ĐIỀU CHỈNH KÍCH THƯỚC VÀ KHOẢNG CÁCH HÌNH ẢNH
      * Giảm khoảng cách: mb-2 (8px) → mb-1 (4px)
      * Hình ảnh lớn hơn ~33%, dễ xem và gần hơn
 
+J. ✅ HIỂN THỊ HÌNH ẢNH DƯỚI BONG BÓNG CHAT (MAJOR LAYOUT UPDATE)
+   - Vấn đề: Hình ảnh hiển thị trên bong bóng chat, không theo đúng alignment user/AI
+   
+   Giải pháp (theo đề xuất của Architect):
+   1. Cấu trúc DOM mới trong src/js/message-renderer.js:
+      * Thêm .message-wrapper để wrap content + files
+      * Files render SAU message-content (dưới bong bóng)
+      * Truyền thêm parameter role vào renderFilesInMessage()
+   
+   2. CSS mới trong assets/css/style.css (dòng 647-708):
+      * .user-message .message-wrapper: flex-direction column, align-items flex-end
+      * .ai-message .message-wrapper: flex-direction column, align-items flex-start
+      * .user-file-attachments: justify-content flex-end (ảnh bên phải)
+      * .ai-file-attachments: justify-content flex-start (ảnh bên trái)
+      * Gap giảm từ 12px → 4px để gần bong bóng chat hơn
+   
+   3. Kết quả:
+      ✅ Hình ảnh hiển thị DƯỚI bong bóng chat (không còn ở trên)
+      ✅ User images align bên phải (theo bubble user)
+      ✅ AI images align bên trái (theo bubble AI)
+      ✅ Khoảng cách chỉ còn 4px - rất gần bong bóng
+      ✅ Layout đẹp, tự nhiên như các app chat hiện đại
+
 =============================================================================
 
 ✨ TÍNH NĂNG MỚI - 10/10/2025:

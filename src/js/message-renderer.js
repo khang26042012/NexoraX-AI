@@ -56,8 +56,8 @@ export function renderMessage(message, context) {
         modelBadge = `<div class="model-badge">${modelName}</div>`;
     }
     
-    // Render files nếu có
-    const filesHtml = message.files ? renderFilesInMessage(message.files, context) : '';
+    // Render files nếu có (với role-specific class)
+    const filesHtml = message.files ? renderFilesInMessage(message.files, message.role, context) : '';
     
     // Tạo message content
     let contentHtml = '';
@@ -69,10 +69,13 @@ export function renderMessage(message, context) {
         contentHtml = formatMessage(message.content);
     }
     
+    // Cấu trúc mới: wrapper chứa content và files (files ở dưới)
     messageDiv.innerHTML = `
         ${modelBadge}
-        ${filesHtml}
-        <div class="message-content">${contentHtml}</div>
+        <div class="message-wrapper">
+            <div class="message-content">${contentHtml}</div>
+            ${filesHtml}
+        </div>
     `;
     
     targetContainer.appendChild(messageDiv);
@@ -138,20 +141,24 @@ export function updateMessage(message, context) {
 /**
  * Render files trong message
  * @param {Array} files - Mảng files cần render
+ * @param {string} role - Role của message ('user' hoặc 'assistant')
  * @param {Object} context - Context chứa openImageModal method
  * @returns {string} HTML của files
  */
-export function renderFilesInMessage(files, context) {
+export function renderFilesInMessage(files, role, context) {
     if (!files || files.length === 0) return '';
     
-    return '<div class="message-files mb-2">' +
+    // Class riêng cho user/AI để align đúng hướng
+    const attachmentClass = role === 'user' ? 'user-file-attachments' : 'ai-file-attachments';
+    
+    return `<div class="${attachmentClass}">` +
         files.map(file => {
             const isImage = file.type.startsWith('image/');
             const sizeText = formatFileSize(file.size);
             
             if (isImage && file.preview) {
                 return `
-                    <div class="inline-block mr-2 mb-1">
+                    <div class="inline-block">
                         <div class="relative group">
                             <img src="${file.preview}" alt="${file.name}" class="max-w-xs max-h-64 rounded-lg shadow-md cursor-pointer" onclick="app.openImageModal('${file.preview}', '${file.name}')">
                             <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all duration-200"></div>
