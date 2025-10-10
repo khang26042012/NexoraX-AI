@@ -195,6 +195,44 @@ export function setupMainEventListeners(app) {
         });
     }
     
+    // Config dropdowns
+    const homeConfigBtn = document.getElementById('homeConfigBtn');
+    const homeConfigDropdown = document.getElementById('homeConfigDropdown');
+    const chatConfigBtn = document.getElementById('chatConfigBtn');
+    const chatConfigDropdown = document.getElementById('chatConfigDropdown');
+    
+    if (homeConfigBtn && homeConfigDropdown) {
+        homeConfigBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            homeConfigDropdown.classList.toggle('hidden');
+            if (chatConfigDropdown) chatConfigDropdown.classList.add('hidden');
+        });
+        
+        homeConfigDropdown.querySelectorAll('.config-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                const action = e.currentTarget.getAttribute('data-action');
+                app.handleConfigAction(action);
+                homeConfigDropdown.classList.add('hidden');
+            });
+        });
+    }
+    
+    if (chatConfigBtn && chatConfigDropdown) {
+        chatConfigBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            chatConfigDropdown.classList.toggle('hidden');
+            if (homeConfigDropdown) homeConfigDropdown.classList.add('hidden');
+        });
+        
+        chatConfigDropdown.querySelectorAll('.config-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                const action = e.currentTarget.getAttribute('data-action');
+                app.handleConfigAction(action);
+                chatConfigDropdown.classList.add('hidden');
+            });
+        });
+    }
+    
     // Close dropdowns khi click outside
     document.addEventListener('click', (e) => {
         const homeDropdown = document.getElementById('homeQuickModelDropdown');
@@ -210,6 +248,17 @@ export function setupMainEventListeners(app) {
         if (chatDropdown && !chatDropdown.contains(e.target) && 
             chatBtn && !chatBtn.contains(e.target)) {
             chatDropdown.classList.add('hidden');
+        }
+        
+        // Close config dropdowns
+        if (homeConfigDropdown && !homeConfigBtn?.contains(e.target) && 
+            !homeConfigDropdown.contains(e.target)) {
+            homeConfigDropdown.classList.add('hidden');
+        }
+        
+        if (chatConfigDropdown && !chatConfigBtn?.contains(e.target) && 
+            !chatConfigDropdown.contains(e.target)) {
+            chatConfigDropdown.classList.add('hidden');
         }
         
         // Close sidebar on mobile

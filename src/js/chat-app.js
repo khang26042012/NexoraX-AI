@@ -738,6 +738,34 @@ export class NexoraXChat {
         return MODEL_NAMES[modelId] || modelId;
     }
     
+    handleConfigAction(action) {
+        const configButtons = document.querySelectorAll(`.config-option[data-action="${action}"]`);
+        
+        if (action === 'image-gen') {
+            if (this.selectedModel === 'image-gen') {
+                const modelToRestore = this.previousModelBeforeImageGen || 'gpt-5-chat';
+                this.changeModel(modelToRestore);
+                this.previousModelBeforeImageGen = null;
+                configButtons.forEach(btn => btn.classList.remove('font-bold'));
+            } else {
+                this.previousModelBeforeImageGen = this.selectedModel;
+                this.changeModel('image-gen');
+                configButtons.forEach(btn => btn.classList.add('font-bold'));
+            }
+        } else if (action === 'search') {
+            if (this.selectedModel === 'gemini-search') {
+                const modelToRestore = this.previousModelBeforeSearch || 'gpt-5-chat';
+                this.changeModel(modelToRestore);
+                this.previousModelBeforeSearch = null;
+                configButtons.forEach(btn => btn.classList.remove('font-bold'));
+            } else {
+                this.previousModelBeforeSearch = this.selectedModel;
+                this.changeModel('gemini-search');
+                configButtons.forEach(btn => btn.classList.add('font-bold'));
+            }
+        }
+    }
+    
     // ===================================
     // TYPEWRITER EFFECT
     // ===================================
