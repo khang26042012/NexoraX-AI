@@ -236,16 +236,56 @@ export function renderDualChatLayout(chat, context) {
     
     if (primarySelect) {
         primarySelect.addEventListener('change', (e) => {
-            context.dualChatPrimaryModel = e.target.value;
+            const oldPrimaryModel = context.dualChatPrimaryModel;
+            const newPrimaryModel = e.target.value;
+            
+            // Xóa tất cả tin nhắn của model cũ (primary panel)
+            chat.messages = chat.messages.filter(msg => {
+                // Giữ lại user messages
+                if (msg.role === 'user') return true;
+                // Giữ lại secondary messages
+                if (msg.isPrimary === false) return true;
+                // Xóa primary messages của model cũ
+                if (msg.isPrimary === true || msg.model === oldPrimaryModel) return false;
+                return true;
+            });
+            
+            context.dualChatPrimaryModel = newPrimaryModel;
             saveDualChatModels(context.dualChatPrimaryModel, context.dualChatSecondaryModel);
+            
+            // Lưu chat sau khi xóa messages
+            if (context.saveChats) {
+                context.saveChats();
+            }
+            
             renderDualChatLayout(chat, context);
         });
     }
     
     if (secondarySelect) {
         secondarySelect.addEventListener('change', (e) => {
-            context.dualChatSecondaryModel = e.target.value;
+            const oldSecondaryModel = context.dualChatSecondaryModel;
+            const newSecondaryModel = e.target.value;
+            
+            // Xóa tất cả tin nhắn của model cũ (secondary panel)
+            chat.messages = chat.messages.filter(msg => {
+                // Giữ lại user messages
+                if (msg.role === 'user') return true;
+                // Giữ lại primary messages
+                if (msg.isPrimary === true) return true;
+                // Xóa secondary messages của model cũ
+                if (msg.isPrimary === false || msg.model === oldSecondaryModel) return false;
+                return true;
+            });
+            
+            context.dualChatSecondaryModel = newSecondaryModel;
             saveDualChatModels(context.dualChatPrimaryModel, context.dualChatSecondaryModel);
+            
+            // Lưu chat sau khi xóa messages
+            if (context.saveChats) {
+                context.saveChats();
+            }
+            
             renderDualChatLayout(chat, context);
         });
     }

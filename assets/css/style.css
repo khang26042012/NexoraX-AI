@@ -685,24 +685,61 @@ body.dark-mode .ai-loading-text {
     word-wrap: break-word;
 }
 
-/* Model badge styling - hiển thị tên model */
+/* Model badge styling - thanh ngang với tên model ở giữa */
 .model-badge {
-    display: inline-block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 0.75rem;
     font-weight: 600;
     color: #6366f1;
-    background: #eef2ff;
-    padding: 2px 8px;
-    border-radius: 4px;
-    margin-bottom: 8px;
-    margin-right: 8px;
+    margin: 12px 0;
+    position: relative;
+    text-align: center;
+}
+
+.model-badge::before,
+.model-badge::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, #d1d5db 20%, #d1d5db 80%, transparent);
+    margin: 0 12px;
+}
+
+.model-badge::before {
+    background: linear-gradient(to right, transparent, #d1d5db 50%, #d1d5db);
+}
+
+.model-badge::after {
+    background: linear-gradient(to left, transparent, #d1d5db 50%, #d1d5db);
 }
 
 .dark .model-badge,
 [data-theme="dark"] .model-badge,
 body.dark-mode .model-badge {
     color: #a5b4fc;
-    background: #312e81;
+}
+
+.dark .model-badge::before,
+.dark .model-badge::after,
+[data-theme="dark"] .model-badge::before,
+[data-theme="dark"] .model-badge::after,
+body.dark-mode .model-badge::before,
+body.dark-mode .model-badge::after {
+    background: linear-gradient(to right, transparent, #4b5563 20%, #4b5563 80%, transparent);
+}
+
+.dark .model-badge::before,
+[data-theme="dark"] .model-badge::before,
+body.dark-mode .model-badge::before {
+    background: linear-gradient(to right, transparent, #4b5563 50%, #4b5563);
+}
+
+.dark .model-badge::after,
+[data-theme="dark"] .model-badge::after,
+body.dark-mode .model-badge::after {
+    background: linear-gradient(to left, transparent, #4b5563 50%, #4b5563);
 }
 
 /* Avatar styling - HIDDEN */
