@@ -803,22 +803,26 @@ export class NexoraXChat {
                 const modelToRestore = this.previousModelBeforeImageGen || 'gpt-5-chat';
                 this.changeModel(modelToRestore);
                 this.previousModelBeforeImageGen = null;
-                configButtons.forEach(btn => btn.classList.remove('font-bold'));
+                configButtons.forEach(btn => btn.classList.remove('active-config'));
             } else {
                 this.previousModelBeforeImageGen = this.selectedModel;
                 this.changeModel('image-gen');
-                configButtons.forEach(btn => btn.classList.add('font-bold'));
+                // Remove active from all config options first
+                document.querySelectorAll('.config-option').forEach(btn => btn.classList.remove('active-config'));
+                configButtons.forEach(btn => btn.classList.add('active-config'));
             }
         } else if (action === 'search') {
             if (this.selectedModel === 'gemini-search') {
                 const modelToRestore = this.previousModelBeforeSearch || 'gpt-5-chat';
                 this.changeModel(modelToRestore);
                 this.previousModelBeforeSearch = null;
-                configButtons.forEach(btn => btn.classList.remove('font-bold'));
+                configButtons.forEach(btn => btn.classList.remove('active-config'));
             } else {
                 this.previousModelBeforeSearch = this.selectedModel;
                 this.changeModel('gemini-search');
-                configButtons.forEach(btn => btn.classList.add('font-bold'));
+                // Remove active from all config options first
+                document.querySelectorAll('.config-option').forEach(btn => btn.classList.remove('active-config'));
+                configButtons.forEach(btn => btn.classList.add('active-config'));
             }
         }
     }
