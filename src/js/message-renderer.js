@@ -151,9 +151,9 @@ export function renderFilesInMessage(files, context) {
             
             if (isImage && file.preview) {
                 return `
-                    <div class="inline-block mr-2 mb-2">
+                    <div class="inline-block mr-2 mb-1">
                         <div class="relative group">
-                            <img src="${file.preview}" alt="${file.name}" class="max-w-60 max-h-40 rounded-lg shadow-md cursor-pointer" onclick="app.openImageModal('${file.preview}', '${file.name}')">
+                            <img src="${file.preview}" alt="${file.name}" class="max-w-xs max-h-64 rounded-lg shadow-md cursor-pointer" onclick="app.openImageModal('${file.preview}', '${file.name}')">
                             <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all duration-200"></div>
                             <div class="absolute bottom-2 left-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
                                 ${file.name} (${sizeText})

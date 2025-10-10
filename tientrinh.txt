@@ -37,6 +37,16 @@ H. ✅ TĂNG TỐC ĐỘ TYPING EFFECT
      * AI response hiển thị nhanh hơn, trải nghiệm mượt mà hơn
      * Vẫn giữ hiệu ứng typing tự nhiên
 
+I. ✅ ĐIỀU CHỈNH KÍCH THƯỚC VÀ KHOẢNG CÁCH HÌNH ẢNH
+   - Vấn đề: Hình ảnh trong chat hiển thị quá nhỏ và cách xa
+   
+   Giải pháp:
+   - Sửa src/js/message-renderer.js (dòng 159):
+     * Tăng kích thước hình: max-w-60 (240px) → max-w-xs (320px)
+     * Tăng chiều cao: max-h-40 (160px) → max-h-64 (256px)
+     * Giảm khoảng cách: mb-2 (8px) → mb-1 (4px)
+     * Hình ảnh lớn hơn ~33%, dễ xem và gần hơn
+
 =============================================================================
 
 ✨ TÍNH NĂNG MỚI - 10/10/2025:
