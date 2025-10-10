@@ -8,6 +8,31 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - 10/10/2025
 ✨ TÍNH NĂNG MỚI - 10/10/2025:
 -----------------------------------------------------------------------------
 
+E. ✅ FIX LỖI GEMINI API (MỚI - 10/10/2025)
+   - Vấn đề: Gemini API lỗi 404 rồi 400, không hoạt động
+   
+   Nguyên nhân:
+   1. Endpoint không khớp:
+      * Frontend: '/api/gemini/chat' ❌
+      * Backend: '/api/gemini' ✅
+   
+   2. Request format không khớp:
+      * Frontend gửi: { message, messages } ❌
+      * Backend expect: { model, payload: { contents: [...] } } ✅
+   
+   Giải pháp:
+   - Fix 1: Sửa src/js/constants.js (dòng 180):
+     * Đổi GEMINI: '/api/gemini/chat' → '/api/gemini'
+   
+   - Fix 2: Sửa src/js/ai-api.js (dòng 68-100):
+     * Build contents array từ conversationHistory + current message
+     * Format đúng Gemini API: { role, parts: [{ text }] }
+     * Wrap trong payload: { model, payload: { contents } }
+     * Xử lý files với inline_data format
+
+✨ TÍNH NĂNG MỚI - 10/10/2025:
+-----------------------------------------------------------------------------
+
 A. ✅ SIDEBAR SCROLLABLE
    - Vấn đề: Khi có nhiều tin nhắn, sidebar không cuộn được
    

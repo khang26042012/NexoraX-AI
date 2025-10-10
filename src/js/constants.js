@@ -174,7 +174,7 @@ export const BREAKPOINTS = {
  * Các endpoint API
  */
 export const API_ENDPOINTS = {
-    GEMINI: '/api/gemini/chat',
+    GEMINI: '/api/gemini',
     LLM7_CHAT: '/api/llm7/chat',
     LLM7_GPT5_CHAT: '/api/llm7/gpt-5-chat',
     LLM7_GEMINI_SEARCH: '/api/llm7/gemini-search',

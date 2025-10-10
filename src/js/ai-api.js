@@ -66,18 +66,35 @@ export async function getGeminiResponse(message, aiMessage, files, conversationH
     try {
         const url = API_ENDPOINTS.GEMINI;
         
-        const requestBody = {
-            message: message,
-            messages: conversationHistory
+        // Build contents array từ history + current message
+        const contents = [...conversationHistory];
+        
+        // Add current user message
+        const currentMessage = {
+            role: 'user',
+            parts: [{ text: message }]
         };
         
         // Thêm files nếu có
         if (files && files.length > 0) {
-            requestBody.images = files.map(file => ({
-                data: file.base64,
-                mimeType: file.type
-            }));
+            files.forEach(file => {
+                currentMessage.parts.push({
+                    inline_data: {
+                        mime_type: file.type,
+                        data: file.base64.split(',')[1] // Remove data:image/... prefix
+                    }
+                });
+            });
         }
+        
+        contents.push(currentMessage);
+        
+        const requestBody = {
+            model: 'gemini-2.0-flash-exp',
+            payload: {
+                contents: contents
+            }
+        };
         
         const response = await fetch(url, {
             method: 'POST',
