@@ -31,9 +31,11 @@ export function renderMessage(message, context) {
     // Nếu dual chat mode, render vào panel tương ứng
     if (messagesContainer.classList.contains('dual-chat-mode')) {
         if (message.isPrimary || message.model === dualChatPrimaryModel) {
-            targetContainer = document.getElementById('primaryPanel');
+            const panel = document.getElementById('primaryPanel');
+            if (panel) targetContainer = panel;
         } else if (message.isPrimary === false || message.model === dualChatSecondaryModel) {
-            targetContainer = document.getElementById('secondaryPanel');
+            const panel = document.getElementById('secondaryPanel');
+            if (panel) targetContainer = panel;
         }
     }
     

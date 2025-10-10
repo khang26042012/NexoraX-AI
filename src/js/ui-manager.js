@@ -22,6 +22,32 @@ import { STORAGE_KEYS } from './constants.js';
 export function toggleSidebar(sidebar) {
     if (!sidebar) return;
     sidebar.classList.toggle('active');
+    
+    // Ẩn/hiện toggle buttons khi sidebar active
+    const mobileToggle = document.getElementById('sidebarToggle');
+    const desktopToggle = document.getElementById('desktopSidebarToggle');
+    
+    if (sidebar.classList.contains('active')) {
+        // Sidebar đang mở - ẩn toggle buttons
+        if (mobileToggle) {
+            mobileToggle.style.opacity = '0';
+            mobileToggle.style.pointerEvents = 'none';
+        }
+        if (desktopToggle) {
+            desktopToggle.style.opacity = '0';
+            desktopToggle.style.pointerEvents = 'none';
+        }
+    } else {
+        // Sidebar đang đóng - hiện toggle buttons
+        if (mobileToggle) {
+            mobileToggle.style.opacity = '1';
+            mobileToggle.style.pointerEvents = 'auto';
+        }
+        if (desktopToggle) {
+            desktopToggle.style.opacity = '1';
+            desktopToggle.style.pointerEvents = 'auto';
+        }
+    }
 }
 
 /**
@@ -31,6 +57,19 @@ export function toggleSidebar(sidebar) {
 export function closeSidebar(sidebar) {
     if (!sidebar) return;
     sidebar.classList.remove('active');
+    
+    // Hiện lại toggle buttons khi đóng sidebar
+    const mobileToggle = document.getElementById('sidebarToggle');
+    const desktopToggle = document.getElementById('desktopSidebarToggle');
+    
+    if (mobileToggle) {
+        mobileToggle.style.opacity = '1';
+        mobileToggle.style.pointerEvents = 'auto';
+    }
+    if (desktopToggle) {
+        desktopToggle.style.opacity = '1';
+        desktopToggle.style.pointerEvents = 'auto';
+    }
 }
 
 /**

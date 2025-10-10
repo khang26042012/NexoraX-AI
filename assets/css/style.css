@@ -685,6 +685,26 @@ body.dark-mode .ai-loading-text {
     word-wrap: break-word;
 }
 
+/* Model badge styling - hiển thị tên model */
+.model-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6366f1;
+    background: #eef2ff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    margin-right: 8px;
+}
+
+.dark .model-badge,
+[data-theme="dark"] .model-badge,
+body.dark-mode .model-badge {
+    color: #a5b4fc;
+    background: #312e81;
+}
+
 /* Avatar styling - HIDDEN */
 .avatar {
     display: none;
@@ -1222,6 +1242,13 @@ body.dark-mode .ai-message .message-content {
 /* Sidebar active state - hiện sidebar khi có class active */
 #sidebar.active {
     transform: translateX(0) !important;
+}
+
+/* Ẩn toggle buttons khi sidebar đang mở */
+#sidebar.active ~ #sidebarToggle,
+#sidebar.active ~ #desktopSidebarToggle {
+    opacity: 0 !important;
+    pointer-events: none !important;
 }
 
 /* Desktop sidebar collapsed state */
