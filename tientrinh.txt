@@ -75,13 +75,14 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - 10/10/2025
      * Nếu panels chưa tồn tại, fallback về messagesContainer
      * Tránh crash và cho phép app hoạt động bình thường
 
-4. ✅ SERVER VALIDATION FIX (Fix trước đó)
+4. ✅ SERVER VALIDATION FIX
    - Vấn đề: Server kiểm tra file cũ assets/js/app.js không tồn tại
    
    Giải pháp:
-   - Sửa sv/server.py (dòng 1753):
+   - Sửa server.py (dòng 1747):
      * Đổi từ 'assets/js/app.js' → 'src/js/main.js'
      * Phù hợp với cấu trúc modular mới
+     * Khắc phục lỗi deployment trên Render
 
 =============================================================================
 CHI TIẾT CÁC FILE ĐÃ THAY ĐỔI:

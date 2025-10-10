@@ -1744,7 +1744,7 @@ if __name__ == "__main__":
     logger.info(f"API Key Status: {'Configured' if api_key and api_key != 'your_gemini_api_key_here' else 'NOT CONFIGURED - Please set GEMINI_API_KEY environment variable'}")
     
     # Check if files exist
-    required_files = ['index.html', 'assets/css/style.css', 'assets/js/app.js']
+    required_files = ['index.html', 'assets/css/style.css', 'src/js/main.js']
     missing_files = [f for f in required_files if not os.path.exists(f)]
     
     if missing_files:
