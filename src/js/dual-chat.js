@@ -62,22 +62,50 @@ export function saveDualChatModels(primaryModel, secondaryModel) {
  * @returns {boolean} New dual chat mode
  */
 export function toggleDualMode(currentMode, context) {
-    const newMode = !currentMode;
-    saveDualChatMode(newMode);
-    
     const { messagesContainer, currentChatId, chats } = context;
-    
-    // Update button states
     const homeDualModeBtn = document.getElementById('homeDualModeBtn');
     const chatDualModeBtn = document.getElementById('chatDualModeBtn');
     
+    // Kiểm tra nếu đang BẬT dual mode và muốn TẮT
+    if (currentMode && currentChatId && chats[currentChatId]) {
+        const chat = chats[currentChatId];
+        // Chỉ kiểm tra dual messages nếu đang muốn tắt
+        const hasDualMessages = chat.messages.some(msg => 
+            msg.role === 'assistant' && (msg.isPrimary !== undefined)
+        );
+        
+        if (hasDualMessages) {
+            // Đã có tin nhắn dual chat - KHÔNG CHO TẮT
+            return currentMode; // Return ngay, giữ mode hiện tại
+        }
+    }
+    
+    // Cho phép toggle
+    const newMode = !currentMode;
+    saveDualChatMode(newMode);
+    
+    // Update button states
     if (newMode) {
-        if (homeDualModeBtn) homeDualModeBtn.classList.add('active');
-        if (chatDualModeBtn) chatDualModeBtn.classList.add('active');
+        if (homeDualModeBtn) {
+            homeDualModeBtn.classList.add('active');
+            homeDualModeBtn.classList.remove('locked');
+        }
+        if (chatDualModeBtn) {
+            chatDualModeBtn.classList.add('active');
+            chatDualModeBtn.classList.remove('locked');
+        }
         if (messagesContainer) messagesContainer.classList.add('dual-chat-mode');
     } else {
-        if (homeDualModeBtn) homeDualModeBtn.classList.remove('active');
-        if (chatDualModeBtn) chatDualModeBtn.classList.remove('active');
+        if (homeDualModeBtn) {
+            homeDualModeBtn.classList.remove('active');
+            homeDualModeBtn.classList.remove('locked');
+            homeDualModeBtn.title = 'Dual Chat Mode';
+        }
+        if (chatDualModeBtn) {
+            chatDualModeBtn.classList.remove('active');
+            chatDualModeBtn.classList.remove('locked');
+            chatDualModeBtn.title = 'Dual Chat Mode';
+        }
         if (messagesContainer) messagesContainer.classList.remove('dual-chat-mode');
     }
     
@@ -122,4 +150,44 @@ export function loadDualModeState(dualChatMode) {
  */
 export function getDualChatModelOptions() {
     return DUAL_CHAT_MODELS;
+}
+
+/**
+ * Update locked state của dual chat buttons dựa trên chat hiện tại
+ * @param {Object} chat - Chat object
+ * @param {boolean} dualChatMode - Dual chat mode hiện tại
+ */
+export function updateDualChatLockState(chat, dualChatMode) {
+    const homeDualModeBtn = document.getElementById('homeDualModeBtn');
+    const chatDualModeBtn = document.getElementById('chatDualModeBtn');
+    
+    // CHỈ khóa khi: (1) đang ở dual mode VÀ (2) có chat VÀ (3) có dual messages
+    if (dualChatMode && chat && chat.messages) {
+        const hasDualMessages = chat.messages.some(msg => 
+            msg.role === 'assistant' && (msg.isPrimary !== undefined)
+        );
+        
+        if (hasDualMessages) {
+            // Có dual messages - khóa button (làm mờ và hiển thị tooltip)
+            if (homeDualModeBtn) {
+                homeDualModeBtn.classList.add('locked');
+                homeDualModeBtn.title = 'Không thể tắt Dual Chat khi đã có tin nhắn. Bấm New Chat để tạo chat mới.';
+            }
+            if (chatDualModeBtn) {
+                chatDualModeBtn.classList.add('locked');
+                chatDualModeBtn.title = 'Không thể tắt Dual Chat khi đã có tin nhắn. Bấm New Chat để tạo chat mới.';
+            }
+            return;
+        }
+    }
+    
+    // Tất cả cases khác - mở khóa
+    if (homeDualModeBtn) {
+        homeDualModeBtn.classList.remove('locked');
+        homeDualModeBtn.title = 'Dual Chat Mode';
+    }
+    if (chatDualModeBtn) {
+        chatDualModeBtn.classList.remove('locked');
+        chatDualModeBtn.title = 'Dual Chat Mode';
+    }
 }

@@ -74,7 +74,8 @@ import {
     loadDualChatModels,
     saveDualChatModels,
     toggleDualMode as dualToggleDualMode,
-    loadDualModeState as dualLoadDualModeState
+    loadDualModeState as dualLoadDualModeState,
+    updateDualChatLockState
 } from './dual-chat.js';
 import {
     setupMainEventListeners,
@@ -290,6 +291,9 @@ export class NexoraXChat {
         
         this.renderChatList();
         
+        // Update dual chat lock state
+        updateDualChatLockState(chat, this.dualChatMode);
+        
         if (window.innerWidth < 1024) {
             this.closeSidebar();
         }
@@ -465,6 +469,8 @@ export class NexoraXChat {
             ]);
         } finally {
             this.saveChats();
+            // Update dual chat lock state sau khi gửi tin nhắn
+            updateDualChatLockState(chat, this.dualChatMode);
         }
     }
     

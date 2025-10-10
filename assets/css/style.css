@@ -686,57 +686,63 @@ body.dark-mode .ai-loading-text {
 }
 
 /* Model badge styling - thanh ngang với tên model ở giữa */
-.model-badge {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #6366f1;
-    margin: 12px 0;
-    position: relative;
-    text-align: center;
+.ai-message .model-badge,
+.message .model-badge,
+div.model-badge {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    color: #6366f1 !important;
+    margin: 12px 0 !important;
+    position: relative !important;
+    text-align: center !important;
+    background: none !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    width: 100% !important;
 }
 
-.model-badge::before,
-.model-badge::after {
+.ai-message .model-badge::before,
+.message .model-badge::before,
+div.model-badge::before {
     content: '';
     flex: 1;
     height: 1px;
-    background: linear-gradient(to right, transparent, #d1d5db 20%, #d1d5db 80%, transparent);
+    background: linear-gradient(to right, transparent, #d1d5db 50%, #d1d5db);
     margin: 0 12px;
 }
 
-.model-badge::before {
-    background: linear-gradient(to right, transparent, #d1d5db 50%, #d1d5db);
-}
-
-.model-badge::after {
+.ai-message .model-badge::after,
+.message .model-badge::after,
+div.model-badge::after {
+    content: '';
+    flex: 1;
+    height: 1px;
     background: linear-gradient(to left, transparent, #d1d5db 50%, #d1d5db);
+    margin: 0 12px;
 }
 
-.dark .model-badge,
+.dark .ai-message .model-badge,
+.dark .message .model-badge,
+.dark div.model-badge,
 [data-theme="dark"] .model-badge,
 body.dark-mode .model-badge {
-    color: #a5b4fc;
+    color: #a5b4fc !important;
 }
 
-.dark .model-badge::before,
-.dark .model-badge::after,
-[data-theme="dark"] .model-badge::before,
-[data-theme="dark"] .model-badge::after,
-body.dark-mode .model-badge::before,
-body.dark-mode .model-badge::after {
-    background: linear-gradient(to right, transparent, #4b5563 20%, #4b5563 80%, transparent);
-}
-
-.dark .model-badge::before,
+.dark .ai-message .model-badge::before,
+.dark .message .model-badge::before,
+.dark div.model-badge::before,
 [data-theme="dark"] .model-badge::before,
 body.dark-mode .model-badge::before {
     background: linear-gradient(to right, transparent, #4b5563 50%, #4b5563);
 }
 
-.dark .model-badge::after,
+.dark .ai-message .model-badge::after,
+.dark .message .model-badge::after,
+.dark div.model-badge::after,
 [data-theme="dark"] .model-badge::after,
 body.dark-mode .model-badge::after {
     background: linear-gradient(to left, transparent, #4b5563 50%, #4b5563);
@@ -3009,6 +3015,20 @@ body.dark-mode .image-generation-result img {
 .dark #homeDualModeBtn.active,
 .dark #chatDualModeBtn.active {
     background: #3b82f6 !important;
+}
+
+/* Dual mode button - locked state (cannot toggle when has messages) */
+#homeDualModeBtn.locked,
+#chatDualModeBtn.locked {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+}
+
+#homeDualModeBtn.locked:hover,
+#chatDualModeBtn.locked:hover {
+    background: #3b82f6 !important;
+    opacity: 0.5 !important;
 }
 
 /* Dual chat layout - Vertical split (top/bottom) */
