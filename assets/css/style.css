@@ -3065,3 +3065,41 @@ body.dark-mode .image-generation-result img {
 .dual-chat-panel .message.user-message {
     display: flex !important;
 }
+
+/* ============================================
+   QUICK MODEL & CONFIG HIGHLIGHT
+   ============================================ */
+
+/* Quick Model Dropdown */
+.quick-model-option {
+    transition: all 0.2s;
+}
+
+.quick-model-option:hover {
+    background-color: #f0f9ff;
+}
+
+.quick-model-option.active-model {
+    background-color: #2563eb;
+    color: white;
+    font-weight: 600;
+}
+
+.quick-model-option.active-model:hover {
+    background-color: #1d4ed8;
+}
+
+/* Config Option Active State */
+.config-option.active-config {
+    background-color: #2563eb;
+    color: white;
+    font-weight: 600;
+}
+
+.config-option.active-config:hover {
+    background-color: #1d4ed8;
+}
+
+.config-option.active-config svg {
+    color: white;
+}

@@ -773,6 +773,14 @@ export class NexoraXChat {
         if (this.chatModelSelector) {
             this.chatModelSelector.value = this.selectedModel;
         }
+        
+        // Highlight selected model in quick model dropdown
+        document.querySelectorAll('.quick-model-option').forEach(option => {
+            option.classList.remove('active-model');
+            if (option.getAttribute('data-model') === this.selectedModel) {
+                option.classList.add('active-model');
+            }
+        });
     }
     
     getModelType(modelId) {
@@ -859,13 +867,11 @@ export class NexoraXChat {
             modelRadio.checked = true;
         }
         
-        // Visual feedback - highlight selected model in dropdowns
+        // Persistent highlight - remove active class from all and add to selected
         document.querySelectorAll('.quick-model-option').forEach(option => {
+            option.classList.remove('active-model');
             if (option.getAttribute('data-model') === model) {
-                option.style.backgroundColor = '#f0f9ff';
-                setTimeout(() => {
-                    option.style.backgroundColor = '';
-                }, 1000);
+                option.classList.add('active-model');
             }
         });
     }
