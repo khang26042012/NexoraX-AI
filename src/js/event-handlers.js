@@ -182,6 +182,31 @@ export function setupMainEventListeners(app) {
         });
     });
     
+    // Quick Model Selector buttons
+    const homeQuickModelBtn = document.getElementById('homeQuickModelBtn');
+    if (homeQuickModelBtn) {
+        homeQuickModelBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            app.toggleQuickModelDropdown('home');
+        });
+    }
+    
+    const quickModelBtn = document.getElementById('quickModelBtn');
+    if (quickModelBtn) {
+        quickModelBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            app.toggleQuickModelDropdown('chat');
+        });
+    }
+    
+    // Quick Model options
+    document.querySelectorAll('.quick-model-option').forEach(option => {
+        option.addEventListener('click', (e) => {
+            const model = e.currentTarget.getAttribute('data-model');
+            app.selectQuickModel(model);
+        });
+    });
+    
     // Model selector dropdowns
     if (app.homeModelSelector) {
         app.homeModelSelector.addEventListener('change', (e) => {
