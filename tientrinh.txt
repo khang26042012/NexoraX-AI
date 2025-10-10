@@ -19,6 +19,23 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - 10/10/2025
    - Sửa prepareConversationHistoryLLM7() trong src/js/ai-api.js (dòng 45-54):
      * Áp dụng cùng logic filter để tránh lỗi tương tự
 
+0.5. ✅ FILE PREVIEW INLINE (MỚI - 10/10/2025)
+   - Vấn đề: File preview hiển thị ở modal riêng thay vì trong thanh nhập tin nhắn (không giống Replit)
+   
+   Giải pháp:
+   - Thêm elements trong src/js/chat-app.js (dòng 160-161):
+     * homeFilePreview và chatFilePreview elements
+   
+   - Tạo updateInlineFilePreview() trong src/js/chat-app.js (dòng 520-565):
+     * Render file preview trực tiếp vào homeFilePreview/chatFilePreview
+     * Hiển thị thumbnail cho ảnh, icon cho file khác
+     * Nút X màu đỏ để xóa từng file
+     * Auto show/hide dựa trên có files hay không
+   
+   - Update handleFileSelection() và sendMessage():
+     * Gọi updateInlineFilePreview() thay vì modal
+     * Clear inline preview khi gửi message
+
 1. ✅ LỖI SIDEBAR TOGGLE BUTTON
    - Vấn đề: Khi bật sidebar, nút toggle vẫn hiển thị và che sidebar
    - Vấn đề phụ: Khi tắt sidebar, nút toggle biến mất và không quay lại

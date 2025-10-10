@@ -154,6 +154,8 @@ export class NexoraXChat {
         this.filePreviewList = document.getElementById('filePreviewList');
         this.homeFileInput = document.getElementById('homeFileInput');
         this.chatFileInput = document.getElementById('chatFileInput');
+        this.homeFilePreview = document.getElementById('homeFilePreview');
+        this.chatFilePreview = document.getElementById('chatFilePreview');
         
         // Model selectors
         this.homeModelSelector = document.getElementById('homeModelSelector');
@@ -364,7 +366,7 @@ export class NexoraXChat {
         // Clear input và files
         this.chatInput.value = '';
         this.selectedFiles.clear();
-        this.updateFilePreviewList();
+        this.updateInlineFilePreview();
         
         // Reset file inputs
         if (this.homeFileInput) this.homeFileInput.value = '';
@@ -494,28 +496,69 @@ export class NexoraXChat {
     
     async handleFileSelection(files) {
         await fileHandleFileSelection(files, this.selectedFiles, () => {
-            this.updateFilePreviewList();
-            if (this.selectedFiles.size > 0) {
-                fileShowFilePreview(this.filePreviewModal);
-            }
+            this.updateInlineFilePreview();
         });
     }
     
     clearSelectedFiles() {
-        fileClearSelectedFiles(this.selectedFiles, () => this.updateFilePreviewList());
+        fileClearSelectedFiles(this.selectedFiles, () => this.updateInlineFilePreview());
     }
     
     removeFile(fileId) {
         fileRemoveFile(this.selectedFiles, fileId, () => {
-            this.updateFilePreviewList();
-            if (this.selectedFiles.size === 0) {
-                this.hideFilePreview();
-            }
+            this.updateInlineFilePreview();
         });
     }
     
     updateFilePreviewList() {
         fileUpdateFilePreviewList(this.selectedFiles, this.filePreviewList, (fileId) => this.removeFile(fileId));
+    }
+    
+    updateInlineFilePreview() {
+        const isHome = !this.chatScreen || this.chatScreen.classList.contains('hidden');
+        const previewContainer = isHome ? this.homeFilePreview : this.chatFilePreview;
+        
+        if (!previewContainer) return;
+        
+        if (this.selectedFiles.size === 0) {
+            previewContainer.classList.add('hidden');
+            previewContainer.innerHTML = '';
+            return;
+        }
+        
+        previewContainer.classList.remove('hidden');
+        
+        const filesArray = Array.from(this.selectedFiles.values());
+        previewContainer.innerHTML = filesArray.map(file => {
+            const isImage = file.type.startsWith('image/');
+            const fileName = file.name.length > 20 ? file.name.substring(0, 17) + '...' : file.name;
+            
+            return `
+                <div class="relative inline-flex items-center gap-2 bg-gray-100 rounded-lg p-2 pr-8" data-file-id="${file.id}">
+                    ${isImage && file.preview ? 
+                        `<img src="${file.preview}" class="w-8 h-8 object-cover rounded" alt="${file.name}">` :
+                        `<svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>`
+                    }
+                    <span class="text-sm text-gray-700">${fileName}</span>
+                    <button class="absolute top-1 right-1 w-5 h-5 flex items-center justify-center bg-red-500 hover:bg-red-600 rounded-full transition-colors remove-inline-file" data-file-id="${file.id}" title="Xóa file">
+                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            `;
+        }).join('');
+        
+        // Wire up remove buttons
+        previewContainer.querySelectorAll('.remove-inline-file').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const fileId = btn.getAttribute('data-file-id');
+                this.removeFile(fileId);
+            });
+        });
     }
     
     showFilePreview() {
