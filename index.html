@@ -144,27 +144,6 @@
                     </h1>
                 </div>
                 
-                <!-- Quick Suggestions -->
-                <div class="flex flex-wrap justify-center gap-3 mb-6 px-4">
-                    <button class="quick-suggestion px-6 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 text-blue-700 rounded-2xl transition-all duration-200 shadow-sm hover:shadow-md flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 8V4H8"/>
-                            <rect width="16" height="12" x="4" y="8" rx="2"/>
-                            <path d="M2 14h2"/>
-                            <path d="M20 14h2"/>
-                            <path d="M15 13v2"/>
-                            <path d="M9 13v2"/>
-                        </svg>
-                        <span>Hỏi về kiến thức</span>
-                    </button>
-                    <button class="quick-suggestion px-6 py-3 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 text-purple-700 rounded-2xl transition-all duration-200 shadow-sm hover:shadow-md flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="16 18 22 12 16 6"/>
-                            <polyline points="8 6 2 12 8 18"/>
-                        </svg>
-                        <span>Hỗ trợ lập trình</span>
-                    </button>
-                </div>
                 
                 <!-- Replit-style Input Area -->
                 <div class="w-full max-w-2xl mx-auto mt-8 px-4">
@@ -249,7 +228,21 @@
                                                 <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="gemini-search">Gemini Search</button>
                                                 <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="deepseek-v3.1">DeepSeek V3.1</button>
                                                 <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="deepseek-reasoning">DeepSeek Reasoning</button>
+                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="gemini-2.5-flash-lite">Gemini 2.5 Flash</button>
+                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="mistral-small-3.1-24b-instruct-2503">Mistral Small 3.1</button>
+                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="mistral-medium-2508">Mistral Medium</button>
+                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="mistral-small-2503">Mistral Small</button>
+                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="open-mixtral-8x7b">Mixtral 8x7B</button>
+                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="nova-fast">Nova Fast</button>
                                                 <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="gpt-5-mini">GPT-5 Mini</button>
+                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="gpt-5-nano-2025-08-07">GPT-5 Nano</button>
+                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="gpt-o4-mini-2025-04-16">GPT-O4 Mini</button>
+                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="qwen2.5-coder-32b-instruct">Qwen Coder</button>
+                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="roblox-rp">Roblox RP</button>
+                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="bidara">Bidara</button>
+                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="rtist">Rtist</button>
+                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="Steelskull/L3.3-MS-Nevoria-70b">Nevoria 70B</button>
+                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="gemma-2-2b-it">Gemma 2</button>
                                             </div>
                                         </div>
                                     </div>
@@ -392,7 +385,21 @@
                                                 <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="gemini-search">Gemini Search</button>
                                                 <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="deepseek-v3.1">DeepSeek V3.1</button>
                                                 <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="deepseek-reasoning">DeepSeek Reasoning</button>
+                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="gemini-2.5-flash-lite">Gemini 2.5 Flash</button>
+                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="mistral-small-3.1-24b-instruct-2503">Mistral Small 3.1</button>
+                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="mistral-medium-2508">Mistral Medium</button>
+                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="mistral-small-2503">Mistral Small</button>
+                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="open-mixtral-8x7b">Mixtral 8x7B</button>
+                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="nova-fast">Nova Fast</button>
                                                 <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="gpt-5-mini">GPT-5 Mini</button>
+                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="gpt-5-nano-2025-08-07">GPT-5 Nano</button>
+                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="gpt-o4-mini-2025-04-16">GPT-O4 Mini</button>
+                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="qwen2.5-coder-32b-instruct">Qwen Coder</button>
+                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="roblox-rp">Roblox RP</button>
+                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="bidara">Bidara</button>
+                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="rtist">Rtist</button>
+                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="Steelskull/L3.3-MS-Nevoria-70b">Nevoria 70B</button>
+                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="gemma-2-2b-it">Gemma 2</button>
                                             </div>
                                         </div>
                                     </div>
@@ -441,271 +448,6 @@
             
             <!-- Modern Settings Content -->
             <div class="modern-settings-content">
-                
-                <!-- AI Model Section -->
-                <div class="settings-section">
-                    <h3 class="settings-section-title">🤖 Molded AI</h3>
-                    <div class="modern-settings-item model-item" id="modelToggle">
-                        <div class="settings-item-icon ai-icon">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                            </svg>
-                        </div>
-                        <div class="settings-item-content">
-                            <div class="settings-item-title">Model AI</div>
-                            <div class="settings-item-subtitle" id="currentModelDisplay">Gpt-5</div>
-                        </div>
-                        <div class="settings-item-arrow">
-                            <svg id="modelArrow" class="w-5 h-5 text-gray-400 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg>
-                        </div>
-                    </div>
-                    
-                    <!-- Model Options -->
-                    <div id="modelOptions" class="model-options hidden">
-                        <label class="model-option">
-                            <input type="radio" name="aiModel" value="gpt-5-chat" class="model-radio" checked>
-                            <div class="model-option-content">
-                                <div class="model-name">💬 Gpt-5</div>
-                                <div class="model-description">Model AI mạnh mẽ, phù hợp mọi tác vụ</div>
-                            </div>
-                            <div class="model-check">
-                                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                        </label>
-                        <label class="model-option">
-                            <input type="radio" name="aiModel" value="nexorax1" class="model-radio">
-                            <div class="model-option-content">
-                                <div class="model-name">⚡ Gemini Flash 2.5</div>
-                                <div class="model-description">Tốc độ cao, thông minh, phù hợp mọi tác vụ</div>
-                            </div>
-                            <div class="model-check">
-                                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                        </label>
-                        <label class="model-option">
-                            <input type="radio" name="aiModel" value="deepseek-v3.1" class="model-radio">
-                            <div class="model-option-content">
-                                <div class="model-name">🧠 DeepSeek V3.1</div>
-                                <div class="model-description">Mô hình AI thế hệ mới với khả năng lập luận vượt trội</div>
-                            </div>
-                            <div class="model-check">
-                                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                        </label>
-                        <label class="model-option">
-                            <input type="radio" name="aiModel" value="deepseek-reasoning" class="model-radio">
-                            <div class="model-option-content">
-                                <div class="model-name">🤔 DeepSeek Reasoning</div>
-                                <div class="model-description">Chuyên về suy luận logic và giải quyết vấn đề phức tạp</div>
-                            </div>
-                            <div class="model-check">
-                                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                        </label>
-                        <label class="model-option">
-                            <input type="radio" name="aiModel" value="gemini-2.5-flash-lite" class="model-radio">
-                            <div class="model-option-content">
-                                <div class="model-name">⚡ Gemini 2.5 Flash Lite</div>
-                                <div class="model-description">Phiên bản nhẹ, tốc độ cao của Gemini</div>
-                            </div>
-                            <div class="model-check">
-                                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                        </label>
-                        <label class="model-option">
-                            <input type="radio" name="aiModel" value="gemini-search" class="model-radio">
-                            <div class="model-option-content">
-                                <div class="model-name">🔍 Gemini Search</div>
-                                <div class="model-description">Tìm kiếm thông tin với AI thông minh</div>
-                            </div>
-                            <div class="model-check">
-                                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                        </label>
-                        <label class="model-option">
-                            <input type="radio" name="aiModel" value="mistral-small-3.1-24b-instruct-2503" class="model-radio">
-                            <div class="model-option-content">
-                                <div class="model-name">🌪️ Mistral Small 3.1</div>
-                                <div class="model-description">Mô hình AI mã nguồn mở hiệu suất cao</div>
-                            </div>
-                            <div class="model-check">
-                                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                        </label>
-                        <label class="model-option">
-                            <input type="radio" name="aiModel" value="nova-fast" class="model-radio">
-                            <div class="model-option-content">
-                                <div class="model-name">🚀 Nova Fast</div>
-                                <div class="model-description">Model AI siêu nhanh, phù hợp chat realtime</div>
-                            </div>
-                            <div class="model-check">
-                                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                        </label>
-                        <label class="model-option">
-                            <input type="radio" name="aiModel" value="gpt-5-mini" class="model-radio">
-                            <div class="model-option-content">
-                                <div class="model-name">💡 GPT-5 Mini</div>
-                                <div class="model-description">Phiên bản thu gọn của GPT-5, cân bằng tốc độ và chất lượng</div>
-                            </div>
-                            <div class="model-check">
-                                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                        </label>
-                        <label class="model-option">
-                            <input type="radio" name="aiModel" value="gpt-5-nano-2025-08-07" class="model-radio">
-                            <div class="model-option-content">
-                                <div class="model-name">🔹 GPT-5 Nano</div>
-                                <div class="model-description">Model cực nhẹ, tốc độ cực cao</div>
-                            </div>
-                            <div class="model-check">
-                                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                        </label>
-                        <label class="model-option">
-                            <input type="radio" name="aiModel" value="gpt-o4-mini-2025-04-16" class="model-radio">
-                            <div class="model-option-content">
-                                <div class="model-name">🤖 GPT-O4 Mini</div>
-                                <div class="model-description">Thế hệ mới với khả năng suy luận tối ưu</div>
-                            </div>
-                            <div class="model-check">
-                                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                        </label>
-                        <label class="model-option">
-                            <input type="radio" name="aiModel" value="qwen2.5-coder-32b-instruct" class="model-radio">
-                            <div class="model-option-content">
-                                <div class="model-name">💻 Qwen Coder</div>
-                                <div class="model-description">Chuyên viết code và lập trình</div>
-                            </div>
-                            <div class="model-check">
-                                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                        </label>
-                        <label class="model-option">
-                            <input type="radio" name="aiModel" value="roblox-rp" class="model-radio">
-                            <div class="model-option-content">
-                                <div class="model-name">🎮 Roblox RP</div>
-                                <div class="model-description">Chuyên tạo nội dung roleplay Roblox</div>
-                            </div>
-                            <div class="model-check">
-                                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                        </label>
-                        <label class="model-option">
-                            <input type="radio" name="aiModel" value="bidara" class="model-radio">
-                            <div class="model-option-content">
-                                <div class="model-name">🌿 Bidara</div>
-                                <div class="model-description">Model AI đa năng thông minh</div>
-                            </div>
-                            <div class="model-check">
-                                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                        </label>
-                        <label class="model-option">
-                            <input type="radio" name="aiModel" value="rtist" class="model-radio">
-                            <div class="model-option-content">
-                                <div class="model-name">🎨 Rtist</div>
-                                <div class="model-description">Chuyên sáng tạo nghệ thuật và văn học</div>
-                            </div>
-                            <div class="model-check">
-                                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                        </label>
-                        <label class="model-option">
-                            <input type="radio" name="aiModel" value="mistral-medium-2508" class="model-radio">
-                            <div class="model-option-content">
-                                <div class="model-name">🌊 Mistral Medium</div>
-                                <div class="model-description">Mô hình AI mã nguồn mở hiệu suất cao</div>
-                            </div>
-                            <div class="model-check">
-                                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                        </label>
-                        <label class="model-option">
-                            <input type="radio" name="aiModel" value="mistral-small-2503" class="model-radio">
-                            <div class="model-option-content">
-                                <div class="model-name">🌀 Mistral Small</div>
-                                <div class="model-description">Mô hình AI mã nguồn mở hiệu suất cao</div>
-                            </div>
-                            <div class="model-check">
-                                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                        </label>
-                        <label class="model-option">
-                            <input type="radio" name="aiModel" value="open-mixtral-8x7b" class="model-radio">
-                            <div class="model-option-content">
-                                <div class="model-name">🎯 Open Mixtral 8x7B</div>
-                                <div class="model-description">Mô hình AI mã nguồn mở hiệu suất cao</div>
-                            </div>
-                            <div class="model-check">
-                                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                        </label>
-                        <label class="model-option">
-                            <input type="radio" name="aiModel" value="Steelskull/L3.3-MS-Nevoria-70b" class="model-radio">
-                            <div class="model-option-content">
-                                <div class="model-name">🏔️ MS Nevoria 70B</div>
-                                <div class="model-description">Model AI quy mô lớn với 70 tỷ tham số</div>
-                            </div>
-                            <div class="model-check">
-                                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                        </label>
-                        <label class="model-option">
-                            <input type="radio" name="aiModel" value="gemma-2-2b-it" class="model-radio">
-                            <div class="model-option-content">
-                                <div class="model-name">🔷 Gemma 2 2B</div>
-                                <div class="model-description">Model nhỏ gọn từ Google</div>
-                            </div>
-                            <div class="model-check">
-                                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                        </label>
-                    </div>
-                </div>
                 
                 <!-- Theme Section -->
                 <div class="settings-section">

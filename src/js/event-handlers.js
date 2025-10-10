@@ -152,34 +152,12 @@ export function setupMainEventListeners(app) {
     
     document.getElementById('starRating')?.addEventListener('mouseleave', () => app.resetStarHighlight());
     
-    // Model selection
-    document.querySelectorAll('input[name="aiModel"]').forEach(radio => {
-        radio.addEventListener('change', (e) => app.changeModel(e.target.value));
-    });
-    
-    document.getElementById('modelToggle')?.addEventListener('click', () => app.toggleModelOptions());
-    
     // Dual Chat Mode Toggle
     document.getElementById('homeDualModeBtn')?.addEventListener('click', () => {
         app.toggleDualMode();
     });
     document.getElementById('chatDualModeBtn')?.addEventListener('click', () => {
         app.toggleDualMode();
-    });
-    
-    // Quick suggestions
-    document.querySelectorAll('.quick-suggestion').forEach(suggestion => {
-        suggestion.addEventListener('click', (e) => {
-            const text = e.currentTarget.querySelector('span').textContent;
-            if (text === 'Hỏi về kiến thức') {
-                app.homeInput.value = 'Bạn có thể giải thích cho tôi về ';
-            } else if (text === 'Hỗ trợ lập trình') {
-                app.homeInput.value = 'Giúp tôi viết code ';
-            }
-            app.homeInput.focus();
-            const len = app.homeInput.value.length;
-            app.homeInput.setSelectionRange(len, len);
-        });
     });
     
     // Quick Model Selector buttons

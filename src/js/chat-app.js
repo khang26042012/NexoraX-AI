@@ -254,13 +254,19 @@ export class NexoraXChat {
     
     startNewChat(message) {
         this.currentChatId = null;
-        this.messagesContainer.innerHTML = '';
         
         const chat = createNewChat(message);
         this.currentChatId = chat.id;
         this.chats[chat.id] = chat;
         
         this.showChatScreen();
+        
+        if (this.dualChatMode) {
+            renderDualChatLayout(chat, this.getContext());
+        } else {
+            this.messagesContainer.innerHTML = '';
+        }
+        
         this.renderChatList();
         
         this.sendMessage(message);
