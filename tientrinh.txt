@@ -1,9 +1,43 @@
 =============================================================================
-TIẾN TRÌNH FIX LỖI NEXORAX AI - 10/10/2025
+TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 11/10/2025
 =============================================================================
 
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
+
+✨ CẬP NHẬT UI/UX - 11/10/2025:
+-----------------------------------------------------------------------------
+
+F. ✅ ẨN NÚT CHỌN MODEL TRONG CHAT SCREEN
+   - Vấn đề: Sau khi đã chọn model ở home, nút chọn model ở chat screen không cần thiết
+   
+   Giải pháp:
+   - Sửa index.html (dòng 380):
+     * Thêm class "hidden" vào div chứa nút quickModelBtn trong chat screen
+     * Nút vẫn tồn tại trong code nhưng bị ẩn hoàn toàn
+     * User đã chọn model ở home nên không cần chọn lại
+
+G. ✅ XÓA MODEL BADGE (TÊN MODEL) TRONG CHAT
+   - Vấn đề: Thanh ngang và tên Model (VD: "DeepSeek V3.1") hiển thị trong chat làm giao diện rối mắt
+   
+   Giải pháp:
+   - Sửa assets/css/style.css (dòng 691-696):
+     * Đơn giản hóa CSS cho .model-badge
+     * Thay thế toàn bộ styling phức tạp (thanh ngang 2 bên) bằng display: none !important
+     * Xóa sạch tất cả pseudo-elements ::before và ::after
+     * Giao diện sạch đẹp hơn, tập trung vào nội dung chat
+
+H. ✅ TĂNG TỐC ĐỘ TYPING EFFECT
+   - Vấn đề: Hiệu ứng typing của AI response chậm (40ms/ký tự), user phải chờ lâu
+   
+   Giải pháp:
+   - Sửa src/js/chat-app.js (dòng 931):
+     * Giảm delay từ 40ms xuống 15ms mỗi ký tự
+     * Tốc độ nhanh hơn ~2.7 lần
+     * AI response hiển thị nhanh hơn, trải nghiệm mượt mà hơn
+     * Vẫn giữ hiệu ứng typing tự nhiên
+
+=============================================================================
 
 ✨ TÍNH NĂNG MỚI - 10/10/2025:
 -----------------------------------------------------------------------------

@@ -915,7 +915,7 @@ export class NexoraXChat {
         const cursor = document.createElement('span');
         cursor.classList.add('typing-cursor');
         
-        // Type character by character
+        // Type character by character (tốc độ nhanh hơn - 15ms thay vì 40ms)
         for (let i = 0; i < text.length; i++) {
             if (element.dataset.cancelled === 'true') break;
             
@@ -925,7 +925,7 @@ export class NexoraXChat {
             
             this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
             
-            await new Promise(resolve => setTimeout(resolve, 40));
+            await new Promise(resolve => setTimeout(resolve, 15));
         }
         
         // Final cleanup
