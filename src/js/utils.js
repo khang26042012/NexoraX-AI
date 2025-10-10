@@ -33,19 +33,6 @@ export function migrateLocalStorageKeys() {
 // ===================================
 
 /**
- * Format kích thước file thành string dễ đọc
- * @param {number} bytes - Kích thước file tính bằng bytes
- * @returns {string} Chuỗi định dạng (ví dụ: "2.5 MB")
- */
-export function formatFileSize(bytes) {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
-
-/**
  * Format timestamp thành string ngày giờ
  * @param {string} timestamp - ISO timestamp
  * @returns {string} Chuỗi ngày giờ định dạng
