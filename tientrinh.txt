@@ -5,6 +5,55 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - 10/10/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
+✨ TÍNH NĂNG MỚI - 10/10/2025:
+-----------------------------------------------------------------------------
+
+A. ✅ SIDEBAR SCROLLABLE
+   - Vấn đề: Khi có nhiều tin nhắn, sidebar không cuộn được
+   
+   Giải pháp:
+   - Sửa cấu trúc sidebar trong index.html:
+     * Thêm flex flex-col cho #sidebar container
+     * Thêm flex-shrink-0 cho header và footer
+     * Thêm flex-1 flex flex-col overflow-hidden cho middle section
+     * ChatList đã có overflow-y-auto, giờ hoạt động đúng
+
+B. ✅ HIGHLIGHT MODEL ĐANG ĐƯỢC CHỌN
+   - Vấn đề: Không biết model nào đang active trong quick model dropdown
+   
+   Giải pháp:
+   - Thêm active-model class trong src/js/chat-app.js:
+     * selectQuickModel(): Thêm/remove active-model class
+     * loadModelSelection(): Highlight model khi load page
+   
+   - Thêm CSS trong assets/css/style.css:
+     * .active-model: background xanh (#2563eb), text trắng, font-weight: 600
+     * .active-model:hover: background đậm hơn (#1d4ed8)
+
+C. ✅ ĐỔI ICON CONFIG
+   - Vấn đề: Icon config đang dùng icon settings (không phù hợp)
+   
+   Giải pháp:
+   - Đổi icon từ settings (gear) sang sparkles (ngôi sao) trong index.html:
+     * homeConfigBtn: Đổi SVG sang icon sparkles
+     * chatConfigBtn: Đổi SVG sang icon sparkles
+
+D. ✅ HIGHLIGHT CONFIG OPTION ĐANG ĐƯỢC CHỌN
+   - Vấn đề: Không biết config nào đang active (image-gen hoặc search)
+   
+   Giải pháp:
+   - Sửa handleConfigAction() trong src/js/chat-app.js:
+     * Đổi từ font-bold sang active-config class
+     * Clear active từ tất cả options trước khi set active mới
+   
+   - Thêm CSS trong assets/css/style.css:
+     * .active-config: background xanh, text trắng, font-weight: 600
+     * .active-config svg: color white
+
+=============================================================================
+CÁC VẤN ĐỀ ĐÃ FIX TRƯỚC ĐÓ:
+-----------------------------------------------------------------------------
+
 0. ✅ LỖI API GEMINI FLASH TRONG DUAL CHAT MODE (MỚI - 10/10/2025)
    - Vấn đề: Gemini Flash 2.5 (nexorax1) báo lỗi "API endpoint không tồn tại" trong dual chat
    - Nguyên nhân: Dual chat push 2 AI typing placeholders vào messages, nhưng prepareConversationHistory
