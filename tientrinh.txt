@@ -5,6 +5,86 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 11/10/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
+✨ CẬP NHẬT MỚI NHẤT - 11/10/2025 (Buổi 10 - 23:48):
+-----------------------------------------------------------------------------
+
+AG. ✅ TĂNG TỐC TYPING EFFECT - TỪ 30MS XUỐNG 10MS
+   - Vấn đề: AI response typing speed chậm (30ms/ký tự)
+   - Yêu cầu: Tăng tốc typing effect để phản hồi nhanh hơn
+   
+   Giải pháp:
+   1. ✅ Cập nhật constants (src/js/constants.js dòng 15):
+      * TYPING_SPEEDS.AI_RESPONSE: 30 → 10 (nhanh gấp 3 lần)
+      * USER_PROMPT giữ nguyên 10ms
+   
+   2. ✅ Refactor chat-app.js (dòng 90-96, 1073-1083):
+      * Import TYPING_SPEEDS từ constants.js
+      * Thay hardcoded 15ms → TYPING_SPEEDS.AI_RESPONSE
+      * Cải thiện code maintainability
+   
+   - Kết quả:
+     ✅ AI typing speed nhanh gấp 3 lần (10ms thay vì 30ms)
+     ✅ Code sử dụng constant thay vì magic number
+     ✅ Dễ dàng điều chỉnh typing speed trong tương lai
+
+AH. ✅ FIX SESSION PERSISTENCE - REMEMBER ME MẶC ĐỊNH 30 NGÀY
+   - Vấn đề: Session chỉ tồn tại 7 ngày vì remember_me=false mặc định
+   - Nguyên nhân: 
+     * Checkbox "Nhớ đăng nhập (30 ngày)" đã bị xóa (Buổi 4 - dòng V)
+     * Frontend luôn gửi remember_me=false
+     * Backend nhận false → session 7 ngày thay vì 30 ngày
+   
+   Giải pháp:
+   1. ✅ Fix handleLogin() (src/js/auth-manager.js dòng 51-66):
+      * Thêm default parameter: rememberMe = true
+      * Luôn gửi remember_me: true trong request body
+      * Session sẽ tồn tại 30 ngày mặc định
+   
+   2. ✅ Fix handleSignup() (src/js/auth-manager.js dòng 110):
+      * Thêm remember_me: true vào requestBody
+      * Session mới cũng tồn tại 30 ngày
+   
+   - Kết quả:
+     ✅ Session tồn tại 30 ngày mặc định (không cần checkbox)
+     ✅ Cookie settings đúng: HttpOnly, SameSite=Lax, Max-Age=30 days
+     ✅ User không cần login lại thường xuyên
+     ✅ Hoạt động tự động, không cần user config
+
+AI. ✅ MỞ RỘNG ONBOARDING - THÊM CONFIG & FIX SELECTORS
+   - Vấn đề: 
+     * Onboarding thiếu step cho config button (image gen, search)
+     * Selectors không đúng (#modelSelect, #dualChatToggle không tồn tại)
+   
+   Giải pháp (src/js/onboarding.js):
+   1. ✅ Fix selectors (dòng 26-54):
+      * #modelSelect → #homeQuickModelBtn (chọn model)
+      * #dualChatToggle → #homeDualModeBtn (dual chat)
+      * #fileUploadBtn → #homeUploadBtn (upload)
+      * #sidebarToggle giữ nguyên (đúng rồi)
+   
+   2. ✅ Thêm step mới cho config (dòng 37-42):
+      * Target: #homeConfigBtn
+      * Title: "⚙️ Tùy chọn nâng cao"
+      * Description: "Truy cập các tính năng đặc biệt: Tạo ảnh với AI hoặc Tìm kiếm thông tin trên web."
+      * Position: bottom
+   
+   3. ✅ Bump version (dòng 19):
+      * ONBOARDING_VERSION: '1.0' → '2.0'
+      * User cũ sẽ thấy onboarding mới
+   
+   - Onboarding giờ có 5 steps:
+     1. 🤖 Chọn AI Model (#homeQuickModelBtn)
+     2. 🔄 Dual Chat Mode (#homeDualModeBtn)
+     3. ⚙️ Tùy chọn nâng cao (#homeConfigBtn) - MỚI!
+     4. 📁 Upload File (#homeUploadBtn)
+     5. 📝 Chat History (#sidebarToggle)
+   
+   - Kết quả:
+     ✅ Tất cả selectors chính xác, onboarding sẽ hoạt động
+     ✅ User mới được hướng dẫn về config features (image gen, search)
+     ✅ Version bump → user cũ cũng thấy tutorial mới
+     ✅ Tooltips hiển thị đúng vị trí các buttons
+
 ✨ CẬP NHẬT MỚI NHẤT - 11/10/2025 (Buổi 9 - 23:40):
 -----------------------------------------------------------------------------
 
