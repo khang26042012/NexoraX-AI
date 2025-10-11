@@ -281,7 +281,24 @@ export async function getLLM7Response(modelId, message, aiMessage, conversationH
         const data = await response.json();
         console.log(`LLM7 ${modelId} response:`, data);
         
-        const responseText = data.reply || JSON.stringify(data);
+        let responseText = data.reply || JSON.stringify(data);
+        
+        // Fix: Một số model (như gemma-2-2b-it) trả về raw JSON string
+        // Cần parse thêm một lớp để lấy message content
+        try {
+            if (responseText.startsWith('{') && responseText.includes('choices')) {
+                const parsedResponse = JSON.parse(responseText);
+                if (parsedResponse.choices && parsedResponse.choices.length > 0) {
+                    const messageContent = parsedResponse.choices[0].message?.content;
+                    if (messageContent) {
+                        responseText = messageContent;
+                    }
+                }
+            }
+        } catch (e) {
+            // Nếu không parse được thì giữ nguyên responseText
+            console.log('Could not parse nested JSON, using original response');
+        }
         
         aiMessage.content = responseText;
         aiMessage.isTyping = false;

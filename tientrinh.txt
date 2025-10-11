@@ -5,7 +5,56 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 11/10/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
-✨ CẬP NHẬT UI/UX - 11/10/2025:
+✨ CẬP NHẬT MỚI NHẤT - 11/10/2025 (Buổi 2):
+-----------------------------------------------------------------------------
+
+K. ✅ FIX BONG BÓNG CHAT USER QUÁ TO VÀ TEXT ALIGNMENT
+   - Vấn đề: Bong bóng chat của user quá nhỏ (55%) và text bị center alignment
+   
+   Giải pháp:
+   - Sửa assets/css/style.css (dòng 638):
+     * Tăng max-width từ 55% lên 70% cho .user-message .message-wrapper
+     * Cho phép bong bóng user rộng hơn, dễ đọc hơn
+   
+   - Sửa assets/css/style.css (dòng 656):
+     * Đổi text-align từ center sang left trong .user-message .message-content
+     * Text trong bong bóng user giờ align trái, tự nhiên hơn
+
+L. ✅ FIX Ô "ĐANG SUY NGHĨ" BỊ DỊCH CHUYỂN QUA GIỮA
+   - Vấn đề: Khi gửi message, ô "Đang suy nghĩ" của AI bị dịch qua giữa thay vì ở bên trái
+   
+   Giải pháp:
+   - Sửa assets/css/style.css (dòng 549):
+     * Thêm margin-right: auto; vào .ai-loading
+     * Buộc loading indicator luôn dính bên trái (giống AI message)
+     * Không còn bị trôi qua giữa màn hình
+
+M. ✅ FIX LỖI MODEL GEMMA 2 HIỂN THỊ RAW JSON
+   - Vấn đề: Model Gemma 2 (gemma-2-2b-it) hiển thị raw JSON response thay vì message content
+   - Backend trả về: `{"choices":[{"message":{"content":"..."}}]}` dạng string
+   
+   Giải pháp:
+   - Sửa src/js/ai-api.js (dòng 289-304):
+     * Thêm logic parse nested JSON trong getLLM7Response()
+     * Detect nếu reply là JSON string có chứa "choices"
+     * Parse và extract message.content từ choices[0].message.content
+     * Fallback về original response nếu parse thất bại
+     * Fix cho tất cả LLM7 models có cùng vấn đề
+
+N. ✅ XÓA MODEL RTIST
+   - Vấn đề: Model Rtist không cần thiết, cần xóa khỏi hệ thống
+   
+   Giải pháp:
+   - Xóa khỏi src/js/constants.js:
+     * Xóa 'rtist': 'Rtist' khỏi MODEL_NAMES (dòng 37)
+     * Xóa { value: 'rtist', label: 'Rtist' } khỏi DUAL_CHAT_MODELS (dòng 67)
+   
+   - Xóa khỏi index.html:
+     * Xóa button rtist ở homeQuickModelDropdown (dòng 246)
+     * Xóa button rtist ở chatQuickModelDropdown (dòng 406)
+     * Sử dụng replace_all để xóa tất cả instances
+
+✨ CẬP NHẬT UI/UX - 11/10/2025 (Buổi 1):
 -----------------------------------------------------------------------------
 
 F. ✅ ẨN NÚT CHỌN MODEL TRONG CHAT SCREEN

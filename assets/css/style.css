@@ -543,6 +543,7 @@ img[src*="nexorax-logo.svg"]:hover {
     background: #f8fafc;
     border-radius: 8px;
     border: 1px solid #e2e8f0;
+    margin-right: auto;
 }
 
 /* Dark mode support for ai-loading */
@@ -633,7 +634,7 @@ body.dark-mode .ai-loading-text {
 }
 
 .user-message .message-wrapper {
-    max-width: 55%;
+    max-width: 70%;
     display: flex;
     flex-direction: column;
     gap: 0px;
@@ -650,7 +651,7 @@ body.dark-mode .ai-loading-text {
     word-wrap: break-word;
     border: 1px solid #d1d5db;
     display: inline-block;
-    text-align: center;
+    text-align: left;
     line-height: 1.6;
     vertical-align: top;
 }

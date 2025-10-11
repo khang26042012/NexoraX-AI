@@ -34,7 +34,6 @@ export const MODEL_NAMES = {
     'qwen2.5-coder-32b-instruct': 'Qwen Coder',
     'roblox-rp': 'Roblox RP',
     'bidara': 'Bidara',
-    'rtist': 'Rtist',
     'mistral-medium-2508': 'Mistral Medium',
     'mistral-small-2503': 'Mistral Small',
     'open-mixtral-8x7b': 'Mixtral 8x7B',
@@ -64,7 +63,6 @@ export const DUAL_CHAT_MODELS = [
     { value: 'gpt-o4-mini-2025-04-16', label: 'GPT-O4 Mini' },
     { value: 'qwen2.5-coder-32b-instruct', label: 'Qwen Coder' },
     { value: 'roblox-rp', label: 'Roblox RP' },
-    { value: 'rtist', label: 'Rtist' },
     { value: 'Steelskull/L3.3-MS-Nevoria-70b', label: 'Nevoria 70B' },
     { value: 'gemma-2-2b-it', label: 'Gemma 2' }
 ];
