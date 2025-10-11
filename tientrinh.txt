@@ -5,6 +5,62 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 11/10/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
+✨ CẬP NHẬT MỚI NHẤT - 11/10/2025 (Buổi 7 - 20:35):
+-----------------------------------------------------------------------------
+
+AA. ✅ QUAY LẠI DÙNG RENDER - XÓA CẤU HÌNH KOYEB
+   - Vấn đề: Commit trước đã chuyển từ Render sang Koyeb, nhưng user muốn quay lại Render
+   - Yêu cầu: Xóa tất cả code và file liên quan Koyeb, cấu hình lại cho Render
+   
+   Giải pháp - Xóa cấu hình Koyeb:
+   1. ✅ Xóa file KOYEB_DEPLOYMENT.md:
+      * File hướng dẫn deploy Koyeb (49 dòng)
+      * Không còn cần thiết
+   
+   2. ✅ Xóa code detect Koyeb trong server.py (dòng 1738):
+      * Trước: env_name = 'Koyeb' if os.getenv('KOYEB_APP_NAME') else 'Render' if ...
+      * Sau: env_name = 'Render' if os.getenv('RENDER') else 'Replit' if ...
+      * Loại bỏ hoàn toàn logic detect Koyeb
+   
+   3. ✅ Giữ lại Procfile:
+      * File này Render cũng dùng (giống Koyeb)
+      * Nội dung: web: python3 server.py
+      * Không cần xóa, tái sử dụng được
+   
+   4. ✅ Tạo RENDER_DEPLOYMENT.md:
+      * File hướng dẫn deploy lên Render.com đầy đủ
+      * Các phần chính:
+        - Chuẩn bị repository và push GitHub
+        - Tạo Web Service trên Render
+        - Thiết lập Environment Variables (GEMINI_API_KEY, SERPAPI_API_KEY, LLM7_API_KEY)
+        - Hướng dẫn deploy chi tiết
+        - **THÊM CUSTOM DOMAIN TỪ PAVIETNAM:**
+          + Lấy thông tin DNS từ Render (CNAME/A record)
+          + Vào Pavietnam DNS Manager
+          + Thêm CNAME record cho www subdomain
+          + Thêm A record cho root domain (tùy chọn)
+          + Xác minh domain và đợi SSL certificate
+        - Troubleshooting: Domain không hoạt động, HTTPS, API keys
+        - Giám sát và logs
+        - Chi phí Free vs Paid plan
+        - Checklist hoàn thành
+   
+   - Kết quả:
+     ✅ Đã xóa sạch tất cả code và file liên quan Koyeb
+     ✅ Server không còn detect Koyeb environment
+     ✅ RENDER_DEPLOYMENT.md với hướng dẫn đầy đủ
+     ✅ Hướng dẫn chi tiết thêm custom domain từ Pavietnam
+     ✅ Sẵn sàng deploy lên Render.com
+     
+   - Ưu điểm Render:
+     * Miễn phí với Free plan (750 giờ/tháng)
+     * Auto-deploy từ GitHub
+     * HTTPS/SSL miễn phí tự động
+     * Custom domain miễn phí
+     * Health check và auto-restart
+     * Logs và metrics chi tiết
+     * Region Singapore (gần Việt Nam)
+
 ✨ CẬP NHẬT MỚI NHẤT - 11/10/2025 (Buổi 6 - 19:05):
 -----------------------------------------------------------------------------
 
