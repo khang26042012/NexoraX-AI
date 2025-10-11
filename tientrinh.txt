@@ -5,6 +5,56 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 11/10/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
+✨ CẬP NHẬT MỚI NHẤT - 11/10/2025 (Buổi 6 - 19:05):
+-----------------------------------------------------------------------------
+
+Z. ✅ CẤU HÌNH DEPLOY LÊN KOYEB.COM
+   - Vấn đề: User muốn chuyển từ Render sang Koyeb.com để deploy
+   - Yêu cầu: Cấu hình lại và tạo hướng dẫn deploy cho Koyeb
+   
+   Giải pháp - Tạo cấu hình Koyeb:
+   1. ✅ Tạo Procfile:
+      * File: Procfile (1 dòng)
+      * Nội dung: web: python3 server.py
+      * Koyeb sẽ dùng file này để start server
+   
+   2. ✅ Tạo .env.example:
+      * Hướng dẫn environment variables cần thiết
+      * GEMINI_API_KEY, SERPAPI_API_KEY, LLM7_API_KEY
+      * PORT (Koyeb tự động set)
+   
+   3. ✅ Tạo KOYEB_DEPLOYMENT.md:
+      * Hướng dẫn chi tiết deploy lên Koyeb
+      * Các bước: Push GitHub → Tạo Web Service → Set env vars → Deploy
+      * Troubleshooting guide
+      * Tips: Custom domain, scaling, monitoring
+   
+   4. ✅ Xóa file cấu hình Render cũ:
+      * README_RENDER.md
+      * RENDER_DEPLOYMENT.md
+      * Dọn dẹp để tránh nhầm lẫn
+   
+   5. ✅ Cập nhật server.py:
+      * Thêm detection cho Koyeb environment (dòng 1741)
+      * Logs sẽ hiển thị "Environment: Koyeb" khi deploy
+      * Logic: Koyeb > Render > Replit > Local
+   
+   - Kết quả:
+     ✅ Procfile sẵn sàng cho Koyeb
+     ✅ File .env.example hướng dẫn env vars
+     ✅ KOYEB_DEPLOYMENT.md với hướng dẫn đầy đủ
+     ✅ Đã xóa file cấu hình Render cũ
+     ✅ Server nhận diện đúng Koyeb environment
+     ✅ Sẵn sàng deploy lên Koyeb.com
+   
+   - Ưu điểm Koyeb:
+     * Miễn phí với Hobby plan (2 web services)
+     * Auto-scale theo traffic
+     * HTTPS/SSL miễn phí tự động
+     * Global CDN - nhanh toàn cầu
+     * Git-based deployment - push code là deploy
+     * Zero-downtime deployment
+
 ✨ CẬP NHẬT MỚI NHẤT - 11/10/2025 (Buổi 5 - 18:50):
 -----------------------------------------------------------------------------
 

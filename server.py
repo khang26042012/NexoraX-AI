@@ -1735,7 +1735,8 @@ if __name__ == "__main__":
     
     # Debug logging for deployment
     logger.info("NexoraX AI - Starting production server...")
-    logger.info(f"Environment: {'Render' if os.getenv('RENDER') else 'Replit' if os.getenv('REPLIT_DOMAIN') else 'Local'}")
+    env_name = 'Koyeb' if os.getenv('KOYEB_APP_NAME') else 'Render' if os.getenv('RENDER') else 'Replit' if os.getenv('REPLIT_DOMAIN') else 'Local'
+    logger.info(f"Environment: {env_name}")
     logger.info(f"Port: {port}")
     logger.info(f"Allowed Origins: {get_allowed_origins()}")
     
