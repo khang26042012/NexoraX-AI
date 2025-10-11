@@ -67,6 +67,10 @@ export function renderMessage(message, context) {
         contentHtml = message.content;
     } else {
         contentHtml = formatMessage(message.content);
+        // Strip wrapping <p> tags for user messages to reduce bubble height
+        if (message.role === 'user') {
+            contentHtml = contentHtml.replace(/^<p>(.*?)<\/p>$/s, '$1');
+        }
     }
     
     // Files hiển thị NGOÀI message-content để không bị ảnh hưởng bởi bubble styling
