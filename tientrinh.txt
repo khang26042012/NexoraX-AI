@@ -5,33 +5,55 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 11/10/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
-✨ CẬP NHẬT MỚI NHẤT - 11/10/2025 (Buổi 8 - 22:58):
+✨ CẬP NHẬT MỚI NHẤT - 11/10/2025 (Buổi 8 - 23:05):
 -----------------------------------------------------------------------------
 
-AB. ✅ FIX RESTORE MODEL KHI VỀ HOME TỪ DUAL CHAT MODE
-   - Vấn đề: Khi bật dual chat → nhập prompt → new chat → về home, web không tự chọn lại model AI cũ (hoặc gpt-5)
-   - Nguyên nhân: Code thiếu logic restore previous model khi về home từ dual chat mode
+AD. ✅ FIX DUAL CHAT TỰ ĐỘNG TẮT KHI BẤM NEW CHAT
+   - Vấn đề: Khi bật dual chat → chat → bấm "New Chat" về home, dual chat vẫn còn bật
+   - Yêu cầu: Dual chat nên tự động TẮT khi về home screen
    
-   Giải pháp:
-   - Sửa src/js/chat-app.js (dòng 230-236):
-     * Thêm đoạn code restore model trong showHomeScreen()
-     * Kiểm tra nếu đang ở dual chat mode
-     * Lấy previous model từ localStorage (STORAGE_KEYS.PREVIOUS_MODEL_BEFORE_DUAL)
-     * Restore model đó nếu khác với model hiện tại
-     * Logic tương tự như image-gen và gemini-search restoration
+   Giải pháp - Tạo helper function và refactor:
+   1. ✅ Tạo function disableDualChatMode() (dòng 715-753):
+      * Helper function để tắt dual chat mode một cách clean
+      * Restore previous model từ localStorage
+      * Tắt dual chat mode và save to localStorage  
+      * Update UI: Remove 'active', 'locked' classes từ buttons
+      * Remove 'dual-chat-mode' class từ messagesContainer
+      * Clean up localStorage (remove PREVIOUS_MODEL_BEFORE_DUAL)
+      * Update config and model visibility
+   
+   2. ✅ Refactor showHomeScreen() (dòng 236-237):
+      * Thay thế duplicate code bằng gọi disableDualChatMode()
+      * Code gọn gàng hơn, dễ maintain
    
    - Kết quả:
-     ✅ Khi về home từ dual chat mode, model được restore về model cũ
-     ✅ User không bị mất model selection khi tạo new chat
-     ✅ Architect đã review và PASS - Code đúng, không có regression
-     ✅ Logic clean và maintainable, tương tự các restoration paths khác
+     ✅ Dual chat TỰ ĐỘNG TẮT khi bấm "New Chat" về home
+     ✅ Model được restore về model cũ
+     ✅ UI cleanup đầy đủ (buttons, messagesContainer)
+     ✅ Architect đã review và PASS - Logic đúng, không có regression
 
-AC. ✅ VERIFY SIDEBAR TOGGLE TRÊN PC ĐÃ HOẠT ĐỘNG
+AE. ✅ FIX DUAL CHAT TỰ ĐỘNG TẮT KHI RELOAD TRANG Ở HOME
+   - Vấn đề: Khi reload trang (F5) ở home screen, dual chat vẫn còn bật (load từ localStorage)
+   - Nguyên nhân: Constructor load dualChatMode từ localStorage nhưng không kiểm tra có đang ở home không
+   
+   Giải pháp:
+   - Sửa src/js/chat-app.js constructor (dòng 139-143):
+     * Sau khi checkUserSession(), thêm logic:
+     * Nếu dualChatMode = true VÀ currentChatId = null (đang ở home)
+     * → Gọi disableDualChatMode() để tắt dual chat tự động
+   
+   - Kết quả:
+     ✅ Khi reload trang ở home, dual chat TỰ ĐỘNG TẮT
+     ✅ Không còn trạng thái dual chat stale sau reload
+     ✅ Architect đã review và PASS - Timing đúng, không có race condition
+     ✅ Helper function reuse tốt, code DRY
+
+AB. ✅ VERIFY SIDEBAR TOGGLE TRÊN PC ĐÃ HOẠT ĐỘNG
    - Vấn đề: User báo sidebar toggle trên PC không bấm được
    - Kiểm tra: 
      * index.html dòng 124: Đã có class "hidden lg:flex" đúng ✅
      * event-handlers.js: Event listener đã được setup đúng ✅
-     * Vấn đề này đã được fix ở commit trước (Buổi 3)
+     * Vấn đề này đã được fix ở commit trước (Buổi 3 - dòng S)
    
    - Kết quả:
      ✅ Code đã đúng, không cần sửa gì thêm
