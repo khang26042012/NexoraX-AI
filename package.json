@@ -1,15 +1,9 @@
 {
   "name": "nexorax-ai",
   "version": "1.0.0",
-  "description": "NexoraX AI Chat Assistant - Performance optimized build system",
+  "description": "NexoraX AI Chat Assistant",
   "type": "module",
-  "scripts": {
-    "build": "npm run build:css",
-    "build:css": "tailwindcss -i ./src/styles/tailwind.css -o ./assets/css/app.min.css --minify",
-    "watch": "tailwindcss -i ./src/styles/tailwind.css -o ./assets/css/app.min.css --watch",
-    "dev": "npm run watch",
-    "demo:imagefx": "node scripts/imagefx-demo.js"
-  },
+  "scripts": {},
   "keywords": [
     "ai",
     "chat",
@@ -19,11 +13,5 @@
   ],
   "author": "NexoraX AI Team",
   "license": "MIT",
-  "devDependencies": {
-    "@rohitaryal/imagefx-api": "^1.1.1",
-    "autoprefixer": "^10.4.21",
-    "esbuild": "^0.19.12",
-    "postcss": "^8.5.6",
-    "tailwindcss": "^3.4.18"
-  }
+  "devDependencies": {}
 }

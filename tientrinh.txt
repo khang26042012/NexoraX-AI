@@ -5,6 +5,59 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 11/10/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
+✨ CẬP NHẬT MỚI NHẤT - 11/10/2025 (Buổi 5 - 18:50):
+-----------------------------------------------------------------------------
+
+Y. ✅ XÓA TAILWIND BUNDLING - KHẮC PHỤC LỖI WEB KHÔNG LOAD
+   - Vấn đề: Commit trước Replit Agent cố bundle Tailwind CSS locally để cải thiện performance
+             nhưng đã làm web bị vỡ hoàn toàn, không load được (chỉ hiển thị "Loading your page...")
+   
+   - Nguyên nhân: 
+     * File app.min.css chỉ chứa Tailwind utilities (25KB)
+     * Nhưng THIẾU TẤT CẢ custom styles từ style.css (65KB - 3000+ dòng CSS)
+     * index.html đã đổi từ load CDN Tailwind + style.css → chỉ load app.min.css
+     * Kết quả: Web mất hết custom styling → layout vỡ hoàn toàn
+   
+   - Giải pháp - XÓA SẠCH TAILWIND BUNDLING:
+     1. ✅ Sửa index.html (dòng 7-11):
+        * Xóa: <link href="assets/css/app.min.css">
+        * Thêm lại: <script src="https://cdn.tailwindcss.com"></script>
+        * Thêm lại: <link href="assets/css/style.css" rel="stylesheet">
+        * Quay về dùng Tailwind CDN như ban đầu
+     
+     2. ✅ Xóa tất cả file cấu hình Tailwind:
+        * tailwind.config.js (49 dòng config Tailwind)
+        * postcss.config.js (6 dòng config PostCSS)
+        * src/styles/tailwind.css (5 dòng @tailwind directives)
+        * assets/css/app.min.css (file CSS đã build bị lỗi)
+     
+     3. ✅ Xóa file không liên quan:
+        * scripts/imagefx-demo.js (demo script không cần)
+        * .npmignore (file ignore không cần)
+     
+     4. ✅ Cập nhật package.json:
+        * Xóa tất cả scripts: build, build:css, watch, dev, demo:imagefx
+        * Xóa tất cả devDependencies: tailwindcss, autoprefixer, postcss, esbuild
+        * Script và dependencies object giờ là rỗng {}
+     
+     5. ✅ Dọn dẹp thư mục:
+        * Xóa thư mục src/styles/ (đã trống)
+        * Xóa thư mục scripts/ (đã trống)
+   
+   - Kết quả:
+     ✅ Web hoạt động trở lại HOÀN HẢO!
+     ✅ Modal đăng ký hiển thị đẹp với đầy đủ styling
+     ✅ Tất cả UI elements (logo, buttons, forms) hiển thị đúng
+     ✅ JavaScript khởi tạo thành công: "NexoraX AI Chat initialized successfully!"
+     ✅ Server chạy tốt trên port 5000
+     ✅ Quay về kiến trúc đơn giản, ổn định: Tailwind CDN + custom CSS
+   
+   - Bài học:
+     * Tailwind bundling local CẦN build đúng cách mới hoạt động
+     * Không nên optimize sớm khi chưa hiểu rõ build process
+     * CDN Tailwind đơn giản, ổn định hơn cho development
+     * Custom CSS (style.css) PHẢI được load đầy đủ, không thể bỏ qua
+
 ✨ CẬP NHẬT MỚI NHẤT - 11/10/2025 (Buổi 4 - 18:13):
 -----------------------------------------------------------------------------
 
