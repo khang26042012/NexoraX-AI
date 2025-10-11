@@ -109,6 +109,16 @@ export class NexoraXChat {
         this.isDarkMode = getCurrentTheme();
         this.currentRating = 0;
         this.selectedModel = localStorage.getItem(STORAGE_KEYS.SELECTED_MODEL) || DEFAULTS.MODEL;
+        
+        // Restore previous model nếu đang dùng image-gen/search khi reload
+        if (this.selectedModel === 'image-gen') {
+            this.selectedModel = localStorage.getItem(STORAGE_KEYS.PREVIOUS_MODEL_BEFORE_IMAGE_GEN) || 'gpt-5-chat';
+            localStorage.removeItem(STORAGE_KEYS.PREVIOUS_MODEL_BEFORE_IMAGE_GEN);
+        } else if (this.selectedModel === 'gemini-search') {
+            this.selectedModel = localStorage.getItem(STORAGE_KEYS.PREVIOUS_MODEL_BEFORE_SEARCH) || 'gpt-5-chat';
+            localStorage.removeItem(STORAGE_KEYS.PREVIOUS_MODEL_BEFORE_SEARCH);
+        }
+        
         localStorage.setItem(STORAGE_KEYS.SELECTED_MODEL, this.selectedModel);
         this.selectedFiles = new Map();
         
@@ -117,10 +127,6 @@ export class NexoraXChat {
         const dualModels = loadDualChatModels();
         this.dualChatPrimaryModel = dualModels.primaryModel;
         this.dualChatSecondaryModel = dualModels.secondaryModel;
-        
-        // Special mode toggles
-        this.previousModelBeforeImageGen = null;
-        this.previousModelBeforeSearch = null;
         
         // Initialize
         this.initializeElements();
@@ -196,6 +202,15 @@ export class NexoraXChat {
         this.currentChatId = null;
         this.homeInput.value = '';
         this.homeInput.focus();
+        
+        // Hiện dual chat buttons khi về home
+        const homeDualModeBtn = document.getElementById('homeDualModeBtn');
+        const chatDualModeBtn = document.getElementById('chatDualModeBtn');
+        if (homeDualModeBtn) homeDualModeBtn.style.display = '';
+        if (chatDualModeBtn) chatDualModeBtn.style.display = '';
+        
+        // Hiện lại config/model buttons (không ẩn nữa khi về home)
+        this.updateConfigAndModelVisibility(false);
     }
     
     showChatScreen() {
@@ -291,8 +306,16 @@ export class NexoraXChat {
         
         this.renderChatList();
         
-        // Update dual chat lock state
-        updateDualChatLockState(chat, this.dualChatMode);
+        // Check if this is a normal chat (has messages but not dual)
+        const isNormalChat = chat.messages && chat.messages.length > 0 && !chat.messages.some(msg => 
+            msg.role === 'assistant' && (msg.isPrimary !== undefined)
+        );
+        
+        // Ẩn/hiện dual chat buttons
+        this.updateDualChatButtonVisibility(isNormalChat, chat);
+        
+        // Update config/model visibility dựa vào dual mode
+        this.updateConfigAndModelVisibility(this.dualChatMode);
         
         if (window.innerWidth < 1024) {
             this.closeSidebar();
@@ -366,6 +389,15 @@ export class NexoraXChat {
         
         chat.messages.push(userMessage);
         this.renderMessage(userMessage);
+        
+        // Update dual chat button visibility (ẩn nếu đang ở chat thường)
+        if (!this.dualChatMode) {
+            // Check if this is a normal chat (has messages but not dual)
+            const isNormalChat = chat.messages.length > 0 && !chat.messages.some(msg => 
+                msg.role === 'assistant' && (msg.isPrimary !== undefined)
+            );
+            this.updateDualChatButtonVisibility(isNormalChat, chat);
+        }
         
         // Clear input và files
         this.chatInput.value = '';
@@ -600,11 +632,69 @@ export class NexoraXChat {
     // ===================================
     
     toggleDualMode() {
+        // Nếu đang TẮT → BẬT: Lưu current model
+        if (!this.dualChatMode) {
+            localStorage.setItem(STORAGE_KEYS.PREVIOUS_MODEL_BEFORE_DUAL, this.selectedModel);
+        }
+        
+        const oldMode = this.dualChatMode;
         this.dualChatMode = dualToggleDualMode(this.dualChatMode, this.getContext());
+        
+        // Update config/model visibility
+        this.updateConfigAndModelVisibility(this.dualChatMode);
+        
+        // Nếu đang BẬT → TẮT: Restore previous model
+        if (oldMode && !this.dualChatMode) {
+            const previousModel = localStorage.getItem(STORAGE_KEYS.PREVIOUS_MODEL_BEFORE_DUAL) || 'gpt-5-chat';
+            this.changeModel(previousModel);
+            localStorage.removeItem(STORAGE_KEYS.PREVIOUS_MODEL_BEFORE_DUAL);
+        }
     }
     
     loadDualModeState() {
         dualLoadDualModeState(this.dualChatMode);
+    }
+    
+    updateDualChatButtonVisibility(isNormalChat, chat) {
+        const homeDualModeBtn = document.getElementById('homeDualModeBtn');
+        const chatDualModeBtn = document.getElementById('chatDualModeBtn');
+        
+        if (isNormalChat) {
+            // Đang ở chat thường (có messages nhưng không phải dual) → ẨN nút
+            if (homeDualModeBtn) homeDualModeBtn.style.display = 'none';
+            if (chatDualModeBtn) chatDualModeBtn.style.display = 'none';
+        } else {
+            // Dual chat hoặc chat mới → HIỆN nút
+            if (homeDualModeBtn) homeDualModeBtn.style.display = '';
+            if (chatDualModeBtn) chatDualModeBtn.style.display = '';
+            
+            // KHÔNG lock nữa - cho phép tắt dual chat bất cứ lúc nào
+            // updateDualChatLockState(chat, this.dualChatMode);
+        }
+    }
+    
+    updateConfigAndModelVisibility(inDualChat) {
+        // Config buttons
+        const homeConfigBtn = document.getElementById('homeConfigBtn');
+        const chatConfigBtn = document.getElementById('chatConfigBtn');
+        
+        // Model selector buttons  
+        const homeQuickModelBtn = document.getElementById('homeQuickModelBtn');
+        const quickModelBtn = document.getElementById('quickModelBtn');
+        
+        if (inDualChat) {
+            // Trong dual chat → ẨN config và model selector
+            if (homeConfigBtn) homeConfigBtn.style.display = 'none';
+            if (chatConfigBtn) chatConfigBtn.style.display = 'none';
+            if (homeQuickModelBtn) homeQuickModelBtn.style.display = 'none';
+            if (quickModelBtn) quickModelBtn.style.display = 'none';
+        } else {
+            // Ngoài dual chat → HIỆN lại
+            if (homeConfigBtn) homeConfigBtn.style.display = '';
+            if (chatConfigBtn) chatConfigBtn.style.display = '';
+            if (homeQuickModelBtn) homeQuickModelBtn.style.display = '';
+            if (quickModelBtn) quickModelBtn.style.display = '';
+        }
     }
     
     saveDualChatModels() {
@@ -802,12 +892,12 @@ export class NexoraXChat {
         
         if (action === 'image-gen') {
             if (this.selectedModel === 'image-gen') {
-                const modelToRestore = this.previousModelBeforeImageGen || 'gpt-5-chat';
+                const modelToRestore = localStorage.getItem(STORAGE_KEYS.PREVIOUS_MODEL_BEFORE_IMAGE_GEN) || 'gpt-5-chat';
                 this.changeModel(modelToRestore);
-                this.previousModelBeforeImageGen = null;
+                localStorage.removeItem(STORAGE_KEYS.PREVIOUS_MODEL_BEFORE_IMAGE_GEN);
                 configButtons.forEach(btn => btn.classList.remove('active-config'));
             } else {
-                this.previousModelBeforeImageGen = this.selectedModel;
+                localStorage.setItem(STORAGE_KEYS.PREVIOUS_MODEL_BEFORE_IMAGE_GEN, this.selectedModel);
                 this.changeModel('image-gen');
                 // Remove active from all config options first
                 document.querySelectorAll('.config-option').forEach(btn => btn.classList.remove('active-config'));
@@ -815,12 +905,12 @@ export class NexoraXChat {
             }
         } else if (action === 'search') {
             if (this.selectedModel === 'gemini-search') {
-                const modelToRestore = this.previousModelBeforeSearch || 'gpt-5-chat';
+                const modelToRestore = localStorage.getItem(STORAGE_KEYS.PREVIOUS_MODEL_BEFORE_SEARCH) || 'gpt-5-chat';
                 this.changeModel(modelToRestore);
-                this.previousModelBeforeSearch = null;
+                localStorage.removeItem(STORAGE_KEYS.PREVIOUS_MODEL_BEFORE_SEARCH);
                 configButtons.forEach(btn => btn.classList.remove('active-config'));
             } else {
-                this.previousModelBeforeSearch = this.selectedModel;
+                localStorage.setItem(STORAGE_KEYS.PREVIOUS_MODEL_BEFORE_SEARCH, this.selectedModel);
                 this.changeModel('gemini-search');
                 // Remove active from all config options first
                 document.querySelectorAll('.config-option').forEach(btn => btn.classList.remove('active-config'));
