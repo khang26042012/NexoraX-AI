@@ -407,3 +407,37 @@ KẾT QUẢ CUỐI CÙNG:
 🎯 App sẵn sàng sử dụng!
 
 =============================================================================
+
+
+=============================================================================
+CẬP NHẬT MỚI NHẤT - 11/10/2025 04:27 - FIX BONG BÓNG CHAT QUÁ TO (LẦN 2)
+=============================================================================
+
+P. ✅ FIX BONG BÓNG CHAT USER QUÁ TO - ĐIỀU CHỈNH FONT-SIZE, LINE-HEIGHT VÀ PADDING
+   - Vấn đề: Bong bóng chat user vẫn quá to, đặc biệt với message ngắn như "Hi"
+   - Root cause (phân tích từ Architect):
+     * Font-size toàn cục 17px quá lớn
+     * Line-height 1.6 tạo khoảng trống nhiều
+     * Padding 8px 12px làm bong bóng to với message ngắn
+     * Chỉ điều chỉnh padding không đủ, cần điều chỉnh cả 3 giá trị
+   
+   Giải pháp triệt để:
+   - Sửa assets/css/style.css (dòng 648-662):
+     * font-size: 17px → 16px (giảm kích thước chữ)
+     * line-height: 1.6 → 1.35 (giảm khoảng cách dòng)
+     * padding: 8px 12px → 6px 10px (giảm khoảng trống trong)
+   
+   - Kết quả:
+     ✅ Message ngắn có bong bóng nhỏ gọn hơn (~25% nhỏ hơn)
+     ✅ Message dài vẫn dễ đọc với line-height 1.35
+     ✅ Không ảnh hưởng đến AI messages
+     ✅ Dark mode vẫn hoạt động bình thường
+     ✅ Responsive mobile vẫn đúng
+   
+   - Chi tiết thay đổi:
+     * .user-message .message-content được override với 3 giá trị mới
+     * Giữ nguyên tất cả properties khác (max-width, border, background...)
+     * Không cần điều chỉnh .message-wrapper hay .ai-message
+
+=============================================================================
+

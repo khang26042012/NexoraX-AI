@@ -645,14 +645,15 @@ body.dark-mode .ai-loading-text {
 .user-message .message-content {
     background: #ffffff;
     color: #1f2937;
-    padding: 8px 12px;
+    padding: 4px 10px;
     border-radius: 8px;
     max-width: fit-content;
     word-wrap: break-word;
     border: 1px solid #d1d5db;
     display: inline-block;
     text-align: left;
-    line-height: 1.6;
+    font-size: 16px;
+    line-height: 1.25;
     vertical-align: top;
     width: auto;
 }
@@ -750,10 +751,22 @@ body.dark-mode .ai-message .message-content {
         font-size: 15px;
     }
     
+    /* User message mobile - nhỏ gọn hơn */
+    .user-message .message-content {
+        font-size: 15px;
+        padding: 3px 9px;
+    }
+    
     .avatar {
         width: 28px;
         height: 28px;
     }
+}
+
+/* User message specificity fix - paragraphs phải inherit line-height và display block */
+.user-message .message-content p {
+    line-height: inherit !important;
+    display: block;
 }
 
 /* Markdown styling */
