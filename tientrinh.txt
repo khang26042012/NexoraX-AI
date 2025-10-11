@@ -5,6 +5,52 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 11/10/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
+✨ CẬP NHẬT MỚI NHẤT - 11/10/2025 (Buổi 9 - 23:40):
+-----------------------------------------------------------------------------
+
+AF. ✅ FIX SIDEBAR TOGGLE TRÊN PC KHÔNG HOẠT ĐỘNG - ĐÃ GIẢI QUYẾT HOÀN TOÀN
+   - Vấn đề: Nút sidebar toggle trên PC (desktop) không nhấn được
+   - Đã cố gắng fix nhiều lần (Buổi 3 - dòng S, Buổi 7 - dòng AB) nhưng không thành công
+   - User liên tục báo lỗi nút không click được
+   
+   Phân tích nguyên nhân (by Architect):
+   - Sidebar có z-index: 50 và fixed position, che phủ cạnh trái màn hình
+   - Desktop toggle button (desktopSidebarToggle) không có z-index đủ cao
+   - Kết quả: Sidebar che nút toggle → pointer events không đến được nút → không click được
+   - Mobile hoạt động vì sidebar ở off-screen (transform -translate-x-full)
+   
+   Giải pháp triệt để:
+   1. ✅ Fix CSS (assets/css/style.css dòng 1292-1301):
+      * Thêm z-index: 60 !important cho #desktopSidebarToggle
+      * Đảm bảo nút luôn nằm TRÊN sidebar (z-60 > z-50)
+      * Thêm transition: left 0.3s cho smooth animation
+      * Thêm CSS di chuyển nút: left: 84px khi sidebar collapsed (80px sidebar + 4px gap)
+   
+   2. ✅ Thêm logic toggle icon (src/js/ui-manager.js dòng 82-94):
+      * Update toggleDesktopSidebar():
+        - Toggle class 'desktop-collapsed' trên sidebar (đã có)
+        - Toggle class 'hidden' trên desktopPanelLeftIcon và desktopPanelRightIcon
+        - Icon đổi khi toggle: panelLeft ↔ panelRight
+   
+   3. ✅ Đảm bảo icon ban đầu đúng (src/js/ui-manager.js dòng 100-113):
+      * Update initializeDesktopSidebar():
+        - Remove class 'desktop-collapsed' (sidebar expanded mặc định)
+        - Remove 'hidden' từ panelLeftIcon (hiện)
+        - Add 'hidden' vào panelRightIcon (ẩn)
+   
+   - Kết quả:
+     ✅ Nút toggle desktop GIỜ ĐÂY CLICK ĐƯỢC (z-index đã cao hơn sidebar)
+     ✅ Icon đổi rõ ràng khi toggle (panelLeft → panelRight khi collapsed)
+     ✅ Vị trí nút di chuyển smooth khi sidebar collapsed (left-4 → left-84px)
+     ✅ Không ảnh hưởng mobile sidebar (CSS chỉ áp dụng @media min-width: 1024px)
+     ✅ Architect đã review và PASS - Không có regression, hoạt động đúng
+   
+   - Bài học:
+     * Z-index conflict là nguyên nhân chính - cần kiểm tra layering kỹ
+     * Sidebar overlay có thể che các control buttons
+     * Desktop và mobile cần logic riêng biệt cho sidebar
+     * Cần thêm visual feedback (icon toggle) để UX rõ ràng
+
 ✨ CẬP NHẬT MỚI NHẤT - 11/10/2025 (Buổi 8 - 23:05):
 -----------------------------------------------------------------------------
 
