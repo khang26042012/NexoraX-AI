@@ -251,7 +251,10 @@ export const STORAGE_KEYS = {
     DUAL_PRIMARY_MODEL: 'nexorax_dual_primary_model',
     DUAL_SECONDARY_MODEL: 'nexorax_dual_secondary_model',
     SESSION_ID: 'nexorax_session_id',
-    USERNAME: 'nexorax_username'
+    USERNAME: 'nexorax_username',
+    PREVIOUS_MODEL_BEFORE_IMAGE_GEN: 'nexorax_previous_model_image_gen',
+    PREVIOUS_MODEL_BEFORE_SEARCH: 'nexorax_previous_model_search',
+    PREVIOUS_MODEL_BEFORE_DUAL: 'nexorax_previous_model_dual'
 };
 
 /**
