@@ -5,6 +5,39 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 11/10/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
+✨ CẬP NHẬT MỚI NHẤT - 11/10/2025 (Buổi 8 - 22:58):
+-----------------------------------------------------------------------------
+
+AB. ✅ FIX RESTORE MODEL KHI VỀ HOME TỪ DUAL CHAT MODE
+   - Vấn đề: Khi bật dual chat → nhập prompt → new chat → về home, web không tự chọn lại model AI cũ (hoặc gpt-5)
+   - Nguyên nhân: Code thiếu logic restore previous model khi về home từ dual chat mode
+   
+   Giải pháp:
+   - Sửa src/js/chat-app.js (dòng 230-236):
+     * Thêm đoạn code restore model trong showHomeScreen()
+     * Kiểm tra nếu đang ở dual chat mode
+     * Lấy previous model từ localStorage (STORAGE_KEYS.PREVIOUS_MODEL_BEFORE_DUAL)
+     * Restore model đó nếu khác với model hiện tại
+     * Logic tương tự như image-gen và gemini-search restoration
+   
+   - Kết quả:
+     ✅ Khi về home từ dual chat mode, model được restore về model cũ
+     ✅ User không bị mất model selection khi tạo new chat
+     ✅ Architect đã review và PASS - Code đúng, không có regression
+     ✅ Logic clean và maintainable, tương tự các restoration paths khác
+
+AC. ✅ VERIFY SIDEBAR TOGGLE TRÊN PC ĐÃ HOẠT ĐỘNG
+   - Vấn đề: User báo sidebar toggle trên PC không bấm được
+   - Kiểm tra: 
+     * index.html dòng 124: Đã có class "hidden lg:flex" đúng ✅
+     * event-handlers.js: Event listener đã được setup đúng ✅
+     * Vấn đề này đã được fix ở commit trước (Buổi 3)
+   
+   - Kết quả:
+     ✅ Code đã đúng, không cần sửa gì thêm
+     ✅ Sidebar toggle hiển thị và hoạt động bình thường trên PC
+     ✅ Icon căn giữa đúng với flex layout
+
 ✨ CẬP NHẬT MỚI NHẤT - 11/10/2025 (Buổi 7 - 20:35):
 -----------------------------------------------------------------------------
 

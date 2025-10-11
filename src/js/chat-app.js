@@ -224,15 +224,40 @@ export class NexoraXChat {
             });
         }
         
-        // RESTORE MODEL khi về home từ dual chat mode
+        // TẮT DUAL CHAT MODE và RESTORE MODEL khi về home
         if (this.dualChatMode) {
+            // Restore model cũ trước khi tắt dual chat
             const previousModel = localStorage.getItem(STORAGE_KEYS.PREVIOUS_MODEL_BEFORE_DUAL);
             if (previousModel && previousModel !== this.selectedModel) {
                 this.changeModel(previousModel);
             }
+            
+            // Tắt dual chat mode
+            this.dualChatMode = false;
+            saveDualChatMode(false);
+            
+            // Update UI - deactivate dual chat buttons
+            if (homeDualModeBtn) {
+                homeDualModeBtn.classList.remove('active');
+                homeDualModeBtn.classList.remove('locked');
+                homeDualModeBtn.title = 'Dual Chat Mode';
+            }
+            if (chatDualModeBtn) {
+                chatDualModeBtn.classList.remove('active');
+                chatDualModeBtn.classList.remove('locked');
+                chatDualModeBtn.title = 'Dual Chat Mode';
+            }
+            
+            // Remove dual-chat-mode class từ messagesContainer
+            if (this.messagesContainer) {
+                this.messagesContainer.classList.remove('dual-chat-mode');
+            }
+            
+            // Clean up localStorage
+            localStorage.removeItem(STORAGE_KEYS.PREVIOUS_MODEL_BEFORE_DUAL);
         }
         
-        // GIỮ LẠI state của dual chat mode - không reset UI
+        // Update config and model visibility (dual chat đã tắt)
         this.updateConfigAndModelVisibility(this.dualChatMode);
     }
     
