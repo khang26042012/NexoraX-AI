@@ -638,9 +638,8 @@ export class NexoraXChat {
     async handleLogin() {
         const username = document.getElementById('loginUsername').value.trim();
         const password = document.getElementById('loginPassword').value.trim();
-        const rememberMe = document.getElementById('rememberMe')?.checked || false;
         
-        await handleLogin(username, password, rememberMe, 
+        await handleLogin(username, password, false, 
             (user) => {
                 updateUIForLoggedInUser(user);
                 setupUserMenuDropdown(() => this.handleLogout());
@@ -649,9 +648,6 @@ export class NexoraXChat {
                 // Clear inputs
                 document.getElementById('loginUsername').value = '';
                 document.getElementById('loginPassword').value = '';
-                if (document.getElementById('rememberMe')) {
-                    document.getElementById('rememberMe').checked = false;
-                }
             }
         );
     }
