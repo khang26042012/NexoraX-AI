@@ -79,6 +79,15 @@ export function closeSidebar(sidebar) {
 export function toggleDesktopSidebar(sidebar) {
     if (!sidebar) return;
     sidebar.classList.toggle('desktop-collapsed');
+    
+    // Toggle icon: panelLeft ↔ panelRight
+    const panelLeftIcon = document.getElementById('desktopPanelLeftIcon');
+    const panelRightIcon = document.getElementById('desktopPanelRightIcon');
+    
+    if (panelLeftIcon && panelRightIcon) {
+        panelLeftIcon.classList.toggle('hidden');
+        panelRightIcon.classList.toggle('hidden');
+    }
 }
 
 /**
@@ -89,6 +98,15 @@ export function initializeDesktopSidebar(sidebar) {
     if (!sidebar) return;
     // Desktop sidebar luôn expanded mặc định
     sidebar.classList.remove('desktop-collapsed');
+    
+    // Đảm bảo icon ban đầu đúng (panelLeft hiện, panelRight ẩn)
+    const panelLeftIcon = document.getElementById('desktopPanelLeftIcon');
+    const panelRightIcon = document.getElementById('desktopPanelRightIcon');
+    
+    if (panelLeftIcon && panelRightIcon) {
+        panelLeftIcon.classList.remove('hidden');
+        panelRightIcon.classList.add('hidden');
+    }
 }
 
 // ===================================
