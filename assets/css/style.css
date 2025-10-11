@@ -634,7 +634,7 @@ body.dark-mode .ai-loading-text {
 }
 
 .user-message .message-wrapper {
-    max-width: 70%;
+    max-width: 80%;
     display: flex;
     flex-direction: column;
     gap: 0px;
@@ -645,15 +645,16 @@ body.dark-mode .ai-loading-text {
 .user-message .message-content {
     background: #ffffff;
     color: #1f2937;
-    padding: 12px 16px;
+    padding: 8px 12px;
     border-radius: 8px;
-    max-width: 100%;
+    max-width: fit-content;
     word-wrap: break-word;
     border: 1px solid #d1d5db;
     display: inline-block;
     text-align: left;
     line-height: 1.6;
     vertical-align: top;
+    width: auto;
 }
 
 /* AI message styling */
@@ -681,16 +682,19 @@ body.dark-mode .ai-loading-text {
     word-wrap: break-word;
 }
 
-/* File attachments - hiển thị trong message-content */
+/* File attachments - hiển thị NGOÀI message-content, TRONG message-wrapper */
 .user-file-attachments,
 .ai-file-attachments {
     display: block;
-    margin-top: 8px;
-    text-align: right;
+    margin-top: 4px;
+}
+
+.user-file-attachments {
+    align-self: flex-end;
 }
 
 .ai-file-attachments {
-    text-align: left;
+    align-self: flex-start;
 }
 
 /* Model badge - ẨN HOÀN TOÀN */

@@ -8,17 +8,21 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 11/10/2025
 ✨ CẬP NHẬT MỚI NHẤT - 11/10/2025 (Buổi 2):
 -----------------------------------------------------------------------------
 
-K. ✅ FIX BONG BÓNG CHAT USER QUÁ TO VÀ TEXT ALIGNMENT
-   - Vấn đề: Bong bóng chat của user quá nhỏ (55%) và text bị center alignment
+K. ✅ FIX BONG BÓNG CHAT USER - TỰ ĐỘNG CO DÃN THEO NỘI DUNG
+   - Vấn đề: Bong bóng chat user quá to, đặc biệt với message ngắn (như "Hi")
+   - Root cause: Dùng % width cố định → message ngắn vẫn chiếm nhiều không gian
    
-   Giải pháp:
-   - Sửa assets/css/style.css (dòng 638):
-     * Tăng max-width từ 55% lên 70% cho .user-message .message-wrapper
-     * Cho phép bong bóng user rộng hơn, dễ đọc hơn
+   Giải pháp triệt để:
+   - Sửa assets/css/style.css (dòng 639-660):
+     * .user-message .message-wrapper: max-width 80% (để message dài không vượt quá)
+     * .user-message .message-content: 
+       - max-width: fit-content (tự động co theo nội dung)
+       - width: auto (không bị cố định)
+       - padding: 8px 12px (giảm từ 12px 16px để nhỏ gọn hơn)
+     * Kết quả: Message ngắn → bong bóng nhỏ, message dài → bong bóng rộng (max 80%)
    
-   - Sửa assets/css/style.css (dòng 656):
-     * Đổi text-align từ center sang left trong .user-message .message-content
-     * Text trong bong bóng user giờ align trái, tự nhiên hơn
+   - Đổi text-align từ center sang left
+     * Text align trái, tự nhiên hơn
 
 L. ✅ FIX Ô "ĐANG SUY NGHĨ" BỊ DỊCH CHUYỂN QUA GIỮA
    - Vấn đề: Khi gửi message, ô "Đang suy nghĩ" của AI bị dịch qua giữa thay vì ở bên trái
@@ -53,6 +57,34 @@ N. ✅ XÓA MODEL RTIST
      * Xóa button rtist ở homeQuickModelDropdown (dòng 246)
      * Xóa button rtist ở chatQuickModelDropdown (dòng 406)
      * Sử dụng replace_all để xóa tất cả instances
+
+O. ✅ FIX ẢNH VẪN CÓ BONG BÓNG - ĐƯA ẢNH RA NGOÀI MESSAGE-CONTENT
+   - Vấn đề: Ảnh vẫn có background trắng và border (bong bóng) vì đang nằm TRONG message-content
+   - Root cause: filesHtml đang được đưa vào TRONG .message-content nên inherit bubble styling
+   
+   Giải pháp (theo hướng dẫn của Architect):
+   - Sửa src/js/message-renderer.js (dòng 75-84):
+     * Đưa filesHtml RA NGOÀI .message-content
+     * filesHtml vẫn TRONG .message-wrapper (làm sibling của message-content)
+     * Cấu trúc mới:
+       ```
+       <message-wrapper>
+         <message-content>text only</message-content>
+         ${filesHtml}  <!-- Ở đây, không trong content -->
+       </message-wrapper>
+       ```
+   
+   - Sửa assets/css/style.css (dòng 687-700):
+     * .user-file-attachments: align-self: flex-end (ảnh bên phải)
+     * .ai-file-attachments: align-self: flex-start (ảnh bên trái)
+     * margin-top: 4px để gần bong bóng
+     * message-wrapper đã có flex-column nên ảnh tự động xuống dưới
+   
+   - Kết quả:
+     ✅ Ảnh KHÔNG còn bong bóng (không có background/border)
+     ✅ Ảnh hiển thị dưới text, align đúng hướng
+     ✅ User images bên phải, AI images bên trái
+     ✅ "Đang suy nghĩ" vẫn align trái đúng (có margin-right: auto)
 
 ✨ CẬP NHẬT UI/UX - 11/10/2025 (Buổi 1):
 -----------------------------------------------------------------------------
