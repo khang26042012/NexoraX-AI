@@ -1285,6 +1285,17 @@ body.dark-mode .ai-message .message-content {
     #sidebar.desktop-collapsed #chatList {
         display: none;
     }
+    
+    /* Đảm bảo desktop toggle button luôn ở trên sidebar */
+    #desktopSidebarToggle {
+        z-index: 60 !important;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* Di chuyển toggle button khi sidebar collapsed */
+    #sidebar.desktop-collapsed ~ #desktopSidebarToggle {
+        left: 84px !important; /* 80px sidebar + 4px gap */
+    }
 }
 
 .chat-item {
