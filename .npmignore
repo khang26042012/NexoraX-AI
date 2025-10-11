@@ -1,0 +1,27 @@
+# Test and demo files - NOT for npm publish
+scripts/imagefx-demo.js
+
+# Development files
+*.log
+*.md
+.git
+.gitignore
+.replit
+replit.md
+
+# Test files
+attached_assets/
+config/
+
+# Server files (Python)
+sv/
+server.py
+config.py
+*.txt
+acc.txt
+sessions_store.json
+rate_limit_store.json
+
+# Documentation (already in README)
+README_RENDER.md
+RENDER_DEPLOYMENT.md

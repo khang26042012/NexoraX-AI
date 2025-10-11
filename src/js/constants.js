@@ -42,6 +42,160 @@ export const MODEL_NAMES = {
 };
 
 /**
+ * Metadata chi tiết cho từng model AI
+ * Bao gồm: mô tả, icon, use cases, category
+ */
+export const MODEL_METADATA = {
+    'gpt-5-chat': {
+        name: 'GPT-5',
+        icon: '🚀',
+        category: 'chat',
+        description: 'Model AI tiên tiến nhất từ OpenAI, vượt trội về khả năng suy luận và giải quyết vấn đề phức tạp',
+        useCases: ['Phân tích dữ liệu phức tạp', 'Viết code chuyên sâu', 'Tư vấn chuyên môn', 'Giải quyết bài toán khó']
+    },
+    'nexorax1': {
+        name: 'Gemini Flash 2.5',
+        icon: '⚡',
+        category: 'chat',
+        description: 'Model siêu nhanh từ Google, xử lý đa phương tiện và tối ưu cho tốc độ phản hồi',
+        useCases: ['Chat nhanh', 'Phân tích hình ảnh', 'Xử lý file đa dạng', 'Trả lời tức thì']
+    },
+    'nexorax2': {
+        name: 'Search',
+        icon: '🔍',
+        category: 'search',
+        description: 'Tìm kiếm thông tin thời gian thực từ internet với độ chính xác cao',
+        useCases: ['Tìm tin tức mới nhất', 'Research chủ đề', 'Kiểm tra thông tin', 'Dữ liệu thời gian thực']
+    },
+    'gemini-search': {
+        name: 'Gemini Search',
+        icon: '🌐',
+        category: 'search',
+        description: 'Công cụ tìm kiếm AI của Google, kết hợp search với phân tích thông minh',
+        useCases: ['Research toàn diện', 'Tổng hợp thông tin web', 'Tìm kiếm học thuật', 'Fact-checking']
+    },
+    'image-gen': {
+        name: 'Image Generator',
+        icon: '🎨',
+        category: 'image',
+        description: 'Tạo hình ảnh từ văn bản với AI, chất lượng cao và đa dạng phong cách',
+        useCases: ['Tạo artwork', 'Design concept', 'Minh họa ý tưởng', 'Tạo logo/banner']
+    },
+    'deepseek-v3.1': {
+        name: 'DeepSeek V3.1',
+        icon: '🧠',
+        category: 'chat',
+        description: 'Model AI mạnh mẽ, chuyên sâu về logic và lập trình',
+        useCases: ['Code generation', 'Debug code', 'Giải thuật', 'Technical writing']
+    },
+    'deepseek-reasoning': {
+        name: 'DeepSeek Reasoning',
+        icon: '🤔',
+        category: 'reasoning',
+        description: 'Chuyên về suy luận logic, toán học và phân tích phức tạp',
+        useCases: ['Giải toán', 'Phân tích logic', 'Chứng minh định lý', 'Suy luận khoa học']
+    },
+    'gemini-2.5-flash-lite': {
+        name: 'Gemini 2.5 Flash Lite',
+        icon: '💫',
+        category: 'chat',
+        description: 'Phiên bản nhẹ của Gemini Flash, tối ưu hiệu năng và tốc độ',
+        useCases: ['Chat thường ngày', 'Câu hỏi nhanh', 'Dịch thuật', 'Tóm tắt văn bản']
+    },
+    'mistral-small-3.1-24b-instruct-2503': {
+        name: 'Mistral Small 3.1',
+        icon: '🌪️',
+        category: 'chat',
+        description: 'Model hiệu quả từ Mistral AI, cân bằng giữa chất lượng và tốc độ',
+        useCases: ['Chat đa mục đích', 'Content writing', 'Brainstorming', 'Q&A']
+    },
+    'mistral-medium-2508': {
+        name: 'Mistral Medium',
+        icon: '🌊',
+        category: 'chat',
+        description: 'Model trung bình từ Mistral, phù hợp cho nhiều tác vụ phức tạp',
+        useCases: ['Phân tích văn bản', 'Creative writing', 'Technical support', 'Data analysis']
+    },
+    'mistral-small-2503': {
+        name: 'Mistral Small',
+        icon: '💨',
+        category: 'chat',
+        description: 'Model nhỏ gọn, nhanh chóng và hiệu quả cho tasks cơ bản',
+        useCases: ['Chat đơn giản', 'Trả lời nhanh', 'Dịch văn bản', 'Tóm tắt']
+    },
+    'open-mixtral-8x7b': {
+        name: 'Mixtral 8x7B',
+        icon: '🔄',
+        category: 'chat',
+        description: 'Model mixture-of-experts, mạnh mẽ và linh hoạt',
+        useCases: ['Multi-task', 'Code & writing', 'Phân tích đa chiều', 'Problem solving']
+    },
+    'nova-fast': {
+        name: 'Nova Fast',
+        icon: '✨',
+        category: 'chat',
+        description: 'Model tốc độ cao, tối ưu cho real-time conversation',
+        useCases: ['Chat real-time', 'Trợ lý ảo', 'Customer support', 'Quick answers']
+    },
+    'gpt-5-mini': {
+        name: 'GPT-5 Mini',
+        icon: '🎯',
+        category: 'chat',
+        description: 'Phiên bản compact của GPT-5, nhanh và hiệu quả',
+        useCases: ['Chat nhanh', 'Simple tasks', 'Brainstorming', 'Drafting']
+    },
+    'gpt-5-nano-2025-08-07': {
+        name: 'GPT-5 Nano',
+        icon: '⚙️',
+        category: 'chat',
+        description: 'Phiên bản siêu nhỏ gọn, tối ưu tốc độ phản hồi',
+        useCases: ['Chat đơn giản', 'Q&A nhanh', 'Suggestions', 'Basic assistance']
+    },
+    'gpt-o4-mini-2025-04-16': {
+        name: 'GPT-O4 Mini',
+        icon: '🔧',
+        category: 'chat',
+        description: 'Model optimization-focused, cân bằng chất lượng và hiệu suất',
+        useCases: ['Optimized tasks', 'Efficient coding', 'Quick analysis', 'Smart replies']
+    },
+    'qwen2.5-coder-32b-instruct': {
+        name: 'Qwen Coder',
+        icon: '💻',
+        category: 'coding',
+        description: 'Chuyên gia coding AI, hỗ trợ đa ngôn ngữ lập trình',
+        useCases: ['Code generation', 'Debug & refactor', 'Code review', 'Algorithm design']
+    },
+    'roblox-rp': {
+        name: 'Roblox RP',
+        icon: '🎮',
+        category: 'roleplay',
+        description: 'AI roleplay chuyên về Roblox và gaming scenarios',
+        useCases: ['Roblox roleplay', 'Game scenarios', 'Creative stories', 'Character chat']
+    },
+    'bidara': {
+        name: 'Bidara',
+        icon: '🌟',
+        category: 'chat',
+        description: 'Model đa năng với khả năng hiểu context sâu sắc',
+        useCases: ['Contextual chat', 'Long conversations', 'Story writing', 'Deep Q&A']
+    },
+    'Steelskull/L3.3-MS-Nevoria-70b': {
+        name: 'Nevoria 70B',
+        icon: '🛡️',
+        category: 'advanced',
+        description: 'Model siêu lớn 70B parameters, khả năng xử lý phức tạp cao',
+        useCases: ['Advanced reasoning', 'Complex analysis', 'Research tasks', 'Expert consultation']
+    },
+    'gemma-2-2b-it': {
+        name: 'Gemma 2',
+        icon: '💎',
+        category: 'chat',
+        description: 'Model compact từ Google, efficient và đáng tin cậy',
+        useCases: ['Daily chat', 'Quick help', 'Simple tasks', 'General assistance']
+    }
+};
+
+/**
  * Các model có thể dùng trong Dual Chat Mode
  * (loại trừ image-gen và nexorax2)
  */

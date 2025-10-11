@@ -4,11 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NexoraX - AI Chat Assistant</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="assets/css/app.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <link rel="stylesheet" href="assets/css/style.css?v=20251011v4">
 </head>
 <body class="bg-gray-50 text-gray-900">
 
@@ -225,27 +224,178 @@
                                                     <line x1="12" y1="22.08" x2="12" y2="12"/>
                                                 </svg>
                                             </button>
-                                            <div id="homeQuickModelDropdown" class="hidden absolute bottom-full left-0 mb-2 bg-white rounded-lg shadow-xl border border-gray-200 py-1 min-w-[180px] max-h-96 overflow-y-auto z-30">
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="gpt-5-chat">GPT-5</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="nexorax1">Gemini Flash 2.5</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="gemini-search">Gemini Search</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="deepseek-v3.1">DeepSeek V3.1</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="deepseek-reasoning">DeepSeek Reasoning</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="gemini-2.5-flash-lite">Gemini 2.5 Flash</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="mistral-small-3.1-24b-instruct-2503">Mistral Small 3.1</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="mistral-medium-2508">Mistral Medium</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="mistral-small-2503">Mistral Small</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="open-mixtral-8x7b">Mixtral 8x7B</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="nova-fast">Nova Fast</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="gpt-5-mini">GPT-5 Mini</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="gpt-5-nano-2025-08-07">GPT-5 Nano</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="gpt-o4-mini-2025-04-16">GPT-O4 Mini</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="qwen2.5-coder-32b-instruct">Qwen Coder</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="roblox-rp">Roblox RP</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="bidara">Bidara</button>
-
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="Steelskull/L3.3-MS-Nevoria-70b">Nevoria 70B</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="gemma-2-2b-it">Gemma 2</button>
+                                            <div id="homeQuickModelDropdown" class="hidden absolute bottom-full left-0 mb-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-2 min-w-[280px] max-h-96 overflow-y-auto z-30">
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="gpt-5-chat" title="Model AI tiên tiến nhất từ OpenAI, vượt trội về khả năng suy luận và giải quyết vấn đề phức tạp">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">🚀</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">GPT-5</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Phân tích phức tạp & Code chuyên sâu</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="nexorax1" title="Model siêu nhanh từ Google, xử lý đa phương tiện và tối ưu cho tốc độ phản hồi">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">⚡</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">Gemini Flash 2.5</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Chat nhanh & Phân tích hình ảnh</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="gemini-search" title="Công cụ tìm kiếm AI của Google, kết hợp search với phân tích thông minh">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">🌐</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">Gemini Search</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Research toàn diện</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="deepseek-v3.1" title="Model AI mạnh mẽ, chuyên sâu về logic và lập trình">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">🧠</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">DeepSeek V3.1</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Code generation & Debug</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="deepseek-reasoning" title="Chuyên về suy luận logic, toán học và phân tích phức tạp">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">🤔</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">DeepSeek Reasoning</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Giải toán & Phân tích logic</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="gemini-2.5-flash-lite" title="Phiên bản nhẹ của Gemini Flash, tối ưu hiệu năng và tốc độ">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">💫</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">Gemini 2.5 Flash</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Chat thường ngày</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="mistral-small-3.1-24b-instruct-2503" title="Model hiệu quả từ Mistral AI, cân bằng giữa chất lượng và tốc độ">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">🌪️</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">Mistral Small 3.1</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Chat đa mục đích</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="mistral-medium-2508" title="Model trung bình từ Mistral, phù hợp cho nhiều tác vụ phức tạp">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">🌊</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">Mistral Medium</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Creative writing</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="mistral-small-2503" title="Model nhỏ gọn, nhanh chóng và hiệu quả cho tasks cơ bản">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">💨</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">Mistral Small</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Chat đơn giản</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="open-mixtral-8x7b" title="Model mixture-of-experts, mạnh mẽ và linh hoạt">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">🔄</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">Mixtral 8x7B</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Multi-task</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="nova-fast" title="Model tốc độ cao, tối ưu cho real-time conversation">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">✨</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">Nova Fast</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Chat real-time</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="gpt-5-mini" title="Phiên bản compact của GPT-5, nhanh và hiệu quả">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">🎯</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">GPT-5 Mini</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Chat nhanh</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="gpt-5-nano-2025-08-07" title="Phiên bản siêu nhỏ gọn, tối ưu tốc độ phản hồi">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">⚙️</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">GPT-5 Nano</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Q&A nhanh</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="gpt-o4-mini-2025-04-16" title="Model optimization-focused, cân bằng chất lượng và hiệu suất">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">🔧</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">GPT-O4 Mini</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Optimized tasks</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="qwen2.5-coder-32b-instruct" title="Chuyên gia coding AI, hỗ trợ đa ngôn ngữ lập trình">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">💻</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">Qwen Coder</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Code generation</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="roblox-rp" title="AI roleplay chuyên về Roblox và gaming scenarios">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">🎮</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">Roblox RP</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Game roleplay</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="bidara" title="Model đa năng với khả năng hiểu context sâu sắc">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">🌟</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">Bidara</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Contextual chat</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="Steelskull/L3.3-MS-Nevoria-70b" title="Model siêu lớn 70B parameters, khả năng xử lý phức tạp cao">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">🛡️</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">Nevoria 70B</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Advanced reasoning</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="gemma-2-2b-it" title="Model compact từ Google, efficient và đáng tin cậy">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">💎</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">Gemma 2</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Daily chat</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -385,27 +535,178 @@
                                                     <line x1="12" y1="22.08" x2="12" y2="12"/>
                                                 </svg>
                                             </button>
-                                            <div id="chatQuickModelDropdown" class="hidden absolute bottom-full left-0 mb-2 bg-white rounded-lg shadow-xl border border-gray-200 py-1 min-w-[180px] max-h-96 overflow-y-auto z-30">
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="gpt-5-chat">GPT-5</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="nexorax1">Gemini Flash 2.5</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="gemini-search">Gemini Search</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="deepseek-v3.1">DeepSeek V3.1</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="deepseek-reasoning">DeepSeek Reasoning</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="gemini-2.5-flash-lite">Gemini 2.5 Flash</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="mistral-small-3.1-24b-instruct-2503">Mistral Small 3.1</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="mistral-medium-2508">Mistral Medium</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="mistral-small-2503">Mistral Small</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="open-mixtral-8x7b">Mixtral 8x7B</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="nova-fast">Nova Fast</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="gpt-5-mini">GPT-5 Mini</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="gpt-5-nano-2025-08-07">GPT-5 Nano</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="gpt-o4-mini-2025-04-16">GPT-O4 Mini</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="qwen2.5-coder-32b-instruct">Qwen Coder</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="roblox-rp">Roblox RP</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="bidara">Bidara</button>
-
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="Steelskull/L3.3-MS-Nevoria-70b">Nevoria 70B</button>
-                                                <button class="quick-model-option w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors" data-model="gemma-2-2b-it">Gemma 2</button>
+                                            <div id="chatQuickModelDropdown" class="hidden absolute bottom-full left-0 mb-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-2 min-w-[280px] max-h-96 overflow-y-auto z-30">
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="gpt-5-chat" title="Model AI tiên tiến nhất từ OpenAI, vượt trội về khả năng suy luận và giải quyết vấn đề phức tạp">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">🚀</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">GPT-5</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Phân tích phức tạp & Code chuyên sâu</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="nexorax1" title="Model siêu nhanh từ Google, xử lý đa phương tiện và tối ưu cho tốc độ phản hồi">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">⚡</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">Gemini Flash 2.5</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Chat nhanh & Phân tích hình ảnh</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="gemini-search" title="Công cụ tìm kiếm AI của Google, kết hợp search với phân tích thông minh">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">🌐</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">Gemini Search</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Research toàn diện</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="deepseek-v3.1" title="Model AI mạnh mẽ, chuyên sâu về logic và lập trình">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">🧠</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">DeepSeek V3.1</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Code generation & Debug</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="deepseek-reasoning" title="Chuyên về suy luận logic, toán học và phân tích phức tạp">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">🤔</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">DeepSeek Reasoning</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Giải toán & Phân tích logic</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="gemini-2.5-flash-lite" title="Phiên bản nhẹ của Gemini Flash, tối ưu hiệu năng và tốc độ">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">💫</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">Gemini 2.5 Flash</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Chat thường ngày</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="mistral-small-3.1-24b-instruct-2503" title="Model hiệu quả từ Mistral AI, cân bằng giữa chất lượng và tốc độ">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">🌪️</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">Mistral Small 3.1</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Chat đa mục đích</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="mistral-medium-2508" title="Model trung bình từ Mistral, phù hợp cho nhiều tác vụ phức tạp">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">🌊</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">Mistral Medium</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Creative writing</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="mistral-small-2503" title="Model nhỏ gọn, nhanh chóng và hiệu quả cho tasks cơ bản">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">💨</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">Mistral Small</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Chat đơn giản</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="open-mixtral-8x7b" title="Model mixture-of-experts, mạnh mẽ và linh hoạt">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">🔄</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">Mixtral 8x7B</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Multi-task</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="nova-fast" title="Model tốc độ cao, tối ưu cho real-time conversation">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">✨</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">Nova Fast</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Chat real-time</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="gpt-5-mini" title="Phiên bản compact của GPT-5, nhanh và hiệu quả">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">🎯</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">GPT-5 Mini</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Chat nhanh</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="gpt-5-nano-2025-08-07" title="Phiên bản siêu nhỏ gọn, tối ưu tốc độ phản hồi">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">⚙️</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">GPT-5 Nano</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Q&A nhanh</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="gpt-o4-mini-2025-04-16" title="Model optimization-focused, cân bằng chất lượng và hiệu suất">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">🔧</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">GPT-O4 Mini</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Optimized tasks</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="qwen2.5-coder-32b-instruct" title="Chuyên gia coding AI, hỗ trợ đa ngôn ngữ lập trình">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">💻</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">Qwen Coder</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Code generation</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="roblox-rp" title="AI roleplay chuyên về Roblox và gaming scenarios">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">🎮</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">Roblox RP</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Game roleplay</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="bidara" title="Model đa năng với khả năng hiểu context sâu sắc">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">🌟</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">Bidara</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Contextual chat</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="Steelskull/L3.3-MS-Nevoria-70b" title="Model siêu lớn 70B parameters, khả năng xử lý phức tạp cao">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">🛡️</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">Nevoria 70B</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Advanced reasoning</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <button class="quick-model-option w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group" data-model="gemma-2-2b-it" title="Model compact từ Google, efficient và đáng tin cậy">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-lg">💎</span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white">Gemma 2</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Daily chat</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
