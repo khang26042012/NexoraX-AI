@@ -13,29 +13,35 @@
 import { STORAGE_KEYS } from './constants.js';
 
 const ONBOARDING_KEY = 'nexorax_onboarding_completed';
-const ONBOARDING_VERSION = '1.0';
+const ONBOARDING_VERSION = '2.0';
 
 class OnboardingManager {
     constructor() {
         this.currentStep = 0;
         this.steps = [
             {
-                target: '#modelSelect',
+                target: '#homeQuickModelBtn',
                 title: '🤖 Chọn AI Model',
-                description: 'Chọn model AI phù hợp với nhu cầu của bạn. Mỗi model có điểm mạnh riêng!',
+                description: 'Click vào đây để chọn model AI phù hợp với nhu cầu của bạn. Mỗi model có điểm mạnh riêng!',
                 position: 'bottom'
             },
             {
-                target: '#dualChatToggle',
+                target: '#homeDualModeBtn',
                 title: '🔄 Dual Chat Mode',
                 description: 'Bật chế độ Dual Chat để so sánh câu trả lời từ 2 AI models khác nhau cùng lúc.',
                 position: 'bottom'
             },
             {
-                target: '#fileUploadBtn',
+                target: '#homeConfigBtn',
+                title: '⚙️ Tùy chọn nâng cao',
+                description: 'Truy cập các tính năng đặc biệt: Tạo ảnh với AI hoặc Tìm kiếm thông tin trên web.',
+                position: 'bottom'
+            },
+            {
+                target: '#homeUploadBtn',
                 title: '📁 Upload File',
                 description: 'Upload hình ảnh hoặc file để AI phân tích và trả lời câu hỏi về nội dung.',
-                position: 'top'
+                position: 'bottom'
             },
             {
                 target: '#sidebarToggle',

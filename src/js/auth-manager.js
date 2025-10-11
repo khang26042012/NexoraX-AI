@@ -45,11 +45,11 @@ export async function checkUserSession(onSuccess, onFail) {
  * Handle login
  * @param {string} username - Username
  * @param {string} password - Password
- * @param {boolean} rememberMe - Remember me checkbox
+ * @param {boolean} rememberMe - Remember me checkbox (mặc định true để session 30 ngày)
  * @param {Function} onSuccess - Callback khi login thành công
  * @param {Function} onError - Callback khi login thất bại
  */
-export async function handleLogin(username, password, rememberMe, onSuccess, onError) {
+export async function handleLogin(username, password, rememberMe = true, onSuccess, onError) {
     if (!username || !password) {
         showNotification('Vui lòng điền đầy đủ thông tin!', 'error');
         return;
@@ -60,7 +60,7 @@ export async function handleLogin(username, password, rememberMe, onSuccess, onE
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
-            body: JSON.stringify({ username, password, remember_me: rememberMe })
+            body: JSON.stringify({ username, password, remember_me: true })
         });
         
         const data = await response.json();
@@ -104,7 +104,7 @@ export async function handleSignup(signupData, onSuccess, onError) {
     }
     
     try {
-        const requestBody = { username, password };
+        const requestBody = { username, password, remember_me: true };
         if (email) {
             requestBody.email = email;
         }
