@@ -132,6 +132,12 @@ export class NexoraXChat {
         
         // Authentication - check session
         this.checkUserSession();
+        
+        // TỰ ĐỘNG TẮT dual chat nếu đang ở home (không có active chat)
+        // Fix: Khi reload trang ở home, dual chat nên tự động tắt
+        if (this.dualChatMode && !this.currentChatId) {
+            this.disableDualChatMode();
+        }
     }
     
     initializeElements() {
@@ -224,41 +230,8 @@ export class NexoraXChat {
             });
         }
         
-        // TẮT DUAL CHAT MODE và RESTORE MODEL khi về home
-        if (this.dualChatMode) {
-            // Restore model cũ trước khi tắt dual chat
-            const previousModel = localStorage.getItem(STORAGE_KEYS.PREVIOUS_MODEL_BEFORE_DUAL);
-            if (previousModel && previousModel !== this.selectedModel) {
-                this.changeModel(previousModel);
-            }
-            
-            // Tắt dual chat mode
-            this.dualChatMode = false;
-            saveDualChatMode(false);
-            
-            // Update UI - deactivate dual chat buttons
-            if (homeDualModeBtn) {
-                homeDualModeBtn.classList.remove('active');
-                homeDualModeBtn.classList.remove('locked');
-                homeDualModeBtn.title = 'Dual Chat Mode';
-            }
-            if (chatDualModeBtn) {
-                chatDualModeBtn.classList.remove('active');
-                chatDualModeBtn.classList.remove('locked');
-                chatDualModeBtn.title = 'Dual Chat Mode';
-            }
-            
-            // Remove dual-chat-mode class từ messagesContainer
-            if (this.messagesContainer) {
-                this.messagesContainer.classList.remove('dual-chat-mode');
-            }
-            
-            // Clean up localStorage
-            localStorage.removeItem(STORAGE_KEYS.PREVIOUS_MODEL_BEFORE_DUAL);
-        }
-        
-        // Update config and model visibility (dual chat đã tắt)
-        this.updateConfigAndModelVisibility(this.dualChatMode);
+        // TẮT DUAL CHAT MODE tự động khi về home
+        this.disableDualChatMode();
     }
     
     showChatScreen() {
@@ -697,6 +670,50 @@ export class NexoraXChat {
             this.changeModel(previousModel);
             localStorage.removeItem(STORAGE_KEYS.PREVIOUS_MODEL_BEFORE_DUAL);
         }
+    }
+    
+    /**
+     * Tắt dual chat mode và restore previous model
+     * Helper function được dùng khi về home hoặc reload trang
+     */
+    disableDualChatMode() {
+        if (!this.dualChatMode) return; // Đã tắt rồi
+        
+        const homeDualModeBtn = document.getElementById('homeDualModeBtn');
+        const chatDualModeBtn = document.getElementById('chatDualModeBtn');
+        
+        // Restore model cũ trước khi tắt dual chat
+        const previousModel = localStorage.getItem(STORAGE_KEYS.PREVIOUS_MODEL_BEFORE_DUAL);
+        if (previousModel && previousModel !== this.selectedModel) {
+            this.changeModel(previousModel);
+        }
+        
+        // Tắt dual chat mode
+        this.dualChatMode = false;
+        saveDualChatMode(false);
+        
+        // Update UI - deactivate dual chat buttons
+        if (homeDualModeBtn) {
+            homeDualModeBtn.classList.remove('active');
+            homeDualModeBtn.classList.remove('locked');
+            homeDualModeBtn.title = 'Dual Chat Mode';
+        }
+        if (chatDualModeBtn) {
+            chatDualModeBtn.classList.remove('active');
+            chatDualModeBtn.classList.remove('locked');
+            chatDualModeBtn.title = 'Dual Chat Mode';
+        }
+        
+        // Remove dual-chat-mode class từ messagesContainer
+        if (this.messagesContainer) {
+            this.messagesContainer.classList.remove('dual-chat-mode');
+        }
+        
+        // Clean up localStorage
+        localStorage.removeItem(STORAGE_KEYS.PREVIOUS_MODEL_BEFORE_DUAL);
+        
+        // Update config and model visibility
+        this.updateConfigAndModelVisibility(false);
     }
     
     loadDualModeState() {
