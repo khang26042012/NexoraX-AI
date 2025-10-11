@@ -18,7 +18,7 @@ NexoraX AI is a modern Vietnamese AI chat application designed for the Replit en
 - **File Structure**: Modular ES6 JavaScript in `src/js/` (14 files), Python server in `server.py`, static assets in `assets/`.
 - **UI/UX**: Responsive Vietnamese chat interface, dark/light theme toggle, mobile-responsive sidebar, multi-model AI support with emoji icons.
 - **Technical Implementations**: Enhanced Markdown rendering with GitHub Flavored Markdown, syntax highlighting (Highlight.js), tables, checkboxes, XSS protection in Markdown. Chat history management with conversation context memory for all AI models. File upload support. Server-side API proxy for secure API key handling. CORS configured for Replit iframe.
-- **Deployment**: Configured for autoscale deployment on Koyeb.com, using a `Procfile` for `python3 server.py`. No build step required; uses static files and Python server.
+- **Deployment**: Configured for autoscale deployment on Koyeb.com. Uses `Procfile` (`web: python3 server.py`). Server auto-detects Koyeb via `KOYEB_APP_NAME` environment variable. No build step required; uses static files and Python server. See `KOYEB_DEPLOYMENT.md` for complete deployment guide.
 
 ## External Dependencies
 - **Google Gemini API**: For Gemini Flash 2.5 conversations.

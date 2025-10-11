@@ -41,11 +41,23 @@ Z. ✅ CẤU HÌNH DEPLOY LÊN KOYEB.COM
    
    - Kết quả:
      ✅ Procfile sẵn sàng cho Koyeb
-     ✅ File .env.example hướng dẫn env vars
-     ✅ KOYEB_DEPLOYMENT.md với hướng dẫn đầy đủ
+     ✅ File .env.example hướng dẫn env vars (với links lấy API keys)
+     ✅ KOYEB_DEPLOYMENT.md với hướng dẫn đầy đủ + warnings về API keys
      ✅ Đã xóa file cấu hình Render cũ
-     ✅ Server nhận diện đúng Koyeb environment
+     ✅ Server nhận diện đúng Koyeb qua KOYEB_APP_NAME
      ✅ Sẵn sàng deploy lên Koyeb.com
+     
+   - Lỗi phát hiện và fix (by Architect):
+     ❌ Ban đầu: Document sai nói Koyeb set KOYEB=true (không đúng)
+     ✅ Fixed: Detect Koyeb qua KOYEB_APP_NAME (env var thật từ Koyeb)
+     ❌ Ban đầu: Không nhấn mạnh rõ API keys BẮT BUỘC
+     ✅ Fixed: Thêm warnings và instructions chi tiết về API keys
+     
+   - Cleanup:
+     ✅ Xóa sv/ folder (duplicate server.py không dùng)
+     ✅ Xóa package.json, package-lock.json (không cần cho Python app)
+   
+   - Status: ✅ ARCHITECT APPROVED - Ready to deploy!
    
    - Ưu điểm Koyeb:
      * Miễn phí với Hobby plan (2 web services)
