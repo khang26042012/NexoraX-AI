@@ -110,16 +110,8 @@ export class NexoraXChat {
         this.currentRating = 0;
         this.selectedModel = localStorage.getItem(STORAGE_KEYS.SELECTED_MODEL) || DEFAULTS.MODEL;
         
-        // Restore previous model nếu đang dùng image-gen/search khi reload
-        if (this.selectedModel === 'image-gen') {
-            this.selectedModel = localStorage.getItem(STORAGE_KEYS.PREVIOUS_MODEL_BEFORE_IMAGE_GEN) || 'gpt-5-chat';
-            localStorage.removeItem(STORAGE_KEYS.PREVIOUS_MODEL_BEFORE_IMAGE_GEN);
-        } else if (this.selectedModel === 'gemini-search') {
-            this.selectedModel = localStorage.getItem(STORAGE_KEYS.PREVIOUS_MODEL_BEFORE_SEARCH) || 'gpt-5-chat';
-            localStorage.removeItem(STORAGE_KEYS.PREVIOUS_MODEL_BEFORE_SEARCH);
-        }
-        
-        localStorage.setItem(STORAGE_KEYS.SELECTED_MODEL, this.selectedModel);
+        // GIỮ LẠI state khi reload - không restore về model cũ
+        // (chỉ restore khi user chủ động tắt mode)
         this.selectedFiles = new Map();
         
         // Dual Chat Mode
@@ -209,8 +201,8 @@ export class NexoraXChat {
         if (homeDualModeBtn) homeDualModeBtn.style.display = '';
         if (chatDualModeBtn) chatDualModeBtn.style.display = '';
         
-        // Hiện lại config/model buttons (không ẩn nữa khi về home)
-        this.updateConfigAndModelVisibility(false);
+        // GIỮ LẠI state của dual chat mode - không reset UI
+        this.updateConfigAndModelVisibility(this.dualChatMode);
     }
     
     showChatScreen() {
