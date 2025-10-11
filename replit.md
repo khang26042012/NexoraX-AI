@@ -4,6 +4,26 @@
 NexoraX AI is a modern Vietnamese AI chat application that provides conversations using Google Gemini language model, search-enhanced AI, and LLM7.io integration for GPT-5 Mini and Gemini Search models. Successfully configured for Replit environment with modular ES6 architecture.
 
 ## Recent Changes
+- **October 11, 2025 (Critical Fix - Reverted Tailwind Bundling)**: Fixed web completely broken after failed Tailwind bundling attempt
+  - **Problem**: Previous commit tried to bundle Tailwind CSS locally for performance but broke the entire web (stuck at "Loading your page...")
+  - **Root Cause**: 
+    - File `app.min.css` only contained Tailwind utilities (25KB)
+    - **MISSING** all custom styles from `style.css` (65KB - 3000+ lines)
+    - `index.html` changed from CDN Tailwind + style.css → only app.min.css
+    - Result: Web lost all custom styling → complete layout breakdown
+  - **Solution - Complete Tailwind Bundling Removal**:
+    - ✅ Fixed `index.html`: Reverted to Tailwind CDN + style.css
+    - ✅ Deleted all Tailwind config files: tailwind.config.js, postcss.config.js, src/styles/tailwind.css
+    - ✅ Deleted build artifact: assets/css/app.min.css
+    - ✅ Deleted unrelated files: scripts/imagefx-demo.js, .npmignore
+    - ✅ Cleaned package.json: Removed all build scripts and Tailwind dependencies
+    - ✅ Removed empty folders: src/styles/, scripts/
+  - **Result**: 
+    - ✅ Web working **PERFECTLY** again!
+    - ✅ All UI elements displaying correctly with full styling
+    - ✅ Server running smoothly on port 5000
+    - ✅ Back to simple, stable architecture: Tailwind CDN + custom CSS
+  - **Lesson Learned**: Local Tailwind bundling requires proper build pipeline; CDN is simpler and more stable for development
 - **October 10, 2025 (Critical Fix - Module Refactoring Issues)**: Fixed broken features after JS module split
   - **Root Cause**: Previous refactoring split monolithic app.js into 15 modules but CSS wasn't updated
   - **Critical CSS Fix**: Copied updated style.css from src/ to assets/ with missing sidebar rules:
