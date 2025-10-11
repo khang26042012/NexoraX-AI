@@ -201,7 +201,7 @@ export class NexoraXChat {
         if (homeDualModeBtn) homeDualModeBtn.style.display = '';
         if (chatDualModeBtn) chatDualModeBtn.style.display = '';
         
-        // RESTORE MODEL nếu đang ở chế độ Image Generation hoặc Gemini Search
+        // RESTORE MODEL khi về home từ các chế độ đặc biệt
         if (this.selectedModel === 'image-gen') {
             // Restore model cũ từ localStorage
             const modelToRestore = localStorage.getItem(STORAGE_KEYS.PREVIOUS_MODEL_BEFORE_IMAGE_GEN) || 'gpt-5-chat';
@@ -222,6 +222,14 @@ export class NexoraXChat {
             document.querySelectorAll('.config-option[data-action="search"]').forEach(btn => {
                 btn.classList.remove('active-config');
             });
+        }
+        
+        // RESTORE MODEL khi về home từ dual chat mode
+        if (this.dualChatMode) {
+            const previousModel = localStorage.getItem(STORAGE_KEYS.PREVIOUS_MODEL_BEFORE_DUAL);
+            if (previousModel && previousModel !== this.selectedModel) {
+                this.changeModel(previousModel);
+            }
         }
         
         // GIỮ LẠI state của dual chat mode - không reset UI
