@@ -1,4 +1,4 @@
-modules = ["python-3.12", "nodejs-20", "web"]
+modules = ["nodejs-20", "web", "python-3.11"]
 
 [nix]
 channel = "stable-25_05"
@@ -22,20 +22,20 @@ args = "NexoraX AI Server"
 name = "NexoraX AI Server"
 author = "agent"
 
-[workflows.workflow.metadata]
-outputType = "webview"
-
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python3 sv/server.py"
+args = "python3 server.py"
 waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
 
 [[ports]]
 localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 36597
+localPort = 36173
 externalPort = 5000
 
 [[ports]]
