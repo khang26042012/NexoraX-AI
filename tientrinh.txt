@@ -5,6 +5,97 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 11/10/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
+✨ CẬP NHẬT MỚI NHẤT - 11/10/2025 (Buổi 3 - 11:58):
+-----------------------------------------------------------------------------
+
+Q. ✅ FIX BONG BÓNG CHAT QUÁ NHỎ - TĂNG KÍCH THƯỚC CHO VỪA VẶN
+   - Vấn đề: Bong bóng chat user quá nhỏ, khó đọc và không đẹp
+   - Nguyên nhân: Padding và font-size quá nhỏ (5px 11px, font 16px)
+   
+   Giải pháp:
+   - Sửa assets/css/style.css (dòng 650-666):
+     * Tăng padding: 5px 11px → 10px 16px (tăng gần gấp đôi)
+     * Tăng font-size: 16px → 17px
+     * Tăng line-height: 1.2 → 1.5 (dễ đọc hơn)
+     * Thêm min-width: 60px (đảm bảo bong bóng có kích thước tối thiểu)
+     * Thêm justify-content: center và text-align: center (chữ căn giữa)
+   
+   - Kết quả:
+     ✅ Bong bóng chat to ra, dễ đọc hơn
+     ✅ Chữ căn giữa trong bong bóng
+     ✅ Khoảng cách hợp lý với line-height 1.5
+     ✅ Message ngắn vẫn đẹp với min-width 60px
+
+R. ✅ FIX NÚT "ĐANG SUY NGHĨ" VẪN Ở GIỮA - CĂN TRÁI ĐÚNG VỊ TRÍ
+   - Vấn đề: Nút "Đang suy nghĩ" của AI hiển thị ở giữa màn hình thay vì ở bên trái (như AI message)
+   - Nguyên nhân: display: inline-flex và margin không đúng
+   
+   Giải pháp:
+   - Sửa assets/css/style.css (dòng 541-551):
+     * Đổi display: inline-flex → display: flex
+     * Xóa margin-right: auto và margin-left: 20px
+     * Thêm width: fit-content
+     * Thêm align-self: flex-start (buộc dính bên trái)
+   
+   - Thêm CSS cho .ai-message .message-content (dòng 684-693):
+     * display: flex
+     * flex-direction: column
+     * align-items: flex-start
+     → Đảm bảo tất cả content trong AI message (kể cả loading) đều căn trái
+   
+   - Kết quả:
+     ✅ Nút "Đang suy nghĩ" luôn ở bên trái (như AI message)
+     ✅ Không còn bị trôi ra giữa màn hình
+     ✅ Nhất quán với layout của AI messages
+
+S. ✅ FIX NÚT SIDEBAR TOGGLE TRÊN PC - KHÔNG NHẤN ĐƯỢC
+   - Vấn đề: Nút sidebar toggle trên PC (desktop) không nhấn được
+   - Nguyên nhân: Conflict giữa class "hidden lg:block" và "flex" → display bị lỗi
+   
+   Giải pháp:
+   - Sửa index.html (dòng 127):
+     * Đổi class: "hidden lg:block" → "hidden lg:flex"
+     * Vì nút cần "flex items-center justify-center" để căn giữa icon
+     * lg:block không tương thích với flex layout
+   
+   - Kết quả:
+     ✅ Nút sidebar toggle trên PC hiển thị đúng
+     ✅ Nhấn được và hoạt động bình thường
+     ✅ Icon căn giữa đúng trong container
+
+T. ✅ FIX DUAL CHAT TRÊN PC - LAYOUT NGANG (SIDE-BY-SIDE)
+   - Vấn đề: Dual chat trên PC hiển thị dọc (top/bottom), không tận dụng không gian màn hình rộng
+   - Yêu cầu: Layout ngang (side-by-side) cho màn hình lớn (desktop)
+   
+   Giải pháp:
+   - Sửa assets/css/style.css (dòng 3092-3103):
+     * Thêm media query @media (min-width: 1024px)
+     * .dual-chat-container: flex-direction: row (ngang thay vì dọc)
+     * .dual-chat-container: gap: 20px (khoảng cách giữa 2 panel)
+     * .dual-chat-panel: flex: 1, min-width: 0, max-width: 50%
+   
+   - Kết quả:
+     ✅ Desktop (>1024px): 2 panel nằm ngang (side-by-side), mỗi panel 50% width
+     ✅ Mobile (<1024px): Vẫn giữ layout dọc (top/bottom) như cũ
+     ✅ Tận dụng tối đa không gian màn hình rộng
+     ✅ Responsive tự động theo kích thước màn hình
+
+U. ✅ HIỆN LẠI NÚT CHỌN MODEL TRONG CHAT SCREEN
+   - Vấn đề: Nút chọn model trong chat screen bị ẩn (class "hidden"), user không thể đổi model khi đang chat
+   - Yêu cầu: Hiện lại nút này để user có thể đổi model bất cứ lúc nào
+   
+   Giải pháp:
+   - Sửa index.html (dòng 377-380):
+     * Xóa class "hidden" khỏi div bao bọc nút quickModelBtn
+     * Đổi comment: "Hidden - Model đã được chọn ở home" → "Quick Model Selector"
+     * Giữ nguyên tất cả chức năng và styling khác
+   
+   - Kết quả:
+     ✅ Nút chọn model hiện lại trong chat screen
+     ✅ User có thể đổi model khi đang chat
+     ✅ Dropdown model vẫn hoạt động bình thường
+     ✅ Active highlight vẫn hiển thị đúng model đang chọn
+
 ✨ CẬP NHẬT MỚI NHẤT - 11/10/2025 (Buổi 2):
 -----------------------------------------------------------------------------
 

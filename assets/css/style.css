@@ -536,14 +536,15 @@ img[src*="nexorax-logo.svg"]:hover {
 
 /* Modern AI Loading Animation like Replit */
 .ai-loading {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: 2px;
     padding: 8px 12px;
     background: #f8fafc;
     border-radius: 8px;
     border: 1px solid #e2e8f0;
-    margin-right: auto;
+    width: fit-content;
+    align-self: flex-start;
 }
 
 /* Dark mode support for ai-loading */
@@ -645,16 +646,18 @@ body.dark-mode .ai-loading-text {
 .user-message .message-content {
     background: #ffffff;
     color: #1f2937;
-    padding: 5px 11px;
+    padding: 10px 16px;
     border-radius: 8px;
     max-width: fit-content;
+    min-width: 60px;
     word-wrap: break-word;
     border: 1px solid #d1d5db;
     display: inline-flex;
     align-items: center;
-    text-align: left;
-    font-size: 16px;
-    line-height: 1.2;
+    justify-content: center;
+    text-align: center;
+    font-size: 17px;
+    line-height: 1.5;
     vertical-align: top;
     width: auto;
 }
@@ -682,6 +685,9 @@ body.dark-mode .ai-loading-text {
     padding: 0;
     max-width: 100%;
     word-wrap: break-word;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
 /* File attachments - hiển thị NGOÀI message-content, TRONG message-wrapper */
@@ -3080,6 +3086,20 @@ body.dark-mode .image-generation-result img {
 @media (max-width: 768px) {
     .dual-chat-panel {
         min-height: 250px;
+    }
+}
+
+/* Desktop layout - Side by side (ngang) cho màn hình lớn */
+@media (min-width: 1024px) {
+    .dual-chat-container {
+        flex-direction: row;
+        gap: 20px;
+    }
+    
+    .dual-chat-panel {
+        flex: 1;
+        min-width: 0;
+        max-width: 50%;
     }
 }
 
