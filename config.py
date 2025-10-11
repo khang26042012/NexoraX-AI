@@ -111,6 +111,7 @@ def check_config():
     """Kiểm tra xem API keys đã được cấu hình chưa"""
     gemini_key = get_api_key("gemini")
     serpapi_key = get_api_key("serpapi")
+    llm7_key = get_api_key("llm7")
     
     warnings = []
     if gemini_key == "your_gemini_api_key_here":
@@ -118,6 +119,9 @@ def check_config():
     
     if serpapi_key == "your_serpapi_api_key_here":
         warnings.append("⚠️  SERPAPI_API_KEY chưa được cấu hình")
+    
+    if llm7_key == "your_llm7_api_key_here":
+        warnings.append("⚠️  LLM7_API_KEY chưa được cấu hình")
     
     return warnings
 
@@ -128,9 +132,15 @@ if __name__ == "__main__":
     if warnings:
         for warning in warnings:
             print(warning)
-        print("\n📝 Hướng dẫn:")
-        print("1. Chỉnh sửa file config.py")  
-        print("2. Thay thế 'your_xxx_api_key_here' bằng API key thực")
-        print("3. Lưu file và khởi động lại server")
+        print("\n📝 Hướng dẫn (KHUYẾN NGHỊ dùng Environment Variables):")
+        print("\n🔐 Cách 1 - Environment Variables (BẢO MẬT, khuyến nghị):")
+        print("  • Render: Vào Dashboard > Environment > Thêm biến môi trường")
+        print("  • Replit: Nhấn biểu tượng khóa (Secrets) > Thêm secret mới")
+        print("  • Local: export GEMINI_API_KEY='key_của_bạn'")
+        print("\n⚠️  Cách 2 - Chỉnh sửa config.py (KHÔNG khuyến nghị cho production):")
+        print("  1. Chỉnh sửa file config.py")  
+        print("  2. Thay thế 'your_xxx_api_key_here' bằng API key thực")
+        print("  3. QUAN TRỌNG: Không commit file này lên Git!")
+        print("  4. Lưu file và khởi động lại server")
     else:
         print("✅ Tất cả API keys đã được cấu hình!")
