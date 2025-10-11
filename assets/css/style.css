@@ -645,7 +645,7 @@ body.dark-mode .ai-loading-text {
 .user-message .message-content {
     background: #ffffff;
     color: #1f2937;
-    padding: 2px 9px;
+    padding: 5px 11px;
     border-radius: 8px;
     max-width: fit-content;
     word-wrap: break-word;
@@ -654,7 +654,7 @@ body.dark-mode .ai-loading-text {
     align-items: center;
     text-align: left;
     font-size: 16px;
-    line-height: 1.1;
+    line-height: 1.2;
     vertical-align: top;
     width: auto;
 }
@@ -755,7 +755,7 @@ body.dark-mode .ai-message .message-content {
     /* User message mobile - nhỏ gọn hơn */
     .user-message .message-content {
         font-size: 15px;
-        padding: 2px 8px;
+        padding: 4px 10px;
     }
     
     .avatar {
