@@ -288,9 +288,9 @@ export const FILE_UPLOAD_CONFIG = {
  * Tốc độ typing animation (milliseconds/ký tự)
  */
 export const TYPING_SPEEDS = {
-    AI_RESPONSE: 30,      // Tốc độ typing cho AI response
+    AI_RESPONSE: 10,      // Tốc độ typing cho AI response (giảm từ 30ms → 10ms cho nhanh hơn)
     USER_TEXT: 80,        // Tốc độ typing cho user text
-    CODE_BLOCK: 10        // Tốc độ typing cho code block
+    CODE_BLOCK: 5         // Tốc độ typing cho code block (giảm từ 10ms → 5ms)
 };
 
 // ===================================

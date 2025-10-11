@@ -88,7 +88,8 @@ import {
     STORAGE_KEYS, 
     MODEL_NAMES,
     DUAL_CHAT_MODELS,
-    DEFAULTS 
+    DEFAULTS,
+    TYPING_SPEEDS
 } from './constants.js';
 import { migrateLocalStorageKeys, isTimeRelatedQuery, isSearchQuery, extractSearchQuery } from './utils.js';
 
@@ -1066,7 +1067,7 @@ export class NexoraXChat {
         const cursor = document.createElement('span');
         cursor.classList.add('typing-cursor');
         
-        // Type character by character (tốc độ nhanh hơn - 15ms thay vì 40ms)
+        // Type character by character (sử dụng TYPING_SPEEDS.AI_RESPONSE từ constants)
         for (let i = 0; i < text.length; i++) {
             if (element.dataset.cancelled === 'true') break;
             
@@ -1076,7 +1077,7 @@ export class NexoraXChat {
             
             this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
             
-            await new Promise(resolve => setTimeout(resolve, 15));
+            await new Promise(resolve => setTimeout(resolve, TYPING_SPEEDS.AI_RESPONSE));
         }
         
         // Final cleanup
