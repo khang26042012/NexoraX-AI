@@ -5,7 +5,67 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 12/10/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
-✨ CẬP NHẬT MỚI NHẤT - 12/10/2025 (Buổi 11 - 01:07):
+✨ CẬP NHẬT MỚI NHẤT - 12/10/2025 (Buổi 12 - 06:06):
+-----------------------------------------------------------------------------
+
+AM. ✅ FIX 6 LSP TYPE HINT WARNINGS TRONG SERVER.PY
+   - Vấn đề: Có 6 LSP type hints warnings trong Python server.py
+   - Vị trí lỗi: Dòng 852-859, 977-984, 1103-1110
+   - Nguyên nhân: 
+     * Biến `messages` và `content_array` không có type annotation
+     * Khi thêm files, content thay đổi từ string thành array
+     * Type checker báo warning vì không khai báo kiểu rõ ràng
+   
+   Giải pháp:
+   1. ✅ Thêm type annotation cho biến messages (3 vị trí):
+      * Trước: messages = [...]
+      * Sau: messages: list = [...]
+   
+   2. ✅ Thêm type annotation cho biến content_array (3 vị trí):
+      * Trước: content_array = [{"type": "text", ...}]
+      * Sau: content_array: list = [{"type": "text", ...}]
+   
+   - Kết quả:
+     ✅ Tất cả 6 LSP warnings đã được fix
+     ✅ Code rõ ràng hơn với type hints
+     ✅ LSP diagnostics: No errors found
+
+AN. ✅ FIX LỖI GEMINI API - EMPTY INLINEDATA PARAMETER
+   - Vấn đề: Gemini API báo lỗi "empty inlineData parameter"
+   - Lỗi chi tiết: 
+     ```
+     { "error": { "code": 400, 
+       "message": "Unable to submit request because it has an empty inlineData parameter" } }
+     ```
+   - Nguyên nhân:
+     * Frontend gửi file không có base64 data hợp lệ
+     * Không validate file.base64 trước khi tạo inline_data
+     * Gemini API từ chối request có inlineData rỗng
+   
+   Giải pháp (src/js/ai-api.js dòng 83-96):
+   1. ✅ Thêm validation đầy đủ trước khi thêm inline_data:
+      * Kiểm tra file.base64 tồn tại
+      * Kiểm tra file.type tồn tại
+      * Kiểm tra file.base64 có chứa dấu phẩy (format: data:image/...)
+      * Kiểm tra base64Data sau split không rỗng
+   
+   2. ✅ Chỉ thêm inline_data khi TẤT CẢ điều kiện thỏa mãn:
+      ```javascript
+      if (file.base64 && file.type && file.base64.includes(',')) {
+          const base64Data = file.base64.split(',')[1];
+          if (base64Data && base64Data.trim() !== '') {
+              currentMessage.parts.push({ inline_data: {...} });
+          }
+      }
+      ```
+   
+   - Kết quả:
+     ✅ Gemini API không còn báo lỗi empty inlineData
+     ✅ Upload file với validation chặt chẽ
+     ✅ Code defensive programming tốt hơn
+     ✅ Server restart thành công, không có lỗi
+
+✨ CẬP NHẬT TRƯỚC ĐÓ - 12/10/2025 (Buổi 11 - 01:07):
 -----------------------------------------------------------------------------
 
 AL. ✅ XÓA TÍNH NĂNG THU GỌN SIDEBAR TRÊN PC - CHỈ GIỮ ĐÓNG/MỞ
