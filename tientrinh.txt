@@ -5,7 +5,67 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 12/10/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
-✨ CẬP NHẬT MỚI NHẤT - 12/10/2025 (Buổi 12 - 06:06):
+✨ CẬP NHẬT MỚI NHẤT - 12/10/2025 (Buổi 12 - 06:30):
+-----------------------------------------------------------------------------
+
+AO. ✅ FIX GEMINI KHÔNG PHÂN TÍCH ĐƯỢC ẢNH - FILE VALIDATION
+   - Vấn đề: Gemini không nhận được file ảnh khi user upload
+   - Logs hiển thị: "⚠️ File validation failed: hasComma: false"
+   - Nguyên nhân:
+     * Hàm fileToBase64() trong utils.js trả về PURE base64 (đã bỏ prefix)
+     * Nhưng validation trong ai-api.js yêu cầu PHẢI có dấu phẩy
+     * → File không pass validation → Gemini không nhận được ảnh
+   
+   Giải pháp (src/js/ai-api.js dòng 88-98):
+   1. ✅ Sửa validation logic linh hoạt hơn:
+      * Chấp nhận CÂ 2 format: pure base64 HOẶC có prefix
+      * Nếu có prefix (có dấu phẩy) → split bỏ đi
+      * Nếu không có → dùng luôn
+   
+   2. ✅ Thêm debug logs chi tiết:
+      * Log số lượng files, tên file, type
+      * Log base64 length khi thành công
+      * Log lý do fail nếu validation không pass
+   
+   - Kết quả:
+     ✅ File upload hoạt động với mọi format base64
+     ✅ Gemini nhận được ảnh và phân tích được
+     ✅ Console logs rõ ràng để debug
+     ✅ Validation robust hơn
+
+AP. ✅ FIX GEMINI TRẢ LỜI BẰNG TIẾNG ANH - THÊM SYSTEM INSTRUCTION
+   - Vấn đề: Gemini thường trả lời bằng tiếng Anh thay vì tiếng Việt
+   - Nguyên nhân: 
+     * Gemini API không có system instruction/prompt
+     * Model mặc định dùng tiếng Anh
+   
+   Giải pháp (src/js/ai-api.js dòng 125-129):
+   1. ✅ Thêm systemInstruction vào Gemini API payload:
+      ```javascript
+      systemInstruction: {
+          parts: [{
+              text: "Bạn là trợ lý AI thông minh tên NexoraX. 
+                     QUAN TRỌNG: Bạn PHẢI luôn trả lời bằng TIẾNG VIỆT, 
+                     trừ khi người dùng yêu cầu rõ ràng bằng ngôn ngữ khác. 
+                     Sử dụng emoji một cách tự nhiên. 
+                     Khi phân tích hình ảnh, hãy mô tả chi tiết bằng tiếng Việt."
+          }]
+      }
+      ```
+   
+   2. ✅ Instruction rõ ràng về:
+      * Tên AI: NexoraX
+      * Ngôn ngữ BẮT BUỘC: Tiếng Việt
+      * Sử dụng emoji tự nhiên
+      * Mô tả ảnh chi tiết bằng tiếng Việt
+   
+   - Kết quả:
+     ✅ Gemini GIỜ LUÔN trả lời bằng tiếng Việt
+     ✅ Phân tích ảnh bằng tiếng Việt
+     ✅ Giữ được tính cách thân thiện với emoji
+     ✅ User experience tốt hơn cho người Việt
+
+✨ CẬP NHẬT TRƯỚC ĐÓ - 12/10/2025 (Buổi 12 - 06:06):
 -----------------------------------------------------------------------------
 
 AM. ✅ FIX 6 LSP TYPE HINT WARNINGS TRONG SERVER.PY

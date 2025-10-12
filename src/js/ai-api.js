@@ -118,7 +118,12 @@ export async function getGeminiResponse(message, aiMessage, files, conversationH
         const requestBody = {
             model: 'gemini-2.0-flash-exp',
             payload: {
-                contents: contents
+                contents: contents,
+                systemInstruction: {
+                    parts: [{
+                        text: "Bạn là trợ lý AI thông minh tên NexoraX. QUAN TRỌNG: Bạn PHẢI luôn trả lời bằng TIẾNG VIỆT, trừ khi người dùng yêu cầu rõ ràng bằng ngôn ngữ khác. Sử dụng emoji một cách tự nhiên để làm câu trả lời sinh động hơn. Khi phân tích hình ảnh, hãy mô tả chi tiết và chính xác bằng tiếng Việt."
+                    }]
+                }
             }
         };
         
