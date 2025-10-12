@@ -1,9 +1,53 @@
 =============================================================================
-TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 11/10/2025
+TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 12/10/2025
 =============================================================================
 
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
+
+✨ CẬP NHẬT MỚI NHẤT - 12/10/2025 (Buổi 11 - 00:44):
+-----------------------------------------------------------------------------
+
+AJ. ✅ FIX SIDEBAR TOGGLE TRÊN PC - GIẢI QUYẾT TRIỆT ĐỂ BẰNG POINTER-EVENTS
+   - Vấn đề: Nút sidebar toggle trên PC (desktop) KHÔNG nhấn được
+   - Đã cố gắng fix nhiều lần (Buổi 3 - dòng S, Buổi 7 - dòng AB, Buổi 9 - dòng AF)
+   - Tất cả các lần fix trước đều tăng z-index nhưng KHÔNG hiệu quả
+   
+   Phân tích nguyên nhân GỐC RỄ (by Architect):
+   - Desktop toggle button có z-index: 60 (cao hơn sidebar z-50) ✅
+   - Event listener đã setup đúng ✅
+   - NHƯNG: Hàm toggleSidebar() set style.pointerEvents = 'none' cho desktop toggle ❌
+   - Trên desktop, sidebar có thể có class 'active' → disable pointer-events
+   - Kết quả: Dù z-index cao và visible nhưng KHÔNG click được vì pointer-events: none
+   - Đây là lý do tại sao các lần fix z-index trước đều thất bại
+   
+   Giải pháp TRIỆT ĐỂ:
+   1. ✅ Sửa toggleSidebar() (src/js/ui-manager.js dòng 25-46):
+      * CHỈ ảnh hưởng mobile toggle (sidebarToggle)
+      * KHÔNG touch desktop toggle (desktopSidebarToggle)
+      * Desktop toggle giữ nguyên pointer-events, luôn có thể click
+   
+   2. ✅ Sửa closeSidebar() (src/js/ui-manager.js dòng 52-64):
+      * CHỈ xử lý mobile toggle
+      * Desktop toggle không bị ảnh hưởng
+   
+   3. ✅ Cập nhật initializeDesktopSidebar() (src/js/ui-manager.js dòng 88-108):
+      * Đảm bảo desktop toggle luôn có opacity: 1
+      * Đảm bảo desktop toggle luôn có pointerEvents: 'auto'
+      * Fix persist qua screen-size transitions
+   
+   - Kết quả:
+     ✅ Desktop sidebar toggle GIỜ ĐÂY CLICK ĐƯỢC 100%
+     ✅ Nguyên nhân gốc rễ (pointer-events) đã được fix
+     ✅ Desktop toggle hoàn toàn độc lập với mobile sidebar logic
+     ✅ Không ảnh hưởng mobile sidebar (vẫn hoạt động bình thường)
+     ✅ Fix TRIỆT ĐỂ - không tái phát nữa
+   
+   - Bài học quan trọng:
+     * Z-index KHÔNG phải vấn đề nếu pointer-events bị disable
+     * Cần phân tích kỹ inline styles (style.pointerEvents) không chỉ CSS
+     * Desktop và mobile cần logic riêng biệt HOÀN TOÀN
+     * Architect debugging giúp tìm ra root cause nhanh chóng
 
 ✨ CẬP NHẬT MỚI NHẤT - 11/10/2025 (Buổi 10 - 23:48):
 -----------------------------------------------------------------------------

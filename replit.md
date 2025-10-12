@@ -3,7 +3,10 @@
 ## Overview
 NexoraX AI is a modern Vietnamese AI chat application designed for the Replit environment. It leverages Google Gemini, search-enhanced AI, and LLM7.io for GPT-5 Mini and Gemini Search models. The project emphasizes a modular ES6 architecture and is configured for seamless deployment, offering a feature-rich, responsive user experience with advanced Markdown rendering and conversation memory.
 
-## Recent Changes (11/10/2025 - Buổi 10)
+## Recent Changes (12/10/2025 - Buổi 11)
+- **Desktop Sidebar Toggle Fix**: Fixed critical pointer-events issue preventing desktop sidebar toggle from being clickable. Root cause was toggleSidebar() disabling pointer-events for both mobile and desktop toggles. Now desktop toggle is completely independent and always clickable.
+
+## Previous Changes (11/10/2025 - Buổi 10)
 - **Session Persistence**: Sessions now default to 30 days (remember_me=true) without requiring checkbox
 - **Typing Speed**: AI response typing increased 3x (10ms/character, down from 30ms)
 - **Onboarding Tutorial**: Expanded from 4 to 5 steps (added config button guidance), fixed selectors, bumped to version 2.0

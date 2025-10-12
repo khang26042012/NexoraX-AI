@@ -23,29 +23,21 @@ export function toggleSidebar(sidebar) {
     if (!sidebar) return;
     sidebar.classList.toggle('active');
     
-    // Ẩn/hiện toggle buttons khi sidebar active
+    // Chỉ ẩn/hiện MOBILE toggle button khi sidebar active
+    // Desktop toggle KHÔNG bị ảnh hưởng - luôn có thể click được
     const mobileToggle = document.getElementById('sidebarToggle');
-    const desktopToggle = document.getElementById('desktopSidebarToggle');
     
     if (sidebar.classList.contains('active')) {
-        // Sidebar đang mở - ẩn toggle buttons
+        // Sidebar đang mở - chỉ ẩn mobile toggle
         if (mobileToggle) {
             mobileToggle.style.opacity = '0';
             mobileToggle.style.pointerEvents = 'none';
         }
-        if (desktopToggle) {
-            desktopToggle.style.opacity = '0';
-            desktopToggle.style.pointerEvents = 'none';
-        }
     } else {
-        // Sidebar đang đóng - hiện toggle buttons
+        // Sidebar đang đóng - hiện mobile toggle
         if (mobileToggle) {
             mobileToggle.style.opacity = '1';
             mobileToggle.style.pointerEvents = 'auto';
-        }
-        if (desktopToggle) {
-            desktopToggle.style.opacity = '1';
-            desktopToggle.style.pointerEvents = 'auto';
         }
     }
 }
@@ -58,17 +50,13 @@ export function closeSidebar(sidebar) {
     if (!sidebar) return;
     sidebar.classList.remove('active');
     
-    // Hiện lại toggle buttons khi đóng sidebar
+    // Hiện lại mobile toggle khi đóng sidebar
+    // Desktop toggle luôn visible, không cần xử lý
     const mobileToggle = document.getElementById('sidebarToggle');
-    const desktopToggle = document.getElementById('desktopSidebarToggle');
     
     if (mobileToggle) {
         mobileToggle.style.opacity = '1';
         mobileToggle.style.pointerEvents = 'auto';
-    }
-    if (desktopToggle) {
-        desktopToggle.style.opacity = '1';
-        desktopToggle.style.pointerEvents = 'auto';
     }
 }
 
@@ -106,6 +94,13 @@ export function initializeDesktopSidebar(sidebar) {
     if (panelLeftIcon && panelRightIcon) {
         panelLeftIcon.classList.remove('hidden');
         panelRightIcon.classList.add('hidden');
+    }
+    
+    // Đảm bảo desktop toggle luôn có thể click được
+    const desktopToggle = document.getElementById('desktopSidebarToggle');
+    if (desktopToggle) {
+        desktopToggle.style.opacity = '1';
+        desktopToggle.style.pointerEvents = 'auto';
     }
 }
 
