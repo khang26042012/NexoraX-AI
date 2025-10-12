@@ -80,11 +80,20 @@ export async function getGeminiResponse(message, aiMessage, files, conversationH
             console.log('🔍 Files to send:', files.length, files);
             files.forEach(file => {
                 console.log('📁 Processing file:', file.name, 'type:', file.type, 'has base64:', !!file.base64);
+                
                 // Validate file data before adding
-                if (file.base64 && file.type && file.base64.includes(',')) {
-                    const base64Data = file.base64.split(',')[1]; // Remove data:image/... prefix
+                if (file.base64 && file.type) {
+                    // file.base64 có thể là pure base64 (không có prefix) hoặc có prefix
+                    let base64Data = file.base64;
+                    
+                    // Nếu có prefix data:image/...;base64, thì bỏ đi
+                    if (file.base64.includes(',')) {
+                        base64Data = file.base64.split(',')[1];
+                    }
+                    
+                    // Validate base64 data
                     if (base64Data && base64Data.trim() !== '') {
-                        console.log('✅ File added to inline_data:', file.name);
+                        console.log('✅ File added to inline_data:', file.name, 'base64 length:', base64Data.length);
                         currentMessage.parts.push({
                             inline_data: {
                                 mime_type: file.type,
@@ -97,8 +106,7 @@ export async function getGeminiResponse(message, aiMessage, files, conversationH
                 } else {
                     console.warn('⚠️ File validation failed:', file.name, {
                         hasBase64: !!file.base64,
-                        hasType: !!file.type,
-                        hasComma: file.base64?.includes(',')
+                        hasType: !!file.type
                     });
                 }
             });
