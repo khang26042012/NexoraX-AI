@@ -827,7 +827,7 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             conversation_messages = request_data.get('messages', [])
             
             # Build messages array with system prompt and conversation history
-            messages = [
+            messages: list = [
                 {"role": "system", "content": "Bạn là trợ lý AI thân thiện và vui tính. Hãy sử dụng emoji một cách tự nhiên trong câu trả lời để làm cho cuộc trò chuyện sinh động và thú vị hơn. Đừng lạm dụng emoji, chỉ dùng khi phù hợp với ngữ cảnh. 😊"}
             ]
             
@@ -845,7 +845,7 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                     if messages[i].get('role') == 'user':
                         current_content = messages[i].get('content', '')
                         # Convert to vision format: content becomes array with text and images
-                        content_array = [{"type": "text", "text": current_content}]
+                        content_array: list = [{"type": "text", "text": current_content}]
                         
                         # Add each file as image_url
                         for file in files:
@@ -952,7 +952,7 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             conversation_messages = request_data.get('messages', [])
             
             # Build messages array with system prompt and conversation history
-            messages = [
+            messages: list = [
                 {"role": "system", "content": "Bạn là trợ lý AI tìm kiếm thông minh và thân thiện. Hãy sử dụng emoji một cách tự nhiên trong câu trả lời để làm cho thông tin dễ hiểu và thú vị hơn. Đừng lạm dụng emoji, chỉ dùng khi phù hợp với ngữ cảnh. 🔍"}
             ]
             
@@ -970,7 +970,7 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                     if messages[i].get('role') == 'user':
                         current_content = messages[i].get('content', '')
                         # Convert to vision format: content becomes array with text and images
-                        content_array = [{"type": "text", "text": current_content}]
+                        content_array: list = [{"type": "text", "text": current_content}]
                         
                         # Add each file as image_url
                         for file in files:
@@ -1078,7 +1078,7 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             conversation_messages = request_data.get('messages', [])
             
             # Build messages array with system prompt and conversation history
-            messages = [
+            messages: list = [
                 {"role": "system", "content": "Bạn là trợ lý AI thân thiện và vui tính. Hãy sử dụng emoji một cách tự nhiên trong câu trả lời để làm cho cuộc trò chuyện sinh động và thú vị hơn. Đừng lạm dụng emoji, chỉ dùng khi phù hợp với ngữ cảnh. 😊"}
             ]
             
@@ -1096,7 +1096,7 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                     if messages[i].get('role') == 'user':
                         current_content = messages[i].get('content', '')
                         # Convert to vision format: content becomes array with text and images
-                        content_array = [{"type": "text", "text": current_content}]
+                        content_array: list = [{"type": "text", "text": current_content}]
                         
                         # Add each file as image_url
                         for file in files:

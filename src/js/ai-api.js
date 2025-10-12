@@ -78,12 +78,18 @@ export async function getGeminiResponse(message, aiMessage, files, conversationH
         // Thêm files nếu có
         if (files && files.length > 0) {
             files.forEach(file => {
-                currentMessage.parts.push({
-                    inline_data: {
-                        mime_type: file.type,
-                        data: file.base64.split(',')[1] // Remove data:image/... prefix
+                // Validate file data before adding
+                if (file.base64 && file.type && file.base64.includes(',')) {
+                    const base64Data = file.base64.split(',')[1]; // Remove data:image/... prefix
+                    if (base64Data && base64Data.trim() !== '') {
+                        currentMessage.parts.push({
+                            inline_data: {
+                                mime_type: file.type,
+                                data: base64Data
+                            }
+                        });
                     }
-                });
+                }
             });
         }
         
