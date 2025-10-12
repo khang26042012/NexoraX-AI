@@ -460,13 +460,13 @@ export class NexoraXChat {
                 await getGeminiResponse(message, aiMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg));
             } else if (modelType === 'llm7') {
                 const conversationHistory = prepareConversationHistoryLLM7(chat.messages, 15);
-                await getLLM7Response(this.selectedModel, message, aiMessage, conversationHistory, (msg) => this.updateMessage(msg));
+                await getLLM7Response(this.selectedModel, message, aiMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg));
             } else if (modelType === 'gpt5') {
                 const conversationHistory = prepareConversationHistoryLLM7(chat.messages, 15);
-                await getLLM7GPT5ChatResponse(message, aiMessage, conversationHistory, (msg) => this.updateMessage(msg));
+                await getLLM7GPT5ChatResponse(message, aiMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg));
             } else if (modelType === 'search') {
                 const conversationHistory = prepareConversationHistoryLLM7(chat.messages, 15);
-                await getLLM7GeminiSearchResponse(message, aiMessage, conversationHistory, (msg) => this.updateMessage(msg));
+                await getLLM7GeminiSearchResponse(message, aiMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg));
             } else if (modelType === 'image') {
                 await getImageGenerationResponse(message, aiMessage, (msg) => this.updateMessage(msg));
             }
@@ -532,11 +532,11 @@ export class NexoraXChat {
         if (modelType === 'gemini') {
             return await getGeminiResponse(message, aiMessage, files, conversationHistoryGemini, (msg) => this.updateMessage(msg));
         } else if (modelType === 'search') {
-            return await getLLM7GeminiSearchResponse(message, aiMessage, conversationHistoryLLM7, (msg) => this.updateMessage(msg));
+            return await getLLM7GeminiSearchResponse(message, aiMessage, files, conversationHistoryLLM7, (msg) => this.updateMessage(msg));
         } else if (modelType === 'llm7') {
-            return await getLLM7Response(modelId, message, aiMessage, conversationHistoryLLM7, (msg) => this.updateMessage(msg));
+            return await getLLM7Response(modelId, message, aiMessage, files, conversationHistoryLLM7, (msg) => this.updateMessage(msg));
         } else if (modelType === 'gpt5') {
-            return await getLLM7GPT5ChatResponse(message, aiMessage, conversationHistoryLLM7, (msg) => this.updateMessage(msg));
+            return await getLLM7GPT5ChatResponse(message, aiMessage, files, conversationHistoryLLM7, (msg) => this.updateMessage(msg));
         } else if (modelType === 'image') {
             return await getImageGenerationResponse(message, aiMessage, (msg) => this.updateMessage(msg));
         }

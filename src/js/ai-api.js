@@ -152,14 +152,20 @@ export async function getGeminiResponse(message, aiMessage, files, conversationH
 
 /**
  * Gọi LLM7 GPT-5 Chat API
+ * @param {string} message - User message
+ * @param {Object} aiMessage - AI message object để update
+ * @param {Array} files - Files đính kèm (nếu có)
+ * @param {Array} conversationHistory - Lịch sử conversation
+ * @param {Function} updateCallback - Callback để update message
  */
-export async function getLLM7GPT5ChatResponse(message, aiMessage, conversationHistory, updateCallback) {
+export async function getLLM7GPT5ChatResponse(message, aiMessage, files, conversationHistory, updateCallback) {
     try {
         const url = API_ENDPOINTS.LLM7_GPT5_CHAT;
         
         const requestBody = {
             message: message,
-            messages: conversationHistory
+            messages: conversationHistory,
+            files: files || [] // Thêm files vào request body
         };
         
         const response = await fetch(url, {
@@ -202,14 +208,20 @@ export async function getLLM7GPT5ChatResponse(message, aiMessage, conversationHi
 
 /**
  * Gọi LLM7 Gemini Search API
+ * @param {string} message - User message
+ * @param {Object} aiMessage - AI message object để update
+ * @param {Array} files - Files đính kèm (nếu có)
+ * @param {Array} conversationHistory - Lịch sử conversation
+ * @param {Function} updateCallback - Callback để update message
  */
-export async function getLLM7GeminiSearchResponse(message, aiMessage, conversationHistory, updateCallback) {
+export async function getLLM7GeminiSearchResponse(message, aiMessage, files, conversationHistory, updateCallback) {
     try {
         const url = API_ENDPOINTS.LLM7_GEMINI_SEARCH;
         
         const requestBody = {
             message: message,
-            messages: conversationHistory
+            messages: conversationHistory,
+            files: files || [] // Thêm files vào request body
         };
         
         const response = await fetch(url, {
@@ -253,15 +265,22 @@ export async function getLLM7GeminiSearchResponse(message, aiMessage, conversati
 
 /**
  * Gọi LLM7 API với model bất kỳ
+ * @param {string} modelId - Model ID
+ * @param {string} message - User message
+ * @param {Object} aiMessage - AI message object để update
+ * @param {Array} files - Files đính kèm (nếu có)
+ * @param {Array} conversationHistory - Lịch sử conversation
+ * @param {Function} updateCallback - Callback để update message
  */
-export async function getLLM7Response(modelId, message, aiMessage, conversationHistory, updateCallback) {
+export async function getLLM7Response(modelId, message, aiMessage, files, conversationHistory, updateCallback) {
     try {
         const url = API_ENDPOINTS.LLM7_CHAT;
         
         const requestBody = {
             model: modelId,
             message: message,
-            messages: conversationHistory
+            messages: conversationHistory,
+            files: files || [] // Thêm files vào request body
         };
         
         const response = await fetch(url, {

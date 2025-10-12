@@ -813,6 +813,9 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self._send_json_error(400, "Message không được để trống", "MISSING_MESSAGE")
                 return
             
+            # Extract files from request (for vision/image analysis)
+            files = request_data.get('files', [])
+            
             # Build LLM7.io API URL for GPT-5-chat
             llm7_url = "https://api.llm7.io/v1/chat/completions"
             llm7_headers = {
@@ -834,6 +837,27 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             else:
                 # Fallback to old format for backward compatibility
                 messages.append({"role": "user", "content": message})
+            
+            # Add files to the last user message if present (for vision models)
+            if files and len(files) > 0:
+                # Find the last user message
+                for i in range(len(messages) - 1, -1, -1):
+                    if messages[i].get('role') == 'user':
+                        current_content = messages[i].get('content', '')
+                        # Convert to vision format: content becomes array with text and images
+                        content_array = [{"type": "text", "text": current_content}]
+                        
+                        # Add each file as image_url
+                        for file in files:
+                            content_array.append({
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": file.get('base64', '')  # base64 string with data:image prefix
+                                }
+                            })
+                        
+                        messages[i]['content'] = content_array
+                        break
             
             llm7_payload = {
                 "model": "gpt-5-chat",
@@ -914,6 +938,9 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self._send_json_error(400, "Message không được để trống", "MISSING_MESSAGE")
                 return
             
+            # Extract files from request (for vision/image analysis)
+            files = request_data.get('files', [])
+            
             # Build LLM7.io API URL for Gemini-search
             llm7_url = "https://api.llm7.io/v1/chat/completions"
             llm7_headers = {
@@ -935,6 +962,27 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             else:
                 # Fallback to old format for backward compatibility
                 messages.append({"role": "user", "content": message})
+            
+            # Add files to the last user message if present (for vision models)
+            if files and len(files) > 0:
+                # Find the last user message
+                for i in range(len(messages) - 1, -1, -1):
+                    if messages[i].get('role') == 'user':
+                        current_content = messages[i].get('content', '')
+                        # Convert to vision format: content becomes array with text and images
+                        content_array = [{"type": "text", "text": current_content}]
+                        
+                        # Add each file as image_url
+                        for file in files:
+                            content_array.append({
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": file.get('base64', '')  # base64 string with data:image prefix
+                                }
+                            })
+                        
+                        messages[i]['content'] = content_array
+                        break
             
             llm7_payload = {
                 "model": "gemini-search",
@@ -1016,6 +1064,9 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self._send_json_error(400, "Message không được để trống", "MISSING_MESSAGE")
                 return
             
+            # Extract files from request (for vision/image analysis)
+            files = request_data.get('files', [])
+            
             # Build LLM7.io API URL
             llm7_url = "https://api.llm7.io/v1/chat/completions"
             llm7_headers = {
@@ -1037,6 +1088,27 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             else:
                 # Fallback to old format for backward compatibility
                 messages.append({"role": "user", "content": message})
+            
+            # Add files to the last user message if present (for vision models)
+            if files and len(files) > 0:
+                # Find the last user message
+                for i in range(len(messages) - 1, -1, -1):
+                    if messages[i].get('role') == 'user':
+                        current_content = messages[i].get('content', '')
+                        # Convert to vision format: content becomes array with text and images
+                        content_array = [{"type": "text", "text": current_content}]
+                        
+                        # Add each file as image_url
+                        for file in files:
+                            content_array.append({
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": file.get('base64', '')  # base64 string with data:image prefix
+                                }
+                            })
+                        
+                        messages[i]['content'] = content_array
+                        break
             
             llm7_payload = {
                 "model": model_id,
