@@ -1267,15 +1267,19 @@ body.dark-mode .ai-message .message-content {
     transform: translateX(0) !important;
 }
 
-/* Ẩn toggle buttons khi sidebar đang mở */
-#sidebar.active ~ #sidebarToggle,
-#sidebar.active ~ #desktopSidebarToggle {
+/* Ẩn MOBILE toggle button khi sidebar đang mở (chỉ mobile) */
+#sidebar.active ~ #sidebarToggle {
     opacity: 0 !important;
     pointer-events: none !important;
 }
 
 /* Desktop sidebar collapsed state */
 @media (min-width: 1024px) {
+    /* Desktop sidebar LUÔN HIỂN THỊ - không dùng class active */
+    #sidebar {
+        transform: translateX(0) !important;
+    }
+    
     #sidebar.desktop-collapsed {
         width: 80px !important;
     }

@@ -5,7 +5,42 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 12/10/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
-✨ CẬP NHẬT MỚI NHẤT - 12/10/2025 (Buổi 11 - 00:44):
+✨ CẬP NHẬT MỚI NHẤT - 12/10/2025 (Buổi 11 - 00:56):
+-----------------------------------------------------------------------------
+
+AK. ✅ FIX SIDEBAR KHÔNG HIỆN TRÊN PC - THÊM CSS TRANSFORM
+   - Vấn đề: Sau fix AJ, nút toggle di chuyển nhưng sidebar KHÔNG HIỂN THỊ
+   - Nguyên nhân phát hiện:
+     * Sidebar mặc định có transform: -translate-x-full (ẩn bên trái)
+     * Mobile dùng class 'active' để hiện sidebar (transform: translateX(0))
+     * Desktop toggle chỉ toggle 'desktop-collapsed' (thu gọn width)
+     * Kết quả: Desktop sidebar KHÔNG BAO GIỜ HIỆN vì không có class 'active'
+   
+   Giải pháp:
+   1. ✅ Thêm CSS desktop sidebar luôn hiển thị (style.css dòng 1281-1285):
+      * @media (min-width: 1024px) { #sidebar { transform: translateX(0) !important; } }
+      * Desktop sidebar LUÔN HIỂN THỊ, không cần class 'active'
+      * Mobile vẫn dùng class 'active' để show/hide
+   
+   2. ✅ Fix CSS ẩn toggle button (style.css dòng 1273-1277):
+      * Trước: #sidebar.active ẨN cả mobile VÀ desktop toggle
+      * Sau: #sidebar.active CHỈ ẨN mobile toggle (#sidebarToggle)
+      * Desktop toggle KHÔNG bị ảnh hưởng bởi class 'active'
+   
+   - Logic desktop sidebar giờ đây:
+     * Mặc định: HIỂN THỊ đầy đủ (width: 320px, expanded)
+     * Click toggle: Thu gọn (width: 80px, desktop-collapsed)
+     * Click lại: Mở rộng về 320px
+     * Nút toggle di chuyển smooth: left: 16px ↔ left: 84px
+   
+   - Kết quả:
+     ✅ Desktop sidebar GIỜ HIỂN THỊ 100% (không bị ẩn nữa)
+     ✅ Toggle hoạt động đúng: thu gọn ↔ mở rộng
+     ✅ Nút toggle click được và di chuyển đúng vị trí
+     ✅ Mobile sidebar vẫn hoạt động bình thường (không ảnh hưởng)
+     ✅ Fix HOÀN TOÀN - sidebar desktop giờ hoạt động như mong đợi
+
+✨ CẬP NHẬT TRƯỚC ĐÓ - 12/10/2025 (Buổi 11 - 00:44):
 -----------------------------------------------------------------------------
 
 AJ. ✅ FIX SIDEBAR TOGGLE TRÊN PC - GIẢI QUYẾT TRIỆT ĐỂ BẰNG POINTER-EVENTS
