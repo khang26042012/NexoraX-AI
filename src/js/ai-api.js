@@ -77,20 +77,32 @@ export async function getGeminiResponse(message, aiMessage, files, conversationH
         
         // Thêm files nếu có
         if (files && files.length > 0) {
+            console.log('🔍 Files to send:', files.length, files);
             files.forEach(file => {
+                console.log('📁 Processing file:', file.name, 'type:', file.type, 'has base64:', !!file.base64);
                 // Validate file data before adding
                 if (file.base64 && file.type && file.base64.includes(',')) {
                     const base64Data = file.base64.split(',')[1]; // Remove data:image/... prefix
                     if (base64Data && base64Data.trim() !== '') {
+                        console.log('✅ File added to inline_data:', file.name);
                         currentMessage.parts.push({
                             inline_data: {
                                 mime_type: file.type,
                                 data: base64Data
                             }
                         });
+                    } else {
+                        console.warn('⚠️ File has empty base64 data:', file.name);
                     }
+                } else {
+                    console.warn('⚠️ File validation failed:', file.name, {
+                        hasBase64: !!file.base64,
+                        hasType: !!file.type,
+                        hasComma: file.base64?.includes(',')
+                    });
                 }
             });
+            console.log('📤 Final message parts:', currentMessage.parts.length, 'parts');
         }
         
         contents.push(currentMessage);
