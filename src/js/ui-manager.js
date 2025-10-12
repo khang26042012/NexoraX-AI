@@ -50,23 +50,39 @@ export function closeSidebar(sidebar) {
     if (!sidebar) return;
     sidebar.classList.remove('active');
     
-    // Hiện lại mobile toggle khi đóng sidebar
-    // Desktop toggle luôn visible, không cần xử lý
+    // Hiện lại toggle buttons khi đóng sidebar
     const mobileToggle = document.getElementById('sidebarToggle');
+    const desktopToggle = document.getElementById('desktopSidebarToggle');
     
     if (mobileToggle) {
         mobileToggle.style.opacity = '1';
         mobileToggle.style.pointerEvents = 'auto';
     }
+    
+    if (desktopToggle) {
+        desktopToggle.style.opacity = '1';
+        desktopToggle.style.pointerEvents = 'auto';
+    }
+    
+    // Cập nhật icon cho desktop toggle (hiện panelLeft, ẩn panelRight)
+    const panelLeftIcon = document.getElementById('desktopPanelLeftIcon');
+    const panelRightIcon = document.getElementById('desktopPanelRightIcon');
+    
+    if (panelLeftIcon && panelRightIcon) {
+        panelLeftIcon.classList.remove('hidden');  // Hiện panelLeft (mở sidebar)
+        panelRightIcon.classList.add('hidden');     // Ẩn panelRight
+    }
 }
 
 /**
- * Toggle desktop sidebar
+ * Toggle desktop sidebar - đóng/mở hoàn toàn (giống mobile)
  * @param {HTMLElement} sidebar - Sidebar element
  */
 export function toggleDesktopSidebar(sidebar) {
     if (!sidebar) return;
-    sidebar.classList.toggle('desktop-collapsed');
+    
+    // Toggle class 'active' để đóng/mở sidebar
+    sidebar.classList.toggle('active');
     
     // Toggle icon: panelLeft ↔ panelRight
     const panelLeftIcon = document.getElementById('desktopPanelLeftIcon');
@@ -76,6 +92,20 @@ export function toggleDesktopSidebar(sidebar) {
         panelLeftIcon.classList.toggle('hidden');
         panelRightIcon.classList.toggle('hidden');
     }
+    
+    // Toggle nút visibility
+    const desktopToggle = document.getElementById('desktopSidebarToggle');
+    if (desktopToggle) {
+        if (sidebar.classList.contains('active')) {
+            // Sidebar đang mở - ẩn nút
+            desktopToggle.style.opacity = '0';
+            desktopToggle.style.pointerEvents = 'none';
+        } else {
+            // Sidebar đang đóng - hiện nút
+            desktopToggle.style.opacity = '1';
+            desktopToggle.style.pointerEvents = 'auto';
+        }
+    }
 }
 
 /**
@@ -84,23 +114,24 @@ export function toggleDesktopSidebar(sidebar) {
  */
 export function initializeDesktopSidebar(sidebar) {
     if (!sidebar) return;
-    // Desktop sidebar luôn expanded mặc định
-    sidebar.classList.remove('desktop-collapsed');
     
-    // Đảm bảo icon ban đầu đúng (panelLeft hiện, panelRight ẩn)
+    // Desktop sidebar MỞ mặc định
+    sidebar.classList.add('active');
+    
+    // Đảm bảo icon ban đầu đúng (panelLeft ẩn, panelRight hiện)
     const panelLeftIcon = document.getElementById('desktopPanelLeftIcon');
     const panelRightIcon = document.getElementById('desktopPanelRightIcon');
     
     if (panelLeftIcon && panelRightIcon) {
-        panelLeftIcon.classList.remove('hidden');
-        panelRightIcon.classList.add('hidden');
+        panelLeftIcon.classList.add('hidden');  // Ẩn panelLeft (dùng khi đóng)
+        panelRightIcon.classList.remove('hidden');  // Hiện panelRight (dùng khi mở)
     }
     
-    // Đảm bảo desktop toggle luôn có thể click được
+    // Ẩn desktop toggle ban đầu (vì sidebar đang mở)
     const desktopToggle = document.getElementById('desktopSidebarToggle');
     if (desktopToggle) {
-        desktopToggle.style.opacity = '1';
-        desktopToggle.style.pointerEvents = 'auto';
+        desktopToggle.style.opacity = '0';
+        desktopToggle.style.pointerEvents = 'none';
     }
 }
 

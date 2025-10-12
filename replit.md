@@ -4,6 +4,7 @@
 NexoraX AI is a modern Vietnamese AI chat application designed for the Replit environment. It leverages Google Gemini, search-enhanced AI, and LLM7.io for GPT-5 Mini and Gemini Search models. The project emphasizes a modular ES6 architecture and is configured for seamless deployment, offering a feature-rich, responsive user experience with advanced Markdown rendering and conversation memory.
 
 ## Recent Changes (12/10/2025 - Buổi 11)
+- **Desktop Sidebar Behavior Change**: Removed collapse/expand functionality on PC. Desktop sidebar now only opens/closes completely (like mobile). When open, use X button in sidebar to close. When closed, use toggle button to open. Simplified and cleaner UX.
 - **Desktop Sidebar Display Fix**: Fixed desktop sidebar not showing at all. Added CSS to ensure sidebar is always visible on desktop (transform: translateX(0)) instead of hidden like mobile. Desktop sidebar now properly shows/hides with toggle button working correctly.
 - **Desktop Sidebar Toggle Fix**: Fixed pointer-events issue preventing desktop sidebar toggle from being clickable. Desktop toggle is now completely independent from mobile sidebar logic and always clickable.
 

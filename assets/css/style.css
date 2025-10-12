@@ -1273,32 +1273,12 @@ body.dark-mode .ai-message .message-content {
     pointer-events: none !important;
 }
 
-/* Desktop sidebar collapsed state */
+/* Desktop sidebar settings */
 @media (min-width: 1024px) {
-    /* Desktop sidebar LUÔN HIỂN THỊ - không dùng class active */
-    #sidebar {
-        transform: translateX(0) !important;
-    }
-    
-    #sidebar.desktop-collapsed {
-        width: 80px !important;
-    }
-    
-    #sidebar.desktop-collapsed .button-text,
-    #sidebar.desktop-collapsed h1,
-    #sidebar.desktop-collapsed #chatList {
-        display: none;
-    }
-    
-    /* Đảm bảo desktop toggle button luôn ở trên sidebar */
+    /* Desktop toggle button luôn ở trên sidebar */
     #desktopSidebarToggle {
         z-index: 60 !important;
-        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    /* Di chuyển toggle button khi sidebar collapsed */
-    #sidebar.desktop-collapsed ~ #desktopSidebarToggle {
-        left: 84px !important; /* 80px sidebar + 4px gap */
+        transition: opacity 0.3s ease, left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 }
 

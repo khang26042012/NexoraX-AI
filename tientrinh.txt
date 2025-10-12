@@ -5,7 +5,52 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 12/10/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
-✨ CẬP NHẬT MỚI NHẤT - 12/10/2025 (Buổi 11 - 00:56):
+✨ CẬP NHẬT MỚI NHẤT - 12/10/2025 (Buổi 11 - 01:07):
+-----------------------------------------------------------------------------
+
+AL. ✅ XÓA TÍNH NĂNG THU GỌN SIDEBAR TRÊN PC - CHỈ GIỮ ĐÓNG/MỞ
+   - Vấn đề: Sau fix AK, sidebar hiện nhưng có 2 nút toggle và tính năng thu gọn
+   - User yêu cầu:
+     * XÓA tính năng thu gọn sidebar (collapse/expand)
+     * Chỉ giữ chức năng đóng/mở hoàn toàn (như mobile)
+     * Nút toggle phải hoạt động để đóng/mở sidebar
+   
+   Giải pháp:
+   1. ✅ Sửa toggleDesktopSidebar() (ui-manager.js dòng 70-98):
+      * Trước: Toggle class 'desktop-collapsed' (thu gọn về 80px)
+      * Sau: Toggle class 'active' (đóng/mở hoàn toàn)
+      * Khi sidebar mở → Ẩn nút toggle (user dùng nút X trong sidebar)
+      * Khi sidebar đóng → Hiện nút toggle (để user mở lại)
+   
+   2. ✅ Sửa initializeDesktopSidebar() (ui-manager.js dòng 100-125):
+      * Desktop sidebar MỞ mặc định (add class 'active')
+      * Ẩn nút toggle ban đầu (vì sidebar đang mở)
+      * Icon ban đầu: panelRight hiện (dùng để đóng)
+   
+   3. ✅ Sửa closeSidebar() (ui-manager.js dòng 48-78):
+      * Hiện lại cả mobile VÀ desktop toggle khi đóng
+      * Cập nhật icon desktop toggle: panelLeft (mở sidebar)
+   
+   4. ✅ Xóa CSS desktop-collapsed (style.css dòng 1279-1286):
+      * Xóa toàn bộ CSS thu gọn sidebar về 80px
+      * Chỉ giữ CSS desktop toggle z-index
+   
+   - Logic desktop sidebar giờ đây (GIỐNG MOBILE):
+     * Mặc định: Sidebar MỞ (width: 320px, class 'active')
+     * Nút toggle BỊ ẨN (vì sidebar đang mở)
+     * User click nút X trong sidebar → Sidebar ĐÓNG (remove 'active')
+     * Nút toggle HIỆN RA ở góc trái
+     * User click nút toggle → Sidebar MỞ lại (add 'active')
+     * Nút toggle ẨN đi
+   
+   - Kết quả:
+     ✅ XÓA hoàn toàn tính năng thu gọn sidebar
+     ✅ Desktop sidebar chỉ đóng/mở hoàn toàn (không thu gọn)
+     ✅ Nút toggle hoạt động đúng: mở sidebar khi đóng
+     ✅ Nút X trong sidebar: đóng sidebar khi mở
+     ✅ Logic đơn giản, dễ hiểu (giống mobile)
+
+✨ CẬP NHẬT TRƯỚC ĐÓ - 12/10/2025 (Buổi 11 - 00:56):
 -----------------------------------------------------------------------------
 
 AK. ✅ FIX SIDEBAR KHÔNG HIỆN TRÊN PC - THÊM CSS TRANSFORM
