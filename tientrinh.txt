@@ -1276,3 +1276,235 @@ P. ✅ FIX BONG BÓNG CHAT USER QUÁ TO - ĐIỀU CHỈNH FONT-SIZE, LINE-HEIGHT
 
 =============================================================================
 
+✨ CẬP NHẬT MỚI NHẤT - 30/10/2025 (Buổi 13 - 02:45):
+-----------------------------------------------------------------------------
+
+AR. ✅ MỞ RỘNG ADMIN PANEL API - LOGS, AI HISTORY, CONFIG MANAGEMENT
+   - Vấn đề: Cần mở rộng Admin Panel với logs, AI call history, và config management
+   - Yêu cầu: 
+     * View server logs với filtering
+     * Track toàn bộ AI call history (prompt + response)
+     * View usage statistics
+     * Quản lý API keys với hot-reload (không cần restart)
+     * KHÔNG đụng đến existing AI endpoints (Gemini, LLM7, etc.)
+   
+   Giải pháp - Tạo 5 Admin API Endpoints mới:
+   
+   **1. ✅ Logs API - GET /api/admin/logs (server.py dòng 2054-2113):**
+      * Rotating file handler cho logs: 5MB max, 5 backups
+      * Query params: limit (số dòng), level (INFO/ERROR/WARNING)
+      * Handler: handle_admin_logs()
+      * Response: { success, total_lines, filtered_count, logs[] }
+      * Features:
+        - Read từ server.log với thread-safe file operations
+        - Pagination với limit parameter
+        - Filter by log level (INFO, ERROR, WARNING)
+        - Trả về timestamp và content của mỗi log
+   
+   **2. ✅ AI History Tracking System (server.py dòng 175-236):**
+      * File: ai_history.jsonl (JSONL format - efficient append)
+      * Thread-safe file_lock để tránh race conditions
+      * Functions:
+        - save_ai_history(): Save AI call với username, model, prompt, response, timestamp
+        - load_ai_history(): Load và filter history với username/model/limit
+      * Rotating logs: 5MB max, 5 backups
+      * Auto-capture từ TẤT CẢ AI handlers:
+        - handle_gemini_chat() - Gemini Flash 2.5
+        - handle_llm7_gpt5() - LLM7 GPT-5 Mini
+        - handle_llm7_gemini_search() - LLM7 Gemini Search
+        - handle_gemini_search() - SerpAPI Search
+   
+   **3. ✅ History Query API - GET /api/admin/history (server.py dòng 2115-2178):**
+      * Query params: username, model, limit
+      * Handler: handle_admin_history()
+      * Response: { success, total_calls, filtered_count, history[] }
+      * Features:
+        - Filter by username (exact match)
+        - Filter by model (exact match)
+        - Limit số lượng results
+        - Trả về: username, model, prompt, response, timestamp
+   
+   **4. ✅ Usage Stats API - GET /api/admin/usage (server.py dòng 2180-2250):**
+      * Aggregate statistics từ ai_history.jsonl
+      * Handler: handle_admin_usage()
+      * Response: { success, total_calls, unique_users, unique_models, users_stats[], models_stats[] }
+      * Features:
+        - Total calls across all users/models
+        - Unique users và unique models count
+        - Per-user stats: total_calls, models_used{}
+        - Per-model stats: total_calls, unique_users
+   
+   **5. ✅ Config Management API (server.py dòng 2252-2319):**
+      * File: config_store.json (persist API key overrides)
+      * GET /api/admin/config - View current configuration:
+        - Handler: handle_admin_config()
+        - Response: { success, config{} }
+        - Features: Show masked API keys (first 8 + last 4 chars)
+        - Show has_override status cho mỗi service
+      
+      * POST /api/admin/config/update - Update API keys:
+        - Handler: handle_admin_config_update()
+        - Request: { service, api_key }
+        - Response: { success, message }
+        - Features: Hot-reload API keys KHÔNG CẦN RESTART server
+   
+   **⚠️ BUGS ĐÃ FIX:**
+   
+   **Bug 1 - save_config_override() Naming Conflict (CRITICAL):**
+   - Vấn đề phát hiện bởi Architect:
+     * server.py redefine save_config_override() với no parameters
+     * Shadow imported function từ config.py với signature (service, api_key)
+     * POST /api/admin/config/update fail với TypeError
+   
+   - Giải pháp:
+     * XÓA duplicate load_config_override() và save_config_override() trong server.py
+     * XÓA duplicate config_override global variable
+     * Import trực tiếp từ config.py: from config import load_config_override, save_config_override
+     * Fix handle_admin_config_update() để call đúng function với 2 parameters
+   
+   - Kết quả:
+     ✅ POST /api/admin/config/update works perfectly
+     ✅ Config changes persist to config_store.json
+     ✅ Hot-reload verified - no restart needed
+   
+   **Bug 2 - has_override Status Stale Reference (CRITICAL):**
+   - Vấn đề phát hiện bởi Architect:
+     * POST /api/admin/config/update save key thành công
+     * NHƯNG GET /api/admin/config vẫn show "has_override": false
+     * Root cause: server.py import config_override trực tiếp
+     * Khi config.py rebind config_override = json.load(), server.py's reference bị stale
+   
+   - Giải pháp:
+     * Đổi import: từ `from config import config_override` sang `import config`
+     * Đọc từ config.config_override thay vì stale reference
+     * GET endpoint giờ luôn lấy latest value
+   
+   - Kết quả:
+     ✅ has_override toggles correctly sau POST update
+     ✅ GET /api/admin/config shows accurate override status
+     ✅ Persistence verified across server restarts
+   
+   **Test Results (Sau khi fix TẤT CẢ bugs):**
+   
+   ✅ /api/admin/logs?limit=3:
+      * 469 logs total
+      * Pagination works perfectly
+      * Response time: <100ms
+   
+   ✅ /api/admin/history?username=test_user:
+      * Query filters work correctly
+      * Shows full prompt + response
+      * Timestamps in ISO format
+   
+   ✅ /api/admin/usage:
+      * Aggregates 1 call, 1 user, 1 model correctly
+      * Per-user stats: test_user with 1 call
+      * Per-model stats: gemini-pro with 1 call
+   
+   ✅ /api/admin/config (GET):
+      * Shows masked keys correctly
+      * gemini: "AIzaSyDh...lJFI"
+      * serpapi: "e5e04b97...4a98"
+      * llm7: "nw8G+LKJ...3WKM"
+      * has_override: true for all services ✅
+   
+   ✅ POST /api/admin/config/update:
+      * Successfully updates API keys
+      * Test: serpapi key changed from "e5e04b97...4a98" → "NEW_SERP...3456"
+      * Hot-reload works - no restart needed ✅
+      * Persists to config_store.json ✅
+      * Subsequent GET shows updated key ✅
+   
+   **Technical Implementation:**
+   
+   1. Thread-Safe File Operations:
+      * file_lock = threading.Lock() cho ai_history.jsonl
+      * Tránh race conditions khi multiple requests
+      * Safe concurrent access
+   
+   2. JSONL Format cho AI History:
+      * Efficient append operations (không cần rewrite toàn bộ file)
+      * Mỗi dòng = 1 JSON object
+      * Easy to parse và filter
+      * Rotating logs: 5MB max, 5 backups
+   
+   3. Config Hot-Reload:
+      * config_store.json lưu overrides
+      * get_api_key() trong config.py check overrides trước
+      * Fallback về env vars nếu không có override
+      * Không cần restart server
+   
+   4. Masked API Keys Display:
+      * Show first 8 chars + "..." + last 4 chars
+      * Security: Không expose full keys trong logs/responses
+      * Example: "AIzaSyDhWAco4k7a...lJFI" thay vì full key
+   
+   **Files Modified:**
+   
+   - server.py:
+     * Added rotating log handler (dòng ~70-80)
+     * Added AI history system (dòng 175-236)
+     * Added 4 new GET endpoints (dòng 2054-2250)
+     * Added 1 new POST endpoint (dòng 2252-2319)
+     * Wrapped all 4 AI handlers để save history
+     * Fixed import: từ direct import sang config.config_override reference
+     * Removed duplicate functions
+   
+   - config.py:
+     * Added config_store.json management (dòng ~408-428)
+     * Added load_config_override() và save_config_override()
+     * Added config_override global dict
+     * Modified get_api_key() để check overrides
+   
+   - ai_history.jsonl: NEW file
+     * JSONL format
+     * Stores all AI calls với username, model, prompt, response, timestamp
+     * Thread-safe append operations
+     * Auto-rotating (5MB max, 5 backups)
+   
+   - config_store.json: NEW file
+     * Stores API key overrides
+     * JSON format: { "service": "api_key" }
+     * Persists across server restarts
+   
+   - server.log: Enhanced
+     * Rotating file handler
+     * 5MB max per file, 5 backups
+     * All server logs captured
+   
+   **Architect Review:**
+   
+   ✅ PASS - All Admin Panel API features working perfectly
+   ✅ Regression testing confirms:
+      * POST /api/admin/config/update persists overrides
+      * GET /api/admin/config shows has_override: true
+      * Hot-reload works without downtime
+      * No regressions in logs, history, usage endpoints
+   ✅ Ready for production use
+   
+   **Admin Panel Capabilities Completed:**
+   
+   1. ✅ View server logs với pagination và filtering
+   2. ✅ Track toàn bộ AI call history (prompt + response)
+   3. ✅ View usage statistics (per-user, per-model)
+   4. ✅ Manage API keys với hot-reload capability
+   5. ✅ Manage users/sessions/rate-limits (từ AQ)
+   
+   **Security Notes:**
+   
+   - User stated security not needed (project not public)
+   - API keys masked in GET responses
+   - Thread-safe file operations
+   - No authentication required for admin endpoints (per user request)
+   
+   **Next Steps for Frontend Admin Panel:**
+   
+   - Build admin dashboard UI
+   - Display logs với pagination
+   - Show AI history table với filters
+   - Display usage charts/stats
+   - Create config management interface
+   - Add user/session management interface
+
+=============================================================================
+
