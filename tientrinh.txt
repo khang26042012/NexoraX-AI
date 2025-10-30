@@ -5,7 +5,63 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 30/10/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
-✨ CẬP NHẬT MỚI NHẤT - 30/10/2025 (Buổi 13 - 02:00):
+✨ CẬP NHẬT MỚI NHẤT - 30/10/2025 (Buổi 14 - 13:18):
+-----------------------------------------------------------------------------
+
+AR. ✅ FIX 3 VẤN ĐỀ QUAN TRỌNG - ONBOARDING, SIDEBAR, LLM7 RETRY LOGIC
+   - Vấn đề 1: Onboarding bị auth modal đè lên
+   - Vấn đề 2: Desktop sidebar tự động bật
+   - Vấn đề 3: LLM7 API timeout errors 502
+   
+   **FIX 1 - ONBOARDING DELAY (onboarding.js, chat-app.js):**
+   ✅ Thêm `startOnboardingManually()` function
+   ✅ Gọi khi hideAuthModal() để defer onboarding cho đến khi auth modal đóng
+   ✅ Prevent UI overlap, onboarding hiện đúng lúc
+   
+   **FIX 2 - SIDEBAR DEFAULTS CLOSED (constants.js, ui-manager.js):**
+   ✅ Thêm `DESKTOP_SIDEBAR_OPEN` localStorage key
+   ✅ Sidebar đóng mặc định (isDesktopSidebarOpen = false)
+   ✅ Lưu state khi toggle, persist across sessions
+   ✅ Sync icons và toggle button state
+   
+   **FIX 3 - LLM7 RETRY LOGIC (server.py):**
+   ✅ Implement `retry_request_with_backoff()` function:
+      * 3 retry attempts
+      * Exponential backoff (1s → 2s → 4s, max 10s)
+      * Random jitter để prevent thundering herd
+      * Detailed logging cho mỗi attempt
+   ✅ Integrate vào 3 LLM7 API handlers:
+      * handle_llm7_chat() - dòng 1134
+      * handle_llm7_search() - dòng 1195  
+      * handle_llm7_generate_image() - dòng 1264
+   ✅ Error handling: Re-raise sau khi exhausted retries → 503
+   ✅ Success case: Return original response stream
+   
+   **TESTING & VERIFICATION:**
+   ✅ Onboarding: Defers correctly until auth modal dismissed
+   ✅ Sidebar: Defaults closed, state persists in localStorage
+   ✅ Retry logic: Tested với LLM7 API timeout:
+      * Attempt 1: Timeout → Retry sau 1.97s ✅
+      * Attempt 2: Timeout → Retry sau 2.11s ✅
+      * Attempt 3: Timeout → All attempts failed → Return 503 ✅
+      * Logs rõ ràng, exponential backoff works perfectly!
+   
+   **ARCHITECT REVIEW: PASS ✅**
+   - No regressions detected
+   - No security issues
+   - Code quality: Good, maintainable
+   - Logic: Sound implementation
+   - Next: Monitor LLM7 upstream availability
+   
+   Files changed:
+   - src/js/onboarding.js: Added startOnboardingManually()
+   - src/js/chat-app.js: Call startOnboardingManually() on hideAuthModal()
+   - src/js/constants.js: Added DESKTOP_SIDEBAR_OPEN key
+   - src/js/ui-manager.js: Sidebar defaults closed, localStorage persistence
+   - server.py: Added retry_request_with_backoff() + integrated to LLM7 handlers
+
+-----------------------------------------------------------------------------
+CẬP NHẬT TRƯỚC ĐÓ - 30/10/2025 (Buổi 13 - 02:00):
 -----------------------------------------------------------------------------
 
 AQ. ✅ TẠO ADMIN PANEL API - QUẢN LÝ USERS, SESSIONS, STATS, RATE LIMITS
