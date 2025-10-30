@@ -21,7 +21,8 @@ import threading
 
 # Import configuration
 try:
-    from config import get_api_key, check_config, get_allowed_origins, REQUEST_TIMEOUT
+    import config
+    from config import get_api_key, check_config, get_allowed_origins, REQUEST_TIMEOUT, load_config_override, save_config_override
 except ImportError:
     # Fallback nếu không có config.py
     def get_api_key(service):
@@ -39,13 +40,29 @@ except ImportError:
     
     REQUEST_TIMEOUT = 30
 
-# Configure logging
+# Configure logging with rotating file handler
+from logging.handlers import RotatingFileHandler
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Add rotating file handler for server.log
+LOG_FILE = 'server.log'
+file_handler = RotatingFileHandler(
+    LOG_FILE,
+    maxBytes=10*1024*1024,  # 10MB
+    backupCount=5,
+    encoding='utf-8'
+)
+file_handler.setLevel(logging.INFO)
+file_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+file_handler.setFormatter(file_formatter)
+logger.addHandler(file_handler)
 
 ACCOUNTS_FILE = 'acc.txt'
 SESSIONS_FILE = 'sessions_store.json'
 RATE_LIMIT_FILE = 'rate_limit_store.json'
+AI_HISTORY_FILE = 'ai_history.jsonl'
 file_lock = threading.Lock()
 users = {}
 sessions = {}
@@ -365,6 +382,28 @@ def cleanup_expired_data():
         except Exception as e:
             logger.error(f"Error in cleanup task: {e}")
 
+def save_ai_history(username, model, prompt, response, metadata=None):
+    """Save AI call history to JSONL file with thread-safety"""
+    try:
+        history_entry = {
+            'timestamp': time.time(),
+            'username': username or 'anonymous',
+            'model': model,
+            'prompt': prompt[:500] if prompt else '',  # Limit prompt length
+            'response': response[:500] if response else '',  # Limit response length
+            'metadata': metadata or {}
+        }
+        
+        with file_lock:
+            with open(AI_HISTORY_FILE, 'a', encoding='utf-8') as f:
+                f.write(json.dumps(history_entry, ensure_ascii=False) + '\n')
+        
+        logger.debug(f"AI history saved: {username} - {model}")
+        return True
+    except Exception as e:
+        logger.error(f"Error saving AI history: {e}")
+        return False
+
 class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     """Custom HTTP request handler for NexoraX AI application"""
     
@@ -408,6 +447,28 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         })
         self.wfile.write(error_response.encode('utf-8'))
     
+    def _get_username_from_cookie(self):
+        """Extract username from session cookie"""
+        try:
+            cookie_header = self.headers.get('Cookie', '')
+            if not cookie_header:
+                return None
+            
+            # Parse cookies
+            cookies = {}
+            for item in cookie_header.split(';'):
+                item = item.strip()
+                if '=' in item:
+                    key, value = item.split('=', 1)
+                    cookies[key] = value
+            
+            session_id = cookies.get('session_id')
+            if session_id:
+                return get_user_from_session(session_id)
+        except Exception as e:
+            logger.debug(f"Error extracting username from cookie: {e}")
+        return None
+    
     def do_POST(self):
         """Handle POST requests for API proxy"""
         if self.path == '/api/gemini':
@@ -440,12 +501,17 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.handle_admin_delete_session()
         elif self.path == '/api/admin/rate-limits/clear':
             self.handle_admin_clear_rate_limit()
+        elif self.path == '/api/admin/config/update':
+            self.handle_admin_config_update()
         else:
             self._send_json_error(404, "API endpoint không tồn tại", "NOT_FOUND")
 
     def handle_gemini_proxy(self):
         """Proxy requests to Gemini API using server-side API key"""
         try:
+            # Get username from session cookie
+            username = self._get_username_from_cookie()
+            
             # Get API key from config hoặc environment
             api_key = get_api_key('gemini')
             logger.info(f"API Key configured: {'Yes' if api_key and api_key != 'your_gemini_api_key_here' else 'No'}")
@@ -469,6 +535,13 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             # Get payload - supports both old and new format
             payload = request_data.get('payload', {})
             
+            # Extract prompt for history tracking
+            prompt_text = ""
+            if 'contents' in payload and isinstance(payload['contents'], list) and len(payload['contents']) > 0:
+                last_content = payload['contents'][-1]
+                if 'parts' in last_content and isinstance(last_content['parts'], list) and len(last_content['parts']) > 0:
+                    prompt_text = last_content['parts'][0].get('text', '')
+            
             # The payload now contains the full conversation history in 'contents' array
             # No need to modify - frontend already sends it in correct format
             
@@ -482,6 +555,28 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             # Make request to Gemini API with timeout
             with urllib.request.urlopen(gemini_request, timeout=REQUEST_TIMEOUT) as response:
                 gemini_response = response.read()
+            
+            # Extract response text for history tracking
+            try:
+                response_data = json.loads(gemini_response.decode('utf-8'))
+                response_text = ""
+                if 'candidates' in response_data and len(response_data['candidates']) > 0:
+                    candidate = response_data['candidates'][0]
+                    if 'content' in candidate and 'parts' in candidate['content']:
+                        parts = candidate['content']['parts']
+                        if len(parts) > 0:
+                            response_text = parts[0].get('text', '')
+                
+                # Save AI history
+                save_ai_history(
+                    username=username,
+                    model=model,
+                    prompt=prompt_text,
+                    response=response_text,
+                    metadata={'endpoint': 'gemini_proxy'}
+                )
+            except Exception as e:
+                logger.debug(f"Error saving Gemini history: {e}")
                 
             # Return response to client
             self.send_response(200)
@@ -799,6 +894,9 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     def handle_llm7_gpt5chat(self):
         """Handle GPT-5-chat requests via LLM7.io"""
         try:
+            # Get username from session cookie
+            username = self._get_username_from_cookie()
+            
             # Get API key from config
             api_key = get_api_key('llm7')
             logger.info(f"LLM7 API Key configured: {'Yes' if api_key else 'No'}")
@@ -889,6 +987,15 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             else:
                 reply = str(llm7_data)
             
+            # Save AI history
+            save_ai_history(
+                username=username,
+                model="gpt-5-chat",
+                prompt=message,
+                response=reply,
+                metadata={'endpoint': 'llm7_gpt5chat', 'has_files': len(files) > 0}
+            )
+            
             # Return response to client
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
@@ -924,6 +1031,9 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     def handle_llm7_gemini_search(self):
         """Handle Gemini-search requests via LLM7.io"""
         try:
+            # Get username from session cookie
+            username = self._get_username_from_cookie()
+            
             # Get API key from config
             api_key = get_api_key('llm7')
             logger.info(f"LLM7 API Key configured: {'Yes' if api_key else 'No'}")
@@ -1014,6 +1124,15 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             else:
                 reply = str(llm7_data)
             
+            # Save AI history
+            save_ai_history(
+                username=username,
+                model="gemini-search",
+                prompt=message,
+                response=reply,
+                metadata={'endpoint': 'llm7_gemini_search', 'has_files': len(files) > 0}
+            )
+            
             # Return response to client
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
@@ -1049,6 +1168,9 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     def handle_llm7_chat(self):
         """Generic handler for all LLM7 models via LLM7.io"""
         try:
+            # Get username from session cookie
+            username = self._get_username_from_cookie()
+            
             # Get API key from config
             api_key = get_api_key('llm7')
             logger.info(f"LLM7 API Key configured: {'Yes' if api_key else 'No'}")
@@ -1139,6 +1261,15 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 reply = llm7_data["choices"][0]["message"]["content"]
             else:
                 reply = str(llm7_data)
+            
+            # Save AI history
+            save_ai_history(
+                username=username,
+                model=model_id,
+                prompt=message,
+                response=reply,
+                metadata={'endpoint': 'llm7_chat', 'has_files': len(files) > 0}
+            )
             
             # Return response to client
             self.send_response(200)
@@ -1923,6 +2054,297 @@ Hãy xử lý prompt sau:"""
             logger.error(f"Admin clear rate limit error: {e}")
             self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
 
+    def handle_admin_logs(self):
+        """Admin API: Get server logs from server.log file"""
+        try:
+            # Parse query parameters
+            from urllib.parse import parse_qs, urlparse
+            parsed = urlparse(self.path)
+            params = parse_qs(parsed.query)
+            
+            limit = int(params.get('limit', ['100'])[0])
+            level_filter = params.get('level', [None])[0]  # INFO, ERROR, WARNING
+            
+            logs = []
+            total_lines = 0
+            
+            # Read server.log file
+            if os.path.exists(LOG_FILE):
+                with file_lock:
+                    with open(LOG_FILE, 'r', encoding='utf-8') as f:
+                        all_lines = f.readlines()
+                        total_lines = len(all_lines)
+                        
+                        # Filter by level if specified
+                        if level_filter:
+                            filtered_lines = [line for line in all_lines if f'- {level_filter} -' in line]
+                        else:
+                            filtered_lines = all_lines
+                        
+                        # Get last N lines
+                        recent_lines = filtered_lines[-limit:]
+                        
+                        for line in recent_lines:
+                            logs.append({
+                                'timestamp': line[:23] if len(line) > 23 else '',
+                                'content': line.strip()
+                            })
+            
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self._send_cors_headers()
+            self.end_headers()
+            
+            response_json = json.dumps({
+                "success": True,
+                "total_lines": total_lines,
+                "filtered_count": len(logs),
+                "limit": limit,
+                "level_filter": level_filter,
+                "logs": logs
+            }, ensure_ascii=False)
+            self.wfile.write(response_json.encode('utf-8'))
+            
+            logger.info(f"Admin API: Retrieved {len(logs)} log entries")
+            
+        except Exception as e:
+            logger.error(f"Admin get logs error: {e}")
+            self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
+
+    def handle_admin_history(self):
+        """Admin API: Get AI call history from ai_history.jsonl"""
+        try:
+            # Parse query parameters
+            from urllib.parse import parse_qs, urlparse
+            parsed = urlparse(self.path)
+            params = parse_qs(parsed.query)
+            
+            username_filter = params.get('username', [None])[0]
+            model_filter = params.get('model', [None])[0]
+            limit = int(params.get('limit', ['50'])[0])
+            
+            history = []
+            total_records = 0
+            
+            # Read ai_history.jsonl file
+            if os.path.exists(AI_HISTORY_FILE):
+                with file_lock:
+                    with open(AI_HISTORY_FILE, 'r', encoding='utf-8') as f:
+                        for line in f:
+                            if line.strip():
+                                try:
+                                    entry = json.loads(line.strip())
+                                    total_records += 1
+                                    
+                                    # Apply filters
+                                    if username_filter and entry.get('username') != username_filter:
+                                        continue
+                                    if model_filter and entry.get('model') != model_filter:
+                                        continue
+                                    
+                                    history.append(entry)
+                                except json.JSONDecodeError:
+                                    continue
+            
+            # Get last N entries
+            history = history[-limit:]
+            
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self._send_cors_headers()
+            self.end_headers()
+            
+            response_json = json.dumps({
+                "success": True,
+                "total_records": total_records,
+                "filtered_count": len(history),
+                "limit": limit,
+                "filters": {
+                    "username": username_filter,
+                    "model": model_filter
+                },
+                "history": history
+            }, ensure_ascii=False)
+            self.wfile.write(response_json.encode('utf-8'))
+            
+            logger.info(f"Admin API: Retrieved {len(history)} AI history entries")
+            
+        except Exception as e:
+            logger.error(f"Admin get history error: {e}")
+            self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
+
+    def handle_admin_usage(self):
+        """Admin API: Get AI usage statistics aggregated from history"""
+        try:
+            users_stats = {}
+            models_stats = {}
+            
+            # Read and aggregate ai_history.jsonl file
+            if os.path.exists(AI_HISTORY_FILE):
+                with file_lock:
+                    with open(AI_HISTORY_FILE, 'r', encoding='utf-8') as f:
+                        for line in f:
+                            if line.strip():
+                                try:
+                                    entry = json.loads(line.strip())
+                                    username = entry.get('username', 'anonymous')
+                                    model = entry.get('model', 'unknown')
+                                    
+                                    # Count by user
+                                    if username not in users_stats:
+                                        users_stats[username] = {
+                                            'username': username,
+                                            'total_calls': 0,
+                                            'models_used': {}
+                                        }
+                                    users_stats[username]['total_calls'] += 1
+                                    
+                                    if model not in users_stats[username]['models_used']:
+                                        users_stats[username]['models_used'][model] = 0
+                                    users_stats[username]['models_used'][model] += 1
+                                    
+                                    # Count by model
+                                    if model not in models_stats:
+                                        models_stats[model] = {
+                                            'model': model,
+                                            'total_calls': 0,
+                                            'unique_users': set()
+                                        }
+                                    models_stats[model]['total_calls'] += 1
+                                    models_stats[model]['unique_users'].add(username)
+                                    
+                                except json.JSONDecodeError:
+                                    continue
+            
+            # Convert sets to counts
+            models_list = []
+            for model, data in models_stats.items():
+                models_list.append({
+                    'model': model,
+                    'total_calls': data['total_calls'],
+                    'unique_users': len(data['unique_users'])
+                })
+            
+            # Sort by total_calls descending
+            users_list = sorted(users_stats.values(), key=lambda x: x['total_calls'], reverse=True)
+            models_list = sorted(models_list, key=lambda x: x['total_calls'], reverse=True)
+            
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self._send_cors_headers()
+            self.end_headers()
+            
+            response_json = json.dumps({
+                "success": True,
+                "total_calls": sum(u['total_calls'] for u in users_list),
+                "unique_users": len(users_list),
+                "unique_models": len(models_list),
+                "users_stats": users_list,
+                "models_stats": models_list
+            }, ensure_ascii=False)
+            self.wfile.write(response_json.encode('utf-8'))
+            
+            logger.info("Admin API: Retrieved AI usage statistics")
+            
+        except Exception as e:
+            logger.error(f"Admin get usage error: {e}")
+            self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
+
+    def handle_admin_config(self):
+        """Admin API: Get current configuration (API keys masked)"""
+        try:
+            config_data = {}
+            
+            # Get current API keys (masked)
+            for service in ['gemini', 'serpapi', 'llm7']:
+                api_key = get_api_key(service)
+                if api_key:
+                    # Show only first 8 and last 4 characters
+                    if len(api_key) > 12:
+                        masked = api_key[:8] + '...' + api_key[-4:]
+                    else:
+                        masked = api_key[:4] + '...'
+                    config_data[service] = {
+                        'configured': True,
+                        'masked_key': masked,
+                        'has_override': service in config.config_override
+                    }
+                else:
+                    config_data[service] = {
+                        'configured': False,
+                        'masked_key': None,
+                        'has_override': False
+                    }
+            
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self._send_cors_headers()
+            self.end_headers()
+            
+            response_json = json.dumps({
+                "success": True,
+                "config": config_data
+            }, ensure_ascii=False)
+            self.wfile.write(response_json.encode('utf-8'))
+            
+            logger.info("Admin API: Retrieved config")
+            
+        except Exception as e:
+            logger.error(f"Admin get config error: {e}")
+            self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
+
+    def handle_admin_config_update(self):
+        """Admin API: Update API key configuration"""
+        try:
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            request_data = json.loads(post_data.decode('utf-8'))
+            
+            service = request_data.get('service', '').strip().lower()
+            api_key = request_data.get('api_key', '').strip()
+            
+            if not service:
+                self._send_json_error(400, "Service không được để trống", "MISSING_SERVICE")
+                return
+            
+            if service not in ['gemini', 'serpapi', 'llm7']:
+                self._send_json_error(400, f"Service '{service}' không hợp lệ. Chỉ chấp nhận: gemini, serpapi, llm7", "INVALID_SERVICE")
+                return
+            
+            if not api_key:
+                self._send_json_error(400, "API key không được để trống", "MISSING_API_KEY")
+                return
+            
+            # Validate API key length (basic validation)
+            if len(api_key) < 10:
+                self._send_json_error(400, "API key quá ngắn, có vẻ không hợp lệ", "INVALID_API_KEY")
+                return
+            
+            # Update config override using config.py function
+            if not save_config_override(service, api_key):
+                self._send_json_error(500, "Không thể lưu cấu hình", "SAVE_ERROR")
+                return
+            
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self._send_cors_headers()
+            self.end_headers()
+            
+            response_json = json.dumps({
+                "success": True,
+                "message": f"API key cho service '{service}' đã được cập nhật thành công"
+            }, ensure_ascii=False)
+            self.wfile.write(response_json.encode('utf-8'))
+            
+            logger.info(f"Admin API: Updated config for service '{service}'")
+            
+        except json.JSONDecodeError as e:
+            logger.error(f"Invalid JSON in config update request: {e}")
+            self._send_json_error(400, "Dữ liệu gửi lên không hợp lệ", "INVALID_JSON")
+        except Exception as e:
+            logger.error(f"Admin config update error: {e}")
+            self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
+
     def _format_search_context_for_ai(self, serpapi_data, query):
         """Format SerpAPI data into context for AI processing"""
         context_parts = []
@@ -2013,6 +2435,18 @@ Vui lòng trả lời:"""
             return
         elif self.path == '/api/admin/rate-limits':
             self.handle_admin_get_rate_limits()
+            return
+        elif self.path.startswith('/api/admin/logs'):
+            self.handle_admin_logs()
+            return
+        elif self.path.startswith('/api/admin/history'):
+            self.handle_admin_history()
+            return
+        elif self.path.startswith('/api/admin/usage'):
+            self.handle_admin_usage()
+            return
+        elif self.path.startswith('/api/admin/config'):
+            self.handle_admin_config()
             return
         
         # Handle root path
@@ -2144,5 +2578,10 @@ if __name__ == "__main__":
     logger.info("Loading rate limits...")
     rate_limits.update(load_rate_limits())
     logger.info(f"Loaded {len(rate_limits)} rate limit(s)")
+    
+    # Load config overrides
+    logger.info("Loading config overrides...")
+    load_config_override()
+    logger.info("Config overrides loaded")
     
     run_server(port)

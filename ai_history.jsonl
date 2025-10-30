@@ -1,0 +1,2 @@
+{"timestamp":"2025-10-30T02:25:00Z","username":"test_user","model":"gemini-pro","prompt":"Test prompt","response":"Test response","metadata":{"endpoint":"test"}}
+{"timestamp": 1761791619.4288397, "username": "anonymous", "model": "gemini-search", "prompt": "Hi", "response": "Chào bạn! Rất vui được hỗ trợ bạn hôm nay. Bạn cần tìm kiếm thông tin gì ạ? Hãy cho mình biết nhé! 😊", "metadata": {"endpoint": "llm7_gemini_search", "has_files": false}}

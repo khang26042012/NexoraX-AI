@@ -5,6 +5,8 @@ Chỉnh sửa file này để thay đổi API keys và cấu hình khác
 """
 
 import os
+import json
+from threading import Lock
 
 # ===========================================
 # API KEYS CONFIGURATION
@@ -26,6 +28,16 @@ SERPAPI_API_KEY = "e5e04b97a6f406a53f9430701e795fb8d306cdc7514a8d68bbbc6c6b0a4d4
 # Environment variable LLM7_API_KEY will override this if set
 LLM7_API_KEY = "nw8G+LKJny13aUM7OYCWTe47Uwg7uo4TM4EMPf1JxFjhKMK9pjFbp09NXqSkAka57mikeYbJPn99WToaqpQjddd2k95oNvNxxVb8VvP5mc8mAVPL6H/Lym34g9/YUgWV3WKM"
 
+# ===========================================
+# CONFIG OVERRIDE (HOT-RELOAD)
+# ===========================================
+
+# Config file for runtime overrides
+CONFIG_STORE_FILE = "config_store.json"
+
+# In-memory override storage
+config_override = {}
+config_lock = Lock()
 
 # ===========================================
 # SERVER CONFIGURATION
@@ -90,17 +102,50 @@ MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 
 def get_api_key(service):
     """
-    Lấy API key từ config hoặc environment variables
-    Environment variables luôn có ưu tiên cao hơn
+    Lấy API key từ config overrides, environment variables, hoặc config file
+    Thứ tự ưu tiên: Config Override > Environment Variables > Config File
     """
-    if service.lower() == "gemini":
+    service_lower = service.lower()
+    
+    # Check override first (hot-reload support)
+    with config_lock:
+        if service_lower in config_override:
+            return config_override[service_lower]
+    
+    # Then check environment variables
+    if service_lower == "gemini":
         return os.getenv('GEMINI_API_KEY', GEMINI_API_KEY)
-    elif service.lower() == "serpapi":
+    elif service_lower == "serpapi":
         return os.getenv('SERPAPI_API_KEY', SERPAPI_API_KEY)
-    elif service.lower() == "llm7":
+    elif service_lower == "llm7":
         return os.getenv('LLM7_API_KEY', LLM7_API_KEY)
     else:
         return None
+
+def load_config_override():
+    """Load config overrides from file"""
+    global config_override
+    try:
+        if os.path.exists(CONFIG_STORE_FILE):
+            with config_lock:
+                with open(CONFIG_STORE_FILE, 'r') as f:
+                    config_override = json.load(f)
+    except Exception as e:
+        print(f"Error loading config override: {e}")
+        config_override = {}
+
+def save_config_override(service, api_key):
+    """Save config override to file"""
+    global config_override
+    try:
+        with config_lock:
+            config_override[service.lower()] = api_key
+            with open(CONFIG_STORE_FILE, 'w') as f:
+                json.dump(config_override, f, indent=2)
+        return True
+    except Exception as e:
+        print(f"Error saving config override: {e}")
+        return False
 
 def get_server_port():
     """Lấy port từ environment hoặc config"""
