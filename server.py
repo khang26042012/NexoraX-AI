@@ -434,6 +434,12 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.handle_auth_login()
         elif self.path == '/api/auth/logout':
             self.handle_auth_logout()
+        elif self.path == '/api/admin/users/delete':
+            self.handle_admin_delete_user()
+        elif self.path == '/api/admin/sessions/delete':
+            self.handle_admin_delete_session()
+        elif self.path == '/api/admin/rate-limits/clear':
+            self.handle_admin_clear_rate_limit()
         else:
             self._send_json_error(404, "API endpoint không tồn tại", "NOT_FOUND")
 
@@ -1631,6 +1637,292 @@ Hãy xử lý prompt sau:"""
             logger.error(f"Check session error: {e}")
             self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
 
+    def handle_admin_get_users(self):
+        """Admin API: Get all users"""
+        try:
+            user_list = []
+            for username, password in users.items():
+                user_list.append({
+                    "username": username,
+                    "password_length": len(password)
+                })
+            
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self._send_cors_headers()
+            self.end_headers()
+            
+            response_json = json.dumps({
+                "success": True,
+                "total_users": len(user_list),
+                "users": user_list
+            }, ensure_ascii=False)
+            self.wfile.write(response_json.encode('utf-8'))
+            
+            logger.info(f"Admin API: Retrieved {len(user_list)} users")
+            
+        except Exception as e:
+            logger.error(f"Admin get users error: {e}")
+            self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
+
+    def handle_admin_get_sessions(self):
+        """Admin API: Get all active sessions"""
+        try:
+            current_time = time.time()
+            session_list = []
+            
+            for session_id, session_data in sessions.items():
+                expires_at = session_data.get('expires_at', 0)
+                time_remaining = expires_at - current_time
+                
+                session_list.append({
+                    "session_id": session_id[:16] + "...",
+                    "username": session_data.get('username'),
+                    "remember_me": session_data.get('remember_me', False),
+                    "expires_at": expires_at,
+                    "time_remaining_seconds": int(time_remaining) if time_remaining > 0 else 0,
+                    "is_expired": time_remaining <= 0
+                })
+            
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self._send_cors_headers()
+            self.end_headers()
+            
+            response_json = json.dumps({
+                "success": True,
+                "total_sessions": len(session_list),
+                "sessions": session_list
+            }, ensure_ascii=False)
+            self.wfile.write(response_json.encode('utf-8'))
+            
+            logger.info(f"Admin API: Retrieved {len(session_list)} sessions")
+            
+        except Exception as e:
+            logger.error(f"Admin get sessions error: {e}")
+            self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
+
+    def handle_admin_get_stats(self):
+        """Admin API: Get system statistics"""
+        try:
+            current_time = time.time()
+            
+            active_sessions_count = sum(1 for s in sessions.values() if current_time < s.get('expires_at', 0))
+            expired_sessions_count = sum(1 for s in sessions.values() if current_time >= s.get('expires_at', 0))
+            
+            locked_users_count = sum(1 for data in rate_limits.values() if current_time < data.get('locked_until', 0))
+            
+            stats = {
+                "users": {
+                    "total": len(users),
+                    "locked": locked_users_count
+                },
+                "sessions": {
+                    "total": len(sessions),
+                    "active": active_sessions_count,
+                    "expired": expired_sessions_count
+                },
+                "rate_limits": {
+                    "total": len(rate_limits),
+                    "currently_locked": locked_users_count
+                },
+                "system": {
+                    "session_expiry_hours": SESSION_EXPIRY_HOURS,
+                    "max_login_attempts": MAX_LOGIN_ATTEMPTS,
+                    "rate_limit_window_seconds": RATE_LIMIT_WINDOW
+                }
+            }
+            
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self._send_cors_headers()
+            self.end_headers()
+            
+            response_json = json.dumps({
+                "success": True,
+                "stats": stats
+            }, ensure_ascii=False)
+            self.wfile.write(response_json.encode('utf-8'))
+            
+            logger.info("Admin API: Retrieved system stats")
+            
+        except Exception as e:
+            logger.error(f"Admin get stats error: {e}")
+            self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
+
+    def handle_admin_get_rate_limits(self):
+        """Admin API: Get all rate limits"""
+        try:
+            current_time = time.time()
+            rate_limit_list = []
+            
+            for username, data in rate_limits.items():
+                locked_until = data.get('locked_until', 0)
+                time_remaining = locked_until - current_time if current_time < locked_until else 0
+                
+                rate_limit_list.append({
+                    "username": username,
+                    "attempts": data.get('attempts', 0),
+                    "last_attempt": data.get('last_attempt', 0),
+                    "locked_until": locked_until,
+                    "is_locked": current_time < locked_until,
+                    "time_remaining_seconds": int(time_remaining)
+                })
+            
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self._send_cors_headers()
+            self.end_headers()
+            
+            response_json = json.dumps({
+                "success": True,
+                "total_rate_limits": len(rate_limit_list),
+                "rate_limits": rate_limit_list
+            }, ensure_ascii=False)
+            self.wfile.write(response_json.encode('utf-8'))
+            
+            logger.info(f"Admin API: Retrieved {len(rate_limit_list)} rate limits")
+            
+        except Exception as e:
+            logger.error(f"Admin get rate limits error: {e}")
+            self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
+
+    def handle_admin_delete_user(self):
+        """Admin API: Delete a user"""
+        try:
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            request_data = json.loads(post_data.decode('utf-8'))
+            
+            username = request_data.get('username', '').strip()
+            
+            if not username:
+                self._send_json_error(400, "Username không được để trống", "MISSING_USERNAME")
+                return
+            
+            if username not in users:
+                self._send_json_error(404, f"User '{username}' không tồn tại", "USER_NOT_FOUND")
+                return
+            
+            del users[username]
+            
+            with file_lock:
+                with open(ACCOUNTS_FILE, 'w', encoding='utf-8') as f:
+                    for user, pwd in users.items():
+                        f.write(f"{user}|{pwd}\n")
+            
+            sessions_to_delete = [sid for sid, data in sessions.items() if data.get('username') == username]
+            for sid in sessions_to_delete:
+                delete_session(sid)
+            
+            if username in rate_limits:
+                del rate_limits[username]
+                save_rate_limits()
+            
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self._send_cors_headers()
+            self.end_headers()
+            
+            response_json = json.dumps({
+                "success": True,
+                "message": f"User '{username}' đã được xóa thành công",
+                "sessions_deleted": len(sessions_to_delete)
+            }, ensure_ascii=False)
+            self.wfile.write(response_json.encode('utf-8'))
+            
+            logger.info(f"Admin API: Deleted user '{username}' and {len(sessions_to_delete)} sessions")
+            
+        except json.JSONDecodeError as e:
+            logger.error(f"Invalid JSON in delete user request: {e}")
+            self._send_json_error(400, "Dữ liệu gửi lên không hợp lệ", "INVALID_JSON")
+        except Exception as e:
+            logger.error(f"Admin delete user error: {e}")
+            self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
+
+    def handle_admin_delete_session(self):
+        """Admin API: Delete a session by username"""
+        try:
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            request_data = json.loads(post_data.decode('utf-8'))
+            
+            username = request_data.get('username', '').strip()
+            
+            if not username:
+                self._send_json_error(400, "Username không được để trống", "MISSING_USERNAME")
+                return
+            
+            sessions_to_delete = [sid for sid, data in sessions.items() if data.get('username') == username]
+            
+            if not sessions_to_delete:
+                self._send_json_error(404, f"Không tìm thấy session nào của user '{username}'", "SESSION_NOT_FOUND")
+                return
+            
+            for sid in sessions_to_delete:
+                delete_session(sid)
+            
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self._send_cors_headers()
+            self.end_headers()
+            
+            response_json = json.dumps({
+                "success": True,
+                "message": f"Đã xóa {len(sessions_to_delete)} session(s) của user '{username}'",
+                "sessions_deleted": len(sessions_to_delete)
+            }, ensure_ascii=False)
+            self.wfile.write(response_json.encode('utf-8'))
+            
+            logger.info(f"Admin API: Deleted {len(sessions_to_delete)} sessions for user '{username}'")
+            
+        except json.JSONDecodeError as e:
+            logger.error(f"Invalid JSON in delete session request: {e}")
+            self._send_json_error(400, "Dữ liệu gửi lên không hợp lệ", "INVALID_JSON")
+        except Exception as e:
+            logger.error(f"Admin delete session error: {e}")
+            self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
+
+    def handle_admin_clear_rate_limit(self):
+        """Admin API: Clear rate limit for a user"""
+        try:
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            request_data = json.loads(post_data.decode('utf-8'))
+            
+            username = request_data.get('username', '').strip()
+            
+            if not username:
+                self._send_json_error(400, "Username không được để trống", "MISSING_USERNAME")
+                return
+            
+            if username not in rate_limits:
+                self._send_json_error(404, f"User '{username}' không có rate limit", "RATE_LIMIT_NOT_FOUND")
+                return
+            
+            del rate_limits[username]
+            save_rate_limits()
+            
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self._send_cors_headers()
+            self.end_headers()
+            
+            response_json = json.dumps({
+                "success": True,
+                "message": f"Đã xóa rate limit cho user '{username}'"
+            }, ensure_ascii=False)
+            self.wfile.write(response_json.encode('utf-8'))
+            
+            logger.info(f"Admin API: Cleared rate limit for user '{username}'")
+            
+        except json.JSONDecodeError as e:
+            logger.error(f"Invalid JSON in clear rate limit request: {e}")
+            self._send_json_error(400, "Dữ liệu gửi lên không hợp lệ", "INVALID_JSON")
+        except Exception as e:
+            logger.error(f"Admin clear rate limit error: {e}")
+            self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
+
     def _format_search_context_for_ai(self, serpapi_data, query):
         """Format SerpAPI data into context for AI processing"""
         context_parts = []
@@ -1707,6 +1999,20 @@ Vui lòng trả lời:"""
         # Handle check-session endpoint
         if self.path.startswith('/api/auth/check-session'):
             self.handle_auth_check_session()
+            return
+        
+        # Handle admin GET endpoints
+        if self.path == '/api/admin/users':
+            self.handle_admin_get_users()
+            return
+        elif self.path == '/api/admin/sessions':
+            self.handle_admin_get_sessions()
+            return
+        elif self.path == '/api/admin/stats':
+            self.handle_admin_get_stats()
+            return
+        elif self.path == '/api/admin/rate-limits':
+            self.handle_admin_get_rate_limits()
             return
         
         # Handle root path
