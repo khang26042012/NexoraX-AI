@@ -84,6 +84,10 @@ export function toggleDesktopSidebar(sidebar) {
     // Toggle class 'active' để đóng/mở sidebar
     sidebar.classList.toggle('active');
     
+    // Lưu trạng thái vào localStorage
+    const isOpen = sidebar.classList.contains('active');
+    localStorage.setItem(STORAGE_KEYS.DESKTOP_SIDEBAR_OPEN, isOpen ? 'true' : 'false');
+    
     // Toggle icon: panelLeft ↔ panelRight
     const panelLeftIcon = document.getElementById('desktopPanelLeftIcon');
     const panelRightIcon = document.getElementById('desktopPanelRightIcon');
@@ -115,23 +119,41 @@ export function toggleDesktopSidebar(sidebar) {
 export function initializeDesktopSidebar(sidebar) {
     if (!sidebar) return;
     
-    // Desktop sidebar MỞ mặc định
-    sidebar.classList.add('active');
+    // Kiểm tra localStorage xem user có preference không
+    const savedState = localStorage.getItem(STORAGE_KEYS.DESKTOP_SIDEBAR_OPEN);
+    const shouldBeOpen = savedState === 'true';  // Mặc định ĐÓNG nếu chưa có preference
     
-    // Đảm bảo icon ban đầu đúng (panelLeft ẩn, panelRight hiện)
+    // Setup icon và toggle dựa trên state
     const panelLeftIcon = document.getElementById('desktopPanelLeftIcon');
     const panelRightIcon = document.getElementById('desktopPanelRightIcon');
-    
-    if (panelLeftIcon && panelRightIcon) {
-        panelLeftIcon.classList.add('hidden');  // Ẩn panelLeft (dùng khi đóng)
-        panelRightIcon.classList.remove('hidden');  // Hiện panelRight (dùng khi mở)
-    }
-    
-    // Ẩn desktop toggle ban đầu (vì sidebar đang mở)
     const desktopToggle = document.getElementById('desktopSidebarToggle');
-    if (desktopToggle) {
-        desktopToggle.style.opacity = '0';
-        desktopToggle.style.pointerEvents = 'none';
+    
+    if (shouldBeOpen) {
+        // Sidebar MỞ
+        sidebar.classList.add('active');
+        
+        if (panelLeftIcon && panelRightIcon) {
+            panelLeftIcon.classList.add('hidden');
+            panelRightIcon.classList.remove('hidden');
+        }
+        
+        if (desktopToggle) {
+            desktopToggle.style.opacity = '0';
+            desktopToggle.style.pointerEvents = 'none';
+        }
+    } else {
+        // Sidebar ĐÓNG (mặc định)
+        sidebar.classList.remove('active');
+        
+        if (panelLeftIcon && panelRightIcon) {
+            panelLeftIcon.classList.remove('hidden');
+            panelRightIcon.classList.add('hidden');
+        }
+        
+        if (desktopToggle) {
+            desktopToggle.style.opacity = '1';
+            desktopToggle.style.pointerEvents = 'auto';
+        }
     }
 }
 

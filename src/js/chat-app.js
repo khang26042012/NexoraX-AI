@@ -92,6 +92,7 @@ import {
     TYPING_SPEEDS
 } from './constants.js';
 import { migrateLocalStorageKeys, isTimeRelatedQuery, isSearchQuery, extractSearchQuery } from './utils.js';
+import { startOnboardingManually } from './onboarding.js';
 
 /**
  * NexoraXChat - Main application class
@@ -789,6 +790,8 @@ export class NexoraXChat {
     
     hideAuthModal() {
         hideModal(this.authModal, document.getElementById('authContent'));
+        
+        startOnboardingManually();
     }
     
     async handleLogin() {

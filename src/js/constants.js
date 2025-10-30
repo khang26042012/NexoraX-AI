@@ -254,7 +254,8 @@ export const STORAGE_KEYS = {
     USERNAME: 'nexorax_username',
     PREVIOUS_MODEL_BEFORE_IMAGE_GEN: 'nexorax_previous_model_image_gen',
     PREVIOUS_MODEL_BEFORE_SEARCH: 'nexorax_previous_model_search',
-    PREVIOUS_MODEL_BEFORE_DUAL: 'nexorax_previous_model_dual'
+    PREVIOUS_MODEL_BEFORE_DUAL: 'nexorax_previous_model_dual',
+    DESKTOP_SIDEBAR_OPEN: 'nexorax_desktop_sidebar_open'
 };
 
 /**

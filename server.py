@@ -18,6 +18,7 @@ import urllib.error
 import time
 import secrets
 import threading
+import random
 
 # Import configuration
 try:
@@ -71,6 +72,68 @@ rate_limits = {}
 SESSION_EXPIRY_HOURS = 168  # 7 days
 MAX_LOGIN_ATTEMPTS = 5
 RATE_LIMIT_WINDOW = 300  # 5 minutes in seconds
+
+# Retry configuration for LLM7 API
+MAX_RETRIES = 3
+BASE_BACKOFF = 1.0  # seconds
+MAX_BACKOFF = 10.0  # seconds
+
+def retry_request_with_backoff(url, headers, data, timeout=REQUEST_TIMEOUT, max_retries=MAX_RETRIES):  # type: ignore
+    """
+    Retry HTTP request with exponential backoff for transient errors
+    
+    Args:
+        url: API endpoint URL
+        headers: HTTP headers dict
+        data: Request payload (bytes)
+        timeout: Request timeout in seconds
+        max_retries: Maximum number of retry attempts
+    
+    Returns:
+        urllib.request HTTP response object (always returns or raises exception)
+    
+    Raises:
+        urllib.error.HTTPError: If final retry fails with HTTP error
+        urllib.error.URLError: If final retry fails with network error
+        TimeoutError: If final retry times out
+    """
+    last_exception = None
+    
+    for attempt in range(max_retries):
+        try:
+            req = urllib.request.Request(url, data=data, headers=headers)
+            response = urllib.request.urlopen(req, timeout=timeout)
+            
+            if attempt > 0:
+                logger.info(f"✅ Request succeeded on attempt {attempt + 1}/{max_retries}")
+            
+            return response
+            
+        except urllib.error.HTTPError as e:
+            last_exception = e
+            if e.code in [502, 503, 504]:
+                if attempt < max_retries - 1:
+                    backoff = min(BASE_BACKOFF * (2 ** attempt) + random.uniform(0, 1), MAX_BACKOFF)
+                    logger.warning(f"⚠️ HTTP {e.code} error on attempt {attempt + 1}/{max_retries}. Retrying in {backoff:.2f}s...")
+                    time.sleep(backoff)
+                    continue
+            raise
+            
+        except (urllib.error.URLError, TimeoutError, OSError) as e:
+            last_exception = e
+            error_type = type(e).__name__
+            
+            if attempt < max_retries - 1:
+                backoff = min(BASE_BACKOFF * (2 ** attempt) + random.uniform(0, 1), MAX_BACKOFF)
+                logger.warning(f"⚠️ {error_type} on attempt {attempt + 1}/{max_retries}: {str(e)}. Retrying in {backoff:.2f}s...")
+                time.sleep(backoff)
+                continue
+            else:
+                logger.error(f"❌ All {max_retries} attempts failed. Last error: {error_type} - {str(e)}")
+                raise
+    
+    if last_exception:
+        raise last_exception
 
 def load_users():
     """Load users from acc.txt and return dict {username: password}"""
@@ -969,14 +1032,13 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 "temperature": 0.7
             }
             
-            # Make request to LLM7.io
-            llm7_request = urllib.request.Request(
+            # Make request to LLM7.io with retry logic
+            with retry_request_with_backoff(
                 llm7_url,
-                data=json.dumps(llm7_payload).encode('utf-8'),
-                headers=llm7_headers
-            )
-            
-            with urllib.request.urlopen(llm7_request, timeout=REQUEST_TIMEOUT) as response:
+                llm7_headers,
+                json.dumps(llm7_payload).encode('utf-8'),
+                timeout=REQUEST_TIMEOUT
+            ) as response:
                 llm7_response = response.read().decode('utf-8')
                 llm7_data = json.loads(llm7_response)
             
@@ -1106,14 +1168,13 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 "temperature": 0.7
             }
             
-            # Make request to LLM7.io
-            llm7_request = urllib.request.Request(
+            # Make request to LLM7.io with retry logic
+            with retry_request_with_backoff(
                 llm7_url,
-                data=json.dumps(llm7_payload).encode('utf-8'),
-                headers=llm7_headers
-            )
-            
-            with urllib.request.urlopen(llm7_request, timeout=REQUEST_TIMEOUT) as response:
+                llm7_headers,
+                json.dumps(llm7_payload).encode('utf-8'),
+                timeout=REQUEST_TIMEOUT
+            ) as response:
                 llm7_response = response.read().decode('utf-8')
                 llm7_data = json.loads(llm7_response)
             
@@ -1244,14 +1305,13 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 "temperature": 0.7
             }
             
-            # Make request to LLM7.io
-            llm7_request = urllib.request.Request(
+            # Make request to LLM7.io with retry logic
+            with retry_request_with_backoff(
                 llm7_url,
-                data=json.dumps(llm7_payload).encode('utf-8'),
-                headers=llm7_headers
-            )
-            
-            with urllib.request.urlopen(llm7_request, timeout=REQUEST_TIMEOUT) as response:
+                llm7_headers,
+                json.dumps(llm7_payload).encode('utf-8'),
+                timeout=REQUEST_TIMEOUT
+            ) as response:
                 llm7_response = response.read().decode('utf-8')
                 llm7_data = json.loads(llm7_response)
             

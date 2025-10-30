@@ -26,7 +26,7 @@ SERPAPI_API_KEY = "e5e04b97a6f406a53f9430701e795fb8d306cdc7514a8d68bbbc6c6b0a4d4
 # LLM7.io API Key
 # API miễn phí cho nhiều mô hình AI: https://llm7.io/
 # Environment variable LLM7_API_KEY will override this if set
-LLM7_API_KEY = "nw8G+LKJny13aUM7OYCWTe47Uwg7uo4TM4EMPf1JxFjhKMK9pjFbp09NXqSkAka57mikeYbJPn99WToaqpQjddd2k95oNvNxxVb8VvP5mc8mAVPL6H/Lym34g9/YUgWV3WKM"
+LLM7_API_KEY = "rSSJ1yGw9HneYBQY4dSs8KPUKxaYwoQY6Q9zQKqNyX8+W3gpyQHOYmw+4JXUhEzk3hhPeMmFAQbmqq2VBCPWDFETIrmF6R9KXjz6AnqdQ2y4woeJgBCEVYmhg48qQYM8UTcx"
 
 # ===========================================
 # CONFIG OVERRIDE (HOT-RELOAD)

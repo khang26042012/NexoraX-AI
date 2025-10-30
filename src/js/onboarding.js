@@ -256,13 +256,25 @@ class OnboardingManager {
 const onboardingManager = new OnboardingManager();
 
 export function initOnboarding() {
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => onboardingManager.start(), 800);
-        });
-    } else {
+    const tryStartOnboarding = () => {
+        const authModal = document.getElementById('authModal');
+        
+        if (authModal && !authModal.classList.contains('hidden')) {
+            return;
+        }
+        
         setTimeout(() => onboardingManager.start(), 800);
+    };
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', tryStartOnboarding);
+    } else {
+        tryStartOnboarding();
     }
+}
+
+export function startOnboardingManually() {
+    setTimeout(() => onboardingManager.start(), 500);
 }
 
 export function resetOnboarding() {
