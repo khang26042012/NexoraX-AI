@@ -134,10 +134,16 @@ export function setupMainEventListeners(app) {
         setTimeout(() => app.showSettings(), 300);
     });
     
-    // Clear All
+    // Clear All - Updated for new confirmation modal
     document.getElementById('clearAllBtn')?.addEventListener('click', () => app.showClearAllConfirmation());
-    document.getElementById('cancelClearAll')?.addEventListener('click', () => app.hideClearAllConfirmation());
-    document.getElementById('confirmClearAll')?.addEventListener('click', () => app.clearAllChats());
+    document.getElementById('cancelDelete')?.addEventListener('click', () => app.hideClearAllConfirmation());
+    document.getElementById('confirmDelete')?.addEventListener('click', () => app.clearAllChats());
+    
+    // Settings Toggles - Notifications
+    document.getElementById('notificationToggle')?.addEventListener('click', () => app.toggleNotifications());
+    
+    // Settings Toggles - Auto Save
+    document.getElementById('autoSaveToggle')?.addEventListener('click', () => app.toggleAutoSave());
     
     // Feedback
     document.getElementById('feedbackBtn')?.addEventListener('click', () => app.showFeedback());

@@ -42,6 +42,8 @@ import {
     hideModal,
     showSettings as uiShowSettings,
     hideSettings as uiHideSettings,
+    showDeleteConfirmation,
+    hideDeleteConfirmation,
     showNotification,
     toggleModelOptions as uiToggleModelOptions
 } from './ui-manager.js';
@@ -129,6 +131,7 @@ export class NexoraXChat {
         this.loadTheme();
         this.loadModelSelection();
         this.loadDualModeState();
+        this.loadSettingsState();
         this.initializeDesktopSidebar();
         this.renderChatList();
         
@@ -266,11 +269,74 @@ export class NexoraXChat {
     }
     
     showClearAllConfirmation() {
-        showModal(this.clearAllModal, document.getElementById('clearAllContent'));
+        showDeleteConfirmation();
     }
     
     hideClearAllConfirmation() {
-        hideModal(this.clearAllModal, document.getElementById('clearAllContent'));
+        hideDeleteConfirmation();
+    }
+    
+    toggleNotifications() {
+        const isEnabled = localStorage.getItem(STORAGE_KEYS.NOTIFICATIONS_ENABLED) !== 'false';
+        const newState = !isEnabled;
+        localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS_ENABLED, String(newState));
+        
+        const track = document.getElementById('notificationTrack');
+        if (track) {
+            if (newState) {
+                track.parentElement.parentElement.classList.add('dark');
+            } else {
+                track.parentElement.parentElement.classList.remove('dark');
+            }
+        }
+        
+        showNotification(
+            newState ? 'Đã bật thông báo' : 'Đã tắt thông báo',
+            'success'
+        );
+    }
+    
+    toggleAutoSave() {
+        const isEnabled = localStorage.getItem(STORAGE_KEYS.AUTO_SAVE_CHAT) === 'true';
+        const newState = !isEnabled;
+        localStorage.setItem(STORAGE_KEYS.AUTO_SAVE_CHAT, String(newState));
+        
+        const track = document.getElementById('autoSaveTrack');
+        if (track) {
+            if (newState) {
+                track.parentElement.parentElement.classList.add('dark');
+            } else {
+                track.parentElement.parentElement.classList.remove('dark');
+            }
+        }
+        
+        showNotification(
+            newState ? 'Đã bật tự động lưu chat' : 'Đã tắt tự động lưu chat',
+            'success'
+        );
+    }
+    
+    loadSettingsState() {
+        const notificationsEnabled = localStorage.getItem(STORAGE_KEYS.NOTIFICATIONS_ENABLED) !== 'false';
+        const autoSaveEnabled = localStorage.getItem(STORAGE_KEYS.AUTO_SAVE_CHAT) === 'true';
+        
+        const notificationTrack = document.getElementById('notificationTrack');
+        if (notificationTrack) {
+            if (notificationsEnabled) {
+                notificationTrack.parentElement.parentElement.classList.add('dark');
+            } else {
+                notificationTrack.parentElement.parentElement.classList.remove('dark');
+            }
+        }
+        
+        const autoSaveTrack = document.getElementById('autoSaveTrack');
+        if (autoSaveTrack) {
+            if (autoSaveEnabled) {
+                autoSaveTrack.parentElement.parentElement.classList.add('dark');
+            } else {
+                autoSaveTrack.parentElement.parentElement.classList.remove('dark');
+            }
+        }
     }
     
     showFeedback() {

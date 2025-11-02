@@ -288,6 +288,28 @@ export function hideSettings() {
     }, 250);
 }
 
+/**
+ * Show delete confirmation modal
+ */
+export function showDeleteConfirmation() {
+    const modal = document.getElementById('deleteConfirmModal');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+/**
+ * Hide delete confirmation modal
+ */
+export function hideDeleteConfirmation() {
+    const modal = document.getElementById('deleteConfirmModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
 // ===================================
 // NOTIFICATION
 // ===================================

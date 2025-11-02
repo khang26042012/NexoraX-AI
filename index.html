@@ -757,7 +757,65 @@
                         </div>
                         <div class="theme-toggle-switch">
                             <div class="toggle-track">
+                                <svg class="toggle-icon toggle-sun" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z" />
+                                </svg>
                                 <div class="toggle-thumb"></div>
+                                <svg class="toggle-icon toggle-moon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                    <path fill-rule="evenodd" d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </div>
+                    </button>
+                </div>
+                
+                <!-- Features Section -->
+                <div class="settings-section">
+                    <h3 class="settings-section-title">⚡ Tính năng</h3>
+                    
+                    <button id="notificationToggle" class="modern-settings-item">
+                        <div class="settings-item-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25);">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                            </svg>
+                        </div>
+                        <div class="settings-item-content">
+                            <div class="settings-item-title">Thông báo</div>
+                            <div class="settings-item-subtitle">Nhận thông báo khi có phản hồi mới</div>
+                        </div>
+                        <div class="theme-toggle-switch">
+                            <div class="toggle-track" id="notificationTrack">
+                                <svg class="toggle-icon toggle-sun" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" style="color: #f59e0b;">
+                                    <path d="M5.85 3.5a.75.75 0 00-1.117-1 9.719 9.719 0 00-2.348 4.876.75.75 0 001.479.248A8.219 8.219 0 015.85 3.5zM19.267 2.5a.75.75 0 10-1.118 1 8.22 8.22 0 011.987 4.124.75.75 0 001.48-.248A9.72 9.72 0 0019.266 2.5z" />
+                                    <path fill-rule="evenodd" d="M12 2.25A6.75 6.75 0 005.25 9v.75a8.217 8.217 0 01-2.119 5.52.75.75 0 00.298 1.206c1.544.57 3.16.99 4.831 1.243a3.75 3.75 0 107.48 0 24.583 24.583 0 004.83-1.244.75.75 0 00.298-1.205 8.217 8.217 0 01-2.118-5.52V9A6.75 6.75 0 0012 2.25zM9.75 18c0-.034 0-.067.002-.1a25.05 25.05 0 004.496 0l.002.1a2.25 2.25 0 11-4.5 0z" clip-rule="evenodd" />
+                                </svg>
+                                <div class="toggle-thumb"></div>
+                                <svg class="toggle-icon toggle-moon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                    <path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </div>
+                    </button>
+                    
+                    <button id="autoSaveToggle" class="modern-settings-item">
+                        <div class="settings-item-icon" style="background: linear-gradient(135deg, #06b6d4, #0891b2); box-shadow: 0 2px 8px rgba(6, 182, 212, 0.25);">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
+                            </svg>
+                        </div>
+                        <div class="settings-item-content">
+                            <div class="settings-item-title">Tự động lưu chat</div>
+                            <div class="settings-item-subtitle">Lưu cuộc trò chuyện tự động khi kết thúc</div>
+                        </div>
+                        <div class="theme-toggle-switch">
+                            <div class="toggle-track" id="autoSaveTrack">
+                                <svg class="toggle-icon toggle-sun" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" style="color: #06b6d4;">
+                                    <path fill-rule="evenodd" d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z" clip-rule="evenodd" />
+                                </svg>
+                                <div class="toggle-thumb"></div>
+                                <svg class="toggle-icon toggle-moon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                    <path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clip-rule="evenodd" />
+                                </svg>
                             </div>
                         </div>
                     </button>
@@ -802,6 +860,29 @@
                     </button>
                 </div>
                 
+            </div>
+        </div>
+    </div>
+    
+    <!-- Confirmation Modal for Delete All Chats -->
+    <div id="deleteConfirmModal" class="confirmation-modal-overlay">
+        <div class="confirmation-modal-container">
+            <div class="confirmation-modal-content">
+                <div class="confirmation-modal-header">
+                    <div class="confirmation-modal-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="confirmation-modal-title">Xác nhận xóa tất cả chat?</h3>
+                </div>
+                <div class="confirmation-modal-body">
+                    <p>Bạn có chắc chắn muốn xóa tất cả các cuộc trò chuyện không? Hành động này không thể hoàn tác và tất cả dữ liệu chat sẽ bị mất vĩnh viễn.</p>
+                </div>
+                <div class="confirmation-modal-footer">
+                    <button id="cancelDelete" class="confirmation-btn confirmation-btn-cancel">Hủy</button>
+                    <button id="confirmDelete" class="confirmation-btn confirmation-btn-confirm">Xác nhận xóa</button>
+                </div>
             </div>
         </div>
     </div>

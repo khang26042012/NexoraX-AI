@@ -59,7 +59,7 @@ img[src*="nexorax-logo.svg"]:hover {
 }
 
 .modern-settings-header {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     padding: 20px 24px;
     position: relative;
     overflow: hidden;
@@ -82,24 +82,25 @@ img[src*="nexorax-logo.svg"]:hover {
 }
 
 .settings-icon-container {
-    width: 44px;
-    height: 44px;
+    width: 52px;
+    height: 52px;
     background: rgba(255, 255, 255, 0.2);
-    border-radius: 12px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
     border: 1px solid rgba(255, 255, 255, 0.25);
+    transition: all 0.3s ease;
 }
 
 .settings-icon-container svg {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
 }
 
 .modern-close-btn {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     background: rgba(255, 255, 255, 0.15);
     border: 1px solid rgba(255, 255, 255, 0.25);
     border-radius: 10px;
@@ -107,12 +108,12 @@ img[src*="nexorax-logo.svg"]:hover {
     align-items: center;
     justify-content: center;
     color: white;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .modern-close-btn:hover {
-    background: rgba(255, 255, 255, 0.25);
-    transform: scale(1.05);
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1) rotate(90deg);
 }
 
 .modern-settings-content {
@@ -138,10 +139,23 @@ img[src*="nexorax-logo.svg"]:hover {
 
 .settings-section {
     margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid transparent;
+    background-image: linear-gradient(to right, transparent, rgba(102, 126, 234, 0.1), transparent);
+    background-position: 0 100%;
+    background-size: 100% 1px;
+    background-repeat: no-repeat;
 }
 
 .settings-section:last-child {
     margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+    background-image: none;
+}
+
+.dark .settings-section {
+    background-image: linear-gradient(to right, transparent, rgba(102, 126, 234, 0.2), transparent);
 }
 
 .settings-section-title {
@@ -236,33 +250,66 @@ img[src*="nexorax-logo.svg"]:hover {
 .settings-item-arrow,
 .settings-item-chevron {
     margin-left: 12px;
+    transition: transform 0.3s ease;
 }
 
-/* Theme Toggle Switch - Compact */
+.modern-settings-item:hover .settings-item-chevron {
+    transform: translateX(4px);
+}
+
+.modern-settings-item:hover .settings-item-arrow {
+    transform: translateX(4px);
+}
+
+/* Theme Toggle Switch - Modern with Sun/Moon Icons */
 .theme-toggle-switch {
     margin-left: 8px;
 }
 
 .toggle-track {
-    width: 44px;
-    height: 24px;
+    width: 52px;
+    height: 28px;
     background: #e2e8f0;
-    border-radius: 12px;
+    border-radius: 14px;
     position: relative;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 6px;
 }
 
 .toggle-thumb {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     background: white;
-    border-radius: 10px;
+    border-radius: 11px;
     position: absolute;
-    top: 2px;
-    left: 2px;
-    transition: all 0.3s ease;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    top: 3px;
+    left: 3px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    z-index: 2;
+}
+
+.toggle-icon {
+    width: 14px;
+    height: 14px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+}
+
+.toggle-sun {
+    color: #fbbf24;
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+}
+
+.toggle-moon {
+    color: #cbd5e0;
+    opacity: 0.4;
+    transform: rotate(90deg) scale(0.8);
 }
 
 .dark .toggle-track {
@@ -270,7 +317,18 @@ img[src*="nexorax-logo.svg"]:hover {
 }
 
 .dark .toggle-thumb {
-    transform: translateX(20px);
+    transform: translateX(24px);
+}
+
+.dark .toggle-sun {
+    opacity: 0.3;
+    transform: rotate(-90deg) scale(0.8);
+}
+
+.dark .toggle-moon {
+    color: #f0f0f0;
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
 }
 
 /* Model Options Dropdown - Compact */
@@ -3148,4 +3206,192 @@ body.dark-mode .image-generation-result img {
 
 .config-option.active-config svg {
     color: white;
+}
+
+/* ============================================
+   CONFIRMATION MODAL - Modern Slide-In Animation
+   ============================================ */
+
+.confirmation-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 150;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.confirmation-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.confirmation-modal-container {
+    width: 90%;
+    max-width: 420px;
+    transform: translateY(-100px);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.confirmation-modal-overlay.active .confirmation-modal-container {
+    transform: translateY(0);
+}
+
+.confirmation-modal-content {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+.confirmation-modal-header {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    padding: 20px 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.confirmation-modal-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+    opacity: 0.9;
+}
+
+.confirmation-modal-header > * {
+    position: relative;
+    z-index: 1;
+}
+
+.confirmation-modal-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.confirmation-modal-icon svg {
+    width: 28px;
+    height: 28px;
+    color: white;
+}
+
+.confirmation-modal-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+    margin-top: 12px;
+}
+
+.confirmation-modal-body {
+    padding: 24px;
+    color: #374151;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.confirmation-modal-footer {
+    display: flex;
+    gap: 12px;
+    padding: 0 24px 24px;
+    justify-content: flex-end;
+}
+
+.confirmation-btn {
+    padding: 12px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 100px;
+}
+
+.confirmation-btn-cancel {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.confirmation-btn-cancel:hover {
+    background: #d1d5db;
+    transform: translateY(-1px);
+}
+
+.confirmation-btn-confirm {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.confirmation-btn-confirm:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+}
+
+/* Dark mode for confirmation modal */
+.dark .confirmation-modal-content {
+    background: #141414;
+    border-color: #262626;
+}
+
+.dark .confirmation-modal-body {
+    color: #d1d5db;
+}
+
+.dark .confirmation-btn-cancel {
+    background: #262626;
+    color: #d1d5db;
+}
+
+.dark .confirmation-btn-cancel:hover {
+    background: #333333;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .confirmation-modal-container {
+        width: 95%;
+    }
+    
+    .confirmation-modal-footer {
+        flex-direction: column;
+    }
+    
+    .confirmation-btn {
+        width: 100%;
+    }
+}
+
+/* Settings item badge */
+.settings-item-badge {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 10px;
+    margin-left: auto;
+    margin-right: 8px;
+}
+
+.dark .settings-item-badge {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
 }

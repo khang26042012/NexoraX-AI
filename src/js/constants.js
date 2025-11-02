@@ -255,7 +255,9 @@ export const STORAGE_KEYS = {
     PREVIOUS_MODEL_BEFORE_IMAGE_GEN: 'nexorax_previous_model_image_gen',
     PREVIOUS_MODEL_BEFORE_SEARCH: 'nexorax_previous_model_search',
     PREVIOUS_MODEL_BEFORE_DUAL: 'nexorax_previous_model_dual',
-    DESKTOP_SIDEBAR_OPEN: 'nexorax_desktop_sidebar_open'
+    DESKTOP_SIDEBAR_OPEN: 'nexorax_desktop_sidebar_open',
+    NOTIFICATIONS_ENABLED: 'nexorax_notifications_enabled',
+    AUTO_SAVE_CHAT: 'nexorax_auto_save_chat'
 };
 
 /**
