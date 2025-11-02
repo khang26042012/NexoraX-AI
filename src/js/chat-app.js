@@ -794,11 +794,30 @@ export class NexoraXChat {
         startOnboardingManually();
     }
     
+    togglePasswordVisibility(passwordField, showIcon, hideIcon) {
+        if (!passwordField || !showIcon || !hideIcon) return;
+        
+        const isPassword = passwordField.type === 'password';
+        
+        if (isPassword) {
+            // Show password
+            passwordField.type = 'text';
+            showIcon.classList.add('hidden');
+            hideIcon.classList.remove('hidden');
+        } else {
+            // Hide password
+            passwordField.type = 'password';
+            showIcon.classList.remove('hidden');
+            hideIcon.classList.add('hidden');
+        }
+    }
+    
     async handleLogin() {
         const username = document.getElementById('loginUsername').value.trim();
         const password = document.getElementById('loginPassword').value.trim();
+        const rememberMe = document.getElementById('loginRememberMe').checked;
         
-        await handleLogin(username, password, false, 
+        await handleLogin(username, password, rememberMe, 
             (user) => {
                 updateUIForLoggedInUser(user);
                 setupUserMenuDropdown(() => this.handleLogout());
@@ -807,37 +826,28 @@ export class NexoraXChat {
                 // Clear inputs
                 document.getElementById('loginUsername').value = '';
                 document.getElementById('loginPassword').value = '';
+                document.getElementById('loginRememberMe').checked = false;
             }
         );
     }
     
-    async handleSignup(type) {
-        let username, password, email = null;
+    async handleSignup() {
+        const email = document.getElementById('signupEmail').value.trim();
+        const username = document.getElementById('signupUsername').value.trim();
+        const password = document.getElementById('signupPassword').value.trim();
+        const confirmPassword = document.getElementById('signupConfirmPassword').value.trim();
         
-        if (type === 'email') {
-            email = document.getElementById('signupEmail').value.trim();
-            username = document.getElementById('signupEmailUsername').value.trim();
-            password = document.getElementById('signupEmailPassword').value.trim();
-        } else {
-            username = document.getElementById('signupUsernameOnly').value.trim();
-            password = document.getElementById('signupUsernamePassword').value.trim();
-        }
-        
-        await handleSignup({ username, password, email },
+        await handleSignup({ email, username, password, confirmPassword },
             (user) => {
                 updateUIForLoggedInUser(user);
                 setupUserMenuDropdown(() => this.handleLogout());
                 this.hideAuthModal();
                 
                 // Clear inputs
-                if (type === 'email') {
-                    document.getElementById('signupEmail').value = '';
-                    document.getElementById('signupEmailUsername').value = '';
-                    document.getElementById('signupEmailPassword').value = '';
-                } else {
-                    document.getElementById('signupUsernameOnly').value = '';
-                    document.getElementById('signupUsernamePassword').value = '';
-                }
+                document.getElementById('signupEmail').value = '';
+                document.getElementById('signupUsername').value = '';
+                document.getElementById('signupPassword').value = '';
+                document.getElementById('signupConfirmPassword').value = '';
             }
         );
     }

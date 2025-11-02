@@ -400,23 +400,39 @@ export function setupAuthEventListeners(app) {
         });
     }
     
-    // Toggle username signup expandable section
-    const toggleUsernameSignup = document.getElementById('toggleUsernameSignup');
-    const backToEmailSignup = document.getElementById('backToEmailSignup');
-    const signupEmailForm = document.getElementById('signupEmailForm');
-    const signupUsernameForm = document.getElementById('signupUsernameForm');
+    // Password visibility toggles - Login
+    const loginPasswordToggle = document.getElementById('loginPasswordToggle');
+    const loginPassword = document.getElementById('loginPassword');
+    const loginPasswordShowIcon = document.getElementById('loginPasswordShowIcon');
+    const loginPasswordHideIcon = document.getElementById('loginPasswordHideIcon');
     
-    if (toggleUsernameSignup && backToEmailSignup && signupEmailForm && signupUsernameForm) {
-        toggleUsernameSignup.addEventListener('click', () => {
-            signupEmailForm.classList.add('hidden');
-            signupUsernameForm.classList.remove('hidden');
-            toggleUsernameSignup.parentElement.classList.add('hidden');
+    if (loginPasswordToggle && loginPassword && loginPasswordShowIcon && loginPasswordHideIcon) {
+        loginPasswordToggle.addEventListener('click', () => {
+            app.togglePasswordVisibility(loginPassword, loginPasswordShowIcon, loginPasswordHideIcon);
         });
-        
-        backToEmailSignup.addEventListener('click', () => {
-            signupUsernameForm.classList.add('hidden');
-            signupEmailForm.classList.remove('hidden');
-            toggleUsernameSignup.parentElement.classList.remove('hidden');
+    }
+    
+    // Password visibility toggles - Signup
+    const signupPasswordToggle = document.getElementById('signupPasswordToggle');
+    const signupPassword = document.getElementById('signupPassword');
+    const signupPasswordShowIcon = document.getElementById('signupPasswordShowIcon');
+    const signupPasswordHideIcon = document.getElementById('signupPasswordHideIcon');
+    
+    if (signupPasswordToggle && signupPassword && signupPasswordShowIcon && signupPasswordHideIcon) {
+        signupPasswordToggle.addEventListener('click', () => {
+            app.togglePasswordVisibility(signupPassword, signupPasswordShowIcon, signupPasswordHideIcon);
+        });
+    }
+    
+    // Password visibility toggles - Signup Confirm Password
+    const signupConfirmPasswordToggle = document.getElementById('signupConfirmPasswordToggle');
+    const signupConfirmPassword = document.getElementById('signupConfirmPassword');
+    const signupConfirmPasswordShowIcon = document.getElementById('signupConfirmPasswordShowIcon');
+    const signupConfirmPasswordHideIcon = document.getElementById('signupConfirmPasswordHideIcon');
+    
+    if (signupConfirmPasswordToggle && signupConfirmPassword && signupConfirmPasswordShowIcon && signupConfirmPasswordHideIcon) {
+        signupConfirmPasswordToggle.addEventListener('click', () => {
+            app.togglePasswordVisibility(signupConfirmPassword, signupConfirmPasswordShowIcon, signupConfirmPasswordHideIcon);
         });
     }
     
@@ -425,7 +441,6 @@ export function setupAuthEventListeners(app) {
     
     // Login with Enter key
     const loginUsername = document.getElementById('loginUsername');
-    const loginPassword = document.getElementById('loginPassword');
     if (loginUsername && loginPassword) {
         [loginUsername, loginPassword].forEach(input => {
             input.addEventListener('keypress', (e) => {
@@ -436,26 +451,19 @@ export function setupAuthEventListeners(app) {
         });
     }
     
-    // Signup buttons
-    document.getElementById('signupEmailBtn')?.addEventListener('click', () => app.handleSignup('email'));
-    document.getElementById('signupUsernameBtn')?.addEventListener('click', () => app.handleSignup('username'));
+    // Signup button
+    document.getElementById('signupBtn')?.addEventListener('click', () => app.handleSignup());
     
     // Signup with Enter key
     const signupInputs = [
-        'signupEmail', 'signupEmailUsername', 'signupEmailPassword',
-        'signupUsernameOnly', 'signupUsernamePassword'
+        'signupEmail', 'signupUsername', 'signupPassword', 'signupConfirmPassword'
     ];
     signupInputs.forEach(id => {
         const input = document.getElementById(id);
         if (input) {
             input.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
-                    const emailForm = document.getElementById('signupEmailForm');
-                    if (emailForm && !emailForm.classList.contains('hidden')) {
-                        app.handleSignup('email');
-                    } else {
-                        app.handleSignup('username');
-                    }
+                    app.handleSignup();
                 }
             });
         }

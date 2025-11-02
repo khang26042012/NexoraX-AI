@@ -10,7 +10,16 @@
  */
 
 import { API_ENDPOINTS } from './constants.js';
-import { isValidEmail, isValidPassword } from './utils.js';
+import { 
+    isValidEmail, 
+    isValidPassword, 
+    isValidUsername,
+    isPasswordMatch,
+    showFieldError,
+    hideFieldError,
+    clearAllErrors,
+    setButtonLoading
+} from './utils.js';
 import { showNotification } from './ui-manager.js';
 
 // ===================================
@@ -42,72 +51,147 @@ export async function checkUserSession(onSuccess, onFail) {
 }
 
 /**
- * Handle login
- * @param {string} username - Username
+ * Handle login với validation và loading states
+ * @param {string} username - Username hoặc email
  * @param {string} password - Password
- * @param {boolean} rememberMe - Remember me checkbox (mặc định true để session 30 ngày)
+ * @param {boolean} rememberMe - Remember me checkbox
  * @param {Function} onSuccess - Callback khi login thành công
  * @param {Function} onError - Callback khi login thất bại
  */
-export async function handleLogin(username, password, rememberMe = true, onSuccess, onError) {
-    if (!username || !password) {
-        showNotification('Vui lòng điền đầy đủ thông tin!', 'error');
+export async function handleLogin(username, password, rememberMe = false, onSuccess, onError) {
+    // Clear previous errors
+    clearAllErrors(['loginUsername', 'loginPassword']);
+    
+    // Validation
+    let hasError = false;
+    
+    if (!username || username.trim() === '') {
+        showFieldError('loginUsername', 'Vui lòng nhập email hoặc username');
+        hasError = true;
+    }
+    
+    if (!password || password.trim() === '') {
+        showFieldError('loginPassword', 'Vui lòng nhập mật khẩu');
+        hasError = true;
+    }
+    
+    if (hasError) {
         return;
     }
+    
+    // Set loading state
+    const loginBtn = document.getElementById('loginBtn');
+    setButtonLoading(loginBtn, true, 'loginBtnText', 'loginBtnSpinner');
     
     try {
         const response = await fetch(API_ENDPOINTS.LOGIN, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
-            body: JSON.stringify({ username, password, remember_me: true })
+            body: JSON.stringify({ 
+                username: username.trim(), 
+                password, 
+                remember_me: rememberMe 
+            })
         });
         
         const data = await response.json();
+        
+        // Remove loading state
+        setButtonLoading(loginBtn, false, 'loginBtnText', 'loginBtnSpinner');
         
         if (response.ok) {
             showNotification(`Đăng nhập thành công! Chào ${username} 👋`, 'success');
             if (onSuccess) onSuccess(username);
         } else {
-            showNotification(data.error || 'Đăng nhập thất bại!', 'error');
+            // Show error based on response
+            const errorMsg = data.error || 'Đăng nhập thất bại!';
+            
+            // Map errors to specific fields if possible
+            if (errorMsg.toLowerCase().includes('username') || errorMsg.toLowerCase().includes('email')) {
+                showFieldError('loginUsername', errorMsg);
+            } else if (errorMsg.toLowerCase().includes('password') || errorMsg.toLowerCase().includes('mật khẩu')) {
+                showFieldError('loginPassword', errorMsg);
+            } else {
+                showNotification(errorMsg, 'error');
+            }
+            
             if (onError) onError(data.error);
         }
     } catch (error) {
         console.error('Login error:', error);
+        setButtonLoading(loginBtn, false, 'loginBtnText', 'loginBtnSpinner');
         showNotification('Lỗi kết nối! Vui lòng thử lại.', 'error');
         if (onError) onError(error.message);
     }
 }
 
 /**
- * Handle signup
- * @param {Object} signupData - Signup data {username, password, email (optional)}
+ * Handle signup với validation đầy đủ và loading states
+ * @param {Object} signupData - Signup data {email, username, password, confirmPassword}
  * @param {Function} onSuccess - Callback khi signup thành công
  * @param {Function} onError - Callback khi signup thất bại
  */
 export async function handleSignup(signupData, onSuccess, onError) {
-    const { username, password, email } = signupData;
+    const { email, username, password, confirmPassword } = signupData;
     
-    if (!username || !password) {
-        showNotification('Vui lòng điền đầy đủ thông tin!', 'error');
+    // Clear previous errors
+    clearAllErrors(['signupEmail', 'signupUsername', 'signupPassword', 'signupConfirmPassword']);
+    
+    // Validation
+    let hasError = false;
+    
+    // Validate Email
+    if (!email || email.trim() === '') {
+        showFieldError('signupEmail', 'Vui lòng nhập email');
+        hasError = true;
+    } else if (!isValidEmail(email)) {
+        showFieldError('signupEmail', 'Email không hợp lệ (ví dụ: user@example.com)');
+        hasError = true;
+    }
+    
+    // Validate Username
+    if (!username || username.trim() === '') {
+        showFieldError('signupUsername', 'Vui lòng nhập username');
+        hasError = true;
+    } else if (!isValidUsername(username)) {
+        showFieldError('signupUsername', 'Username phải có 3-20 ký tự (chỉ chữ, số và _)');
+        hasError = true;
+    }
+    
+    // Validate Password
+    if (!password || password.trim() === '') {
+        showFieldError('signupPassword', 'Vui lòng nhập mật khẩu');
+        hasError = true;
+    } else if (!isValidPassword(password)) {
+        showFieldError('signupPassword', 'Mật khẩu phải có ít nhất 6 ký tự');
+        hasError = true;
+    }
+    
+    // Validate Confirm Password
+    if (!confirmPassword || confirmPassword.trim() === '') {
+        showFieldError('signupConfirmPassword', 'Vui lòng xác nhận mật khẩu');
+        hasError = true;
+    } else if (!isPasswordMatch(password, confirmPassword)) {
+        showFieldError('signupConfirmPassword', 'Mật khẩu xác nhận không khớp');
+        hasError = true;
+    }
+    
+    if (hasError) {
         return;
     }
     
-    if (email && !isValidEmail(email)) {
-        showNotification('Email không hợp lệ!', 'error');
-        return;
-    }
-    
-    if (!isValidPassword(password)) {
-        showNotification('Mật khẩu phải có ít nhất 6 ký tự!', 'error');
-        return;
-    }
+    // Set loading state
+    const signupBtn = document.getElementById('signupBtn');
+    setButtonLoading(signupBtn, true, 'signupBtnText', 'signupBtnSpinner');
     
     try {
-        const requestBody = { username, password, remember_me: true };
-        if (email) {
-            requestBody.email = email;
-        }
+        const requestBody = { 
+            email: email.trim(),
+            username: username.trim(), 
+            password, 
+            remember_me: true 
+        };
         
         const response = await fetch(API_ENDPOINTS.SIGNUP, {
             method: 'POST',
@@ -118,15 +202,32 @@ export async function handleSignup(signupData, onSuccess, onError) {
         
         const data = await response.json();
         
+        // Remove loading state
+        setButtonLoading(signupBtn, false, 'signupBtnText', 'signupBtnSpinner');
+        
         if (response.ok) {
             showNotification(`Đăng ký thành công! Chào mừng ${username} 🎉`, 'success');
             if (onSuccess) onSuccess(username);
         } else {
-            showNotification(data.error || 'Đăng ký thất bại!', 'error');
+            // Show error based on response
+            const errorMsg = data.error || 'Đăng ký thất bại!';
+            
+            // Map errors to specific fields if possible
+            if (errorMsg.toLowerCase().includes('email')) {
+                showFieldError('signupEmail', errorMsg);
+            } else if (errorMsg.toLowerCase().includes('username')) {
+                showFieldError('signupUsername', errorMsg);
+            } else if (errorMsg.toLowerCase().includes('password') || errorMsg.toLowerCase().includes('mật khẩu')) {
+                showFieldError('signupPassword', errorMsg);
+            } else {
+                showNotification(errorMsg, 'error');
+            }
+            
             if (onError) onError(data.error);
         }
     } catch (error) {
         console.error('Signup error:', error);
+        setButtonLoading(signupBtn, false, 'signupBtnText', 'signupBtnSpinner');
         showNotification('Lỗi kết nối! Vui lòng thử lại.', 'error');
         if (onError) onError(error.message);
     }
