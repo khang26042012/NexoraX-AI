@@ -1564,3 +1564,194 @@ AR. ✅ MỞ RỘNG ADMIN PANEL API - LOGS, AI HISTORY, CONFIG MANAGEMENT
 
 =============================================================================
 
+BG - 02/11/2024 - AUTH UI REDESIGN - Enhanced Login/Signup Experience
+=============================================================================
+
+**Objective:**
+Thiết kế lại giao diện đăng nhập/đăng ký với UX improvements bao gồm:
+- Separate login/signup forms với tabs
+- Comprehensive field validation (client-side)
+- Password visibility toggles
+- Inline error messages
+- Loading states
+- Remember me checkbox
+- Forgot password link
+- Responsive design với icons
+
+**Design Requirements:**
+1. ✅ Tab-based interface để switch giữa Login và Signup
+2. ✅ Login form: Email/Username + Password + Remember Me + Forgot Password
+3. ✅ Signup form: Email + Username + Password + Confirm Password
+4. ✅ Field validation:
+   - Email: Valid email format
+   - Username: 3-20 characters (alphanumeric + underscore)
+   - Password: Minimum 6 characters
+   - Confirm Password: Must match password
+5. ✅ Password visibility toggles cho tất cả password fields
+6. ✅ Inline error messages dưới mỗi field
+7. ✅ Loading states với spinner khi submit
+8. ✅ Icons cho mỗi input field
+
+**Implementation Details:**
+
+1. **index.html - Auth Modal Structure:**
+   - Restructured auth modal với tab navigation (Đăng nhập / Đăng ký)
+   - Added tab indicator với smooth transition
+   - Login form:
+     * Email/Username field với user icon
+     * Password field với lock icon và visibility toggle
+     * Remember me checkbox
+     * Forgot password link
+     * Error message slots cho mỗi field
+   - Signup form:
+     * Email field với email icon và error slot
+     * Username field với user icon và error slot
+     * Password field với lock icon, visibility toggle và error slot
+     * Confirm password field với checkmark icon, visibility toggle và error slot
+   - Both forms:
+     * Submit buttons với loading spinner (hidden by default)
+     * Consistent styling với Tailwind CSS
+     * Icons sử dụng Lucide icons (inline SVG)
+
+2. **src/js/utils.js - Validation & UI Utilities:**
+   Added new utility functions:
+   - `isValidEmail(email)`: Validate email format
+   - `isValidUsername(username)`: Validate username (3-20 chars, alphanumeric + _)
+   - `isValidPassword(password)`: Validate password (min 6 chars)
+   - `isPasswordMatch(password, confirmPassword)`: Check password match
+   - `showFieldError(fieldId, errorMsg)`: Display inline error message
+   - `hideFieldError(fieldId)`: Hide error message
+   - `clearAllErrors(fieldIds)`: Clear multiple errors at once
+   - `setButtonLoading(button, isLoading, textId, spinnerId)`: Toggle loading state
+
+3. **src/js/auth-manager.js - Enhanced Authentication Logic:**
+   Updated authentication functions:
+   - `handleLogin()`:
+     * Clear previous errors trước khi validate
+     * Validate username và password (required fields)
+     * Show field-specific errors
+     * Set loading state khi submit
+     * Map server errors to specific fields
+     * Get remember me value từ checkbox
+   - `handleSignup()`:
+     * Validate tất cả 4 fields (email, username, password, confirmPassword)
+     * Email format validation
+     * Username length và character validation
+     * Password minimum length validation
+     * Confirm password match validation
+     * Show field-specific errors
+     * Set loading state khi submit
+     * Map server errors to specific fields
+
+4. **src/js/event-handlers.js - Event Wiring:**
+   Updated `setupAuthEventListeners()`:
+   - Tab switching logic (giữ nguyên)
+   - Removed old username/email toggle handlers
+   - Added password visibility toggle handlers:
+     * Login password toggle
+     * Signup password toggle
+     * Signup confirm password toggle
+   - Updated login button handler để gọi app.handleLogin()
+   - Updated signup button handler để gọi app.handleSignup()
+   - Updated Enter key handlers cho new form structure
+
+5. **src/js/chat-app.js - Chat App Methods:**
+   Added/Updated methods:
+   - `togglePasswordVisibility(passwordField, showIcon, hideIcon)`:
+     * Toggle password field type giữa 'password' và 'text'
+     * Toggle visibility của show/hide icons
+   - `handleLogin()`:
+     * Get username, password, và rememberMe từ form
+     * Call handleLogin từ auth-manager với rememberMe value
+     * Clear inputs sau khi success
+   - `handleSignup()`:
+     * Get email, username, password, confirmPassword từ form
+     * Call handleSignup từ auth-manager với tất cả 4 fields
+     * Clear inputs sau khi success
+
+**Features Implemented:**
+
+1. ✅ Tab Navigation:
+   - Smooth transition giữa Login và Signup tabs
+   - Tab indicator animation
+   - Active tab highlighting
+
+2. ✅ Field Validation:
+   - Real-time validation khi submit
+   - Field-specific error messages
+   - Clear, user-friendly error text (Vietnamese)
+
+3. ✅ Password Management:
+   - Visibility toggles cho tất cả password fields
+   - Eye icon changes based on visibility state
+   - Confirm password matching validation
+
+4. ✅ Loading States:
+   - Button disables khi loading
+   - Spinner animation shows
+   - Text changes to indicate processing
+
+5. ✅ Error Handling:
+   - Inline errors appear dưới invalid fields
+   - Errors clear khi re-submit
+   - Server errors map to specific fields when possible
+
+6. ✅ Remember Me:
+   - Checkbox functional
+   - Value passed to backend
+   - Clear after successful login
+
+7. ✅ Forgot Password:
+   - Link present (functionality to be implemented later)
+
+**Testing Results:**
+
+✅ Server Tests:
+- Server running successfully on port 5000
+- No startup errors
+- All JavaScript modules loaded correctly
+- Auth API endpoints responding (check-session works)
+
+✅ Browser Tests:
+- No JavaScript console errors
+- No LSP diagnostics errors
+- App initialized successfully
+- Onboarding completed
+
+✅ Visual Tests:
+- Auth modal displays correctly
+- Tabs visible và functional
+- All icons showing (email, user, lock, checkmark, eye)
+- Password toggle icons visible
+- Signup form shows all 4 fields
+- Button styling correct
+- GitHub OAuth button present
+
+✅ Code Quality:
+- No syntax errors
+- Clean imports
+- Consistent code style
+- Proper error handling
+- Vietnamese language maintained throughout
+
+**Files Modified:**
+- index.html (auth modal HTML structure)
+- src/js/utils.js (validation utilities)
+- src/js/auth-manager.js (enhanced auth logic)
+- src/js/event-handlers.js (event wiring)
+- src/js/chat-app.js (auth methods)
+
+**Status:** ✅ COMPLETED
+
+Auth UI redesign fully implemented với tất cả design requirements met.
+Ready for user testing và feedback.
+
+**Notes:**
+- Forgot password functionality chỉ có link, chưa implement backend
+- Remember me checkbox functional, passes value to server
+- All validation messages in Vietnamese
+- Responsive design maintained
+- No security concerns (client-side validation only, server validates too)
+
+=============================================================================
+

@@ -777,6 +777,7 @@ export class NexoraXChat {
             (username) => {
                 updateUIForLoggedInUser(username);
                 setupUserMenuDropdown(() => this.handleLogout());
+                startOnboardingManually();
             },
             () => {
                 setTimeout(() => this.showAuthModal(), 500);
@@ -827,6 +828,8 @@ export class NexoraXChat {
                 document.getElementById('loginUsername').value = '';
                 document.getElementById('loginPassword').value = '';
                 document.getElementById('loginRememberMe').checked = false;
+                
+                startOnboardingManually();
             }
         );
     }
@@ -848,6 +851,8 @@ export class NexoraXChat {
                 document.getElementById('signupUsername').value = '';
                 document.getElementById('signupPassword').value = '';
                 document.getElementById('signupConfirmPassword').value = '';
+                
+                startOnboardingManually();
             }
         );
     }
