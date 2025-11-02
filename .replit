@@ -38,10 +38,6 @@ externalPort = 80
 localPort = 33521
 externalPort = 3000
 
-[[ports]]
-localPort = 45261
-externalPort = 3001
-
 [deployment]
 deploymentTarget = "autoscale"
 run = ["python3", "server.py"]
