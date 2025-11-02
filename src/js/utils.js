@@ -201,6 +201,16 @@ export function isValidPassword(password) {
     return password && password.length >= 6;
 }
 
+/**
+ * Kiểm tra confirm password khớp với password
+ * @param {string} password - Password gốc
+ * @param {string} confirmPassword - Confirm password
+ * @returns {boolean}
+ */
+export function isPasswordMatch(password, confirmPassword) {
+    return password === confirmPassword && password.length > 0;
+}
+
 // ===================================
 // DOM UTILITIES
 // ===================================
@@ -330,4 +340,105 @@ export function throttle(func, limit) {
             setTimeout(() => inThrottle = false, limit);
         }
     };
+}
+
+// ===================================
+// AUTH FORM UI HELPERS
+// ===================================
+
+/**
+ * Hiển thị error message cho field
+ * @param {string} fieldId - ID của field input
+ * @param {string} message - Error message
+ */
+export function showFieldError(fieldId, message) {
+    const errorElement = document.getElementById(`${fieldId}Error`);
+    const inputElement = document.getElementById(fieldId);
+    
+    if (errorElement) {
+        errorElement.textContent = message;
+        errorElement.classList.remove('hidden');
+    }
+    
+    if (inputElement) {
+        inputElement.classList.add('border-red-500');
+        inputElement.classList.remove('border-slate-200');
+    }
+}
+
+/**
+ * Ẩn error message cho field
+ * @param {string} fieldId - ID của field input
+ */
+export function hideFieldError(fieldId) {
+    const errorElement = document.getElementById(`${fieldId}Error`);
+    const inputElement = document.getElementById(fieldId);
+    
+    if (errorElement) {
+        errorElement.textContent = '';
+        errorElement.classList.add('hidden');
+    }
+    
+    if (inputElement) {
+        inputElement.classList.remove('border-red-500');
+        inputElement.classList.add('border-slate-200');
+    }
+}
+
+/**
+ * Clear tất cả error messages trong form
+ * @param {string[]} fieldIds - Array các field IDs cần clear
+ */
+export function clearAllErrors(fieldIds) {
+    fieldIds.forEach(fieldId => hideFieldError(fieldId));
+}
+
+/**
+ * Toggle password visibility
+ * @param {HTMLInputElement} passwordField - Password input field
+ * @param {HTMLElement} showIcon - Icon hiển thị khi password đang ẩn
+ * @param {HTMLElement} hideIcon - Icon hiển thị khi password đang hiện
+ */
+export function togglePasswordVisibility(passwordField, showIcon, hideIcon) {
+    if (!passwordField || !showIcon || !hideIcon) return;
+    
+    const isPassword = passwordField.type === 'password';
+    
+    if (isPassword) {
+        // Show password
+        passwordField.type = 'text';
+        showIcon.classList.add('hidden');
+        hideIcon.classList.remove('hidden');
+    } else {
+        // Hide password
+        passwordField.type = 'password';
+        showIcon.classList.remove('hidden');
+        hideIcon.classList.add('hidden');
+    }
+}
+
+/**
+ * Set loading state cho button
+ * @param {HTMLElement} button - Button element
+ * @param {boolean} isLoading - Loading state
+ * @param {string} textElementId - ID của text element trong button
+ * @param {string} spinnerElementId - ID của spinner element trong button
+ */
+export function setButtonLoading(button, isLoading, textElementId, spinnerElementId) {
+    if (!button) return;
+    
+    const textElement = document.getElementById(textElementId);
+    const spinnerElement = document.getElementById(spinnerElementId);
+    
+    if (isLoading) {
+        button.disabled = true;
+        button.classList.add('opacity-50', 'cursor-not-allowed');
+        if (textElement) textElement.classList.add('hidden');
+        if (spinnerElement) spinnerElement.classList.remove('hidden');
+    } else {
+        button.disabled = false;
+        button.classList.remove('opacity-50', 'cursor-not-allowed');
+        if (textElement) textElement.classList.remove('hidden');
+        if (spinnerElement) spinnerElement.classList.add('hidden');
+    }
 }
