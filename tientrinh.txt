@@ -1,11 +1,40 @@
 =============================================================================
-TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 30/10/2025
+TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 09/11/2025
 =============================================================================
 
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
-✨ CẬP NHẬT MỚI NHẤT - 02/11/2025 (Buổi 15 - Cải thiện UI Settings):
+✨ CẬP NHẬT MỚI NHẤT - 09/11/2025 (Buổi 16 - Xóa UI Settings):
+-----------------------------------------------------------------------------
+
+AT. ✅ XÓA 2 SETTINGS TRONG TRANG CÀI ĐẶT - CHỈ XÓA UI, GIỮ LOGIC
+   - Vấn đề: User yêu cầu xóa 2 settings "Thông báo" và "Tự động lưu chat" khỏi UI
+   - Yêu cầu: CHỈ xóa phần hiển thị UI, KHÔNG xóa logic localStorage để lưu chat
+   
+   **THAY ĐỔI:**
+   ✅ Xóa toàn bộ section "TÍNH NĂNG" trong Settings (index.html dòng 772-822):
+      * Xóa button #notificationToggle (Thông báo)
+      * Xóa button #autoSaveToggle (Tự động lưu chat)
+      * Xóa cả section header "⚡ Tính năng"
+   
+   ✅ GIỮ NGUYÊN tất cả JavaScript logic:
+      * constants.js: NOTIFICATIONS_ENABLED, AUTO_SAVE_CHAT vẫn tồn tại
+      * chat-app.js: toggleNotifications(), toggleAutoSave(), loadSettingsState() vẫn hoạt động
+      * event-handlers.js: Event listeners vẫn được setup (mặc dù buttons không còn)
+   
+   **KẾT QUẢ:**
+   ✅ UI Settings đã xóa 2 toggles Thông báo và Tự động lưu chat
+   ✅ Chỉ còn 3 sections: GIAO DIỆN (Chế độ tối), TÁC VỤ (Về NexoraX, Xóa chat)
+   ✅ Logic localStorage vẫn hoạt động bình thường để lưu trữ settings
+   ✅ Server restart thành công, không có lỗi
+   ✅ Browser console: "NexoraX AI Chat initialized successfully!" ✅
+   
+   Files changed:
+   - index.html: Xóa section "TÍNH NĂNG" với 2 toggle buttons
+
+-----------------------------------------------------------------------------
+CẬP NHẬT TRƯỚC ĐÓ - 02/11/2025 (Buổi 15 - Cải thiện UI Settings):
 -----------------------------------------------------------------------------
 
 AS. ✅ CẢI THIỆN GIAO DIỆN TRANG SETTINGS - HIỆN ĐẠI HÓA UI 2025
