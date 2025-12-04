@@ -1,11 +1,63 @@
 =============================================================================
-TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 09/11/2025
+TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 04/12/2025
 =============================================================================
 
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
-✨ CẬP NHẬT MỚI NHẤT - 09/11/2025 (Buổi 16 - Tối ưu Icons):
+✨ CẬP NHẬT MỚI NHẤT - 04/12/2025 (Buổi 17 - Fix Model Identity):
+-----------------------------------------------------------------------------
+
+AV. ✅ FIX LỖI CÁC MODEL LLM7 TỰ NHẬN MÌNH LÀ MODEL KHÁC
+   - Vấn đề: Tất cả model LLM7 (GPT-5, Gemini Search, v.v.) đều tự nhận mình 
+     là "Virida" thay vì đúng tên model của chúng
+   - Nguyên nhân: System prompt cũ không nói rõ tên model, chỉ nói "trợ lý AI 
+     thân thiện" nên model quay lại preset của upstream (Virida)
+   
+   **GIẢI PHÁP:**
+   
+   1. ✅ **Tạo hàm get_llm7_system_prompt(model_id)** (server.py dòng 84-114):
+      * Mapping model_id → display name (VD: 'gpt-5-chat' → 'GPT-5')
+      * System prompt BẮT BUỘC model phải:
+        - Trả lời bằng tiếng Việt
+        - Tự nhận đúng tên của nó (GPT-5, Gemini, Claude, v.v.)
+        - KHÔNG ĐƯỢC nhận là Virida hoặc tên AI khác
+        - Dùng emoji tự nhiên
+   
+   2. ✅ **Tạo hàm get_llm7_search_system_prompt()** (server.py dòng 116-126):
+      * System prompt riêng cho Gemini Search với khả năng tìm kiếm
+      * Cùng quy tắc nhận diện như trên
+   
+   3. ✅ **Cập nhật 3 handler LLM7:**
+      * handle_llm7_gpt5chat() - dùng get_llm7_system_prompt('gpt-5-chat')
+      * handle_llm7_gemini_search() - dùng get_llm7_search_system_prompt()
+      * handle_llm7_chat() - dùng get_llm7_system_prompt(model_id) động
+   
+   **DANH SÁCH MODEL HỖ TRỢ:**
+   - gpt-5-chat → GPT-5
+   - gpt-4o → GPT-4o
+   - gpt-4 → GPT-4
+   - gpt-3.5-turbo → GPT-3.5 Turbo
+   - gemini-search → Gemini Search
+   - gemini-pro → Gemini Pro
+   - gemini-2.0-flash → Gemini 2.0 Flash
+   - claude-3 → Claude 3
+   - claude-3.5-sonnet → Claude 3.5 Sonnet
+   - llama-3 → Llama 3
+   - mistral → Mistral
+   (Các model khác sẽ hiển thị model_id.upper())
+   
+   **KẾT QUẢ:**
+   ✅ Server restart thành công, không có lỗi
+   ✅ Model sẽ tự nhận đúng tên của nó khi được hỏi
+   ✅ Tất cả câu trả lời bằng tiếng Việt
+   ✅ Không còn nhận là Virida
+   
+   Files changed:
+   - server.py: Thêm 2 hàm tạo system prompt + cập nhật 3 handler LLM7
+
+-----------------------------------------------------------------------------
+CẬP NHẬT TRƯỚC ĐÓ - 09/11/2025 (Buổi 16 - Tối ưu Icons):
 -----------------------------------------------------------------------------
 
 AU. ✅ TỐI ƯU ICONS CHO INPUT AREA - HIỆN ĐẠI, DỄ NHÌN HƠN
