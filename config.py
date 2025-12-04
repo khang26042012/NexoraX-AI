@@ -18,10 +18,15 @@ from threading import Lock
 # Environment variable GEMINI_API_KEY will override this if set
 GEMINI_API_KEY = "AIzaSyCeVTZ25XREVzIjGIuMHBnwoN1a1MBo10g"
 
-# SerpAPI Search API Key
+# SerpAPI Search API Key (deprecated - replaced by Serper)
 # API tìm kiếm web để lấy kết quả từ Google, Bing, etc: https://serpapi.com
 # Environment variable SERPAPI_API_KEY will override this if set
 SERPAPI_API_KEY = "e5e04b97a6f406a53f9430701e795fb8d306cdc7514a8d68bbbc6c6b0a4d4a98"
+
+# Serper API Key (NEW - thay thế cho LLM7 Gemini Search)
+# API tìm kiếm Google nhanh và chính xác: https://serper.dev
+# Environment variable SERPER_API_KEY will override this if set
+SERPER_API_KEY = "5b17b86a5ff09e83a338cef0d5eb9edb99defa5e"
 
 # LLM7.io API Key
 # API miễn phí cho nhiều mô hình AI: https://llm7.io/
@@ -117,6 +122,8 @@ def get_api_key(service):
         return os.getenv('GEMINI_API_KEY', GEMINI_API_KEY)
     elif service_lower == "serpapi":
         return os.getenv('SERPAPI_API_KEY', SERPAPI_API_KEY)
+    elif service_lower == "serper":
+        return os.getenv('SERPER_API_KEY', SERPER_API_KEY)
     elif service_lower == "llm7":
         return os.getenv('LLM7_API_KEY', LLM7_API_KEY)
     else:
@@ -156,6 +163,7 @@ def check_config():
     """Kiểm tra xem API keys đã được cấu hình chưa"""
     gemini_key = get_api_key("gemini")
     serpapi_key = get_api_key("serpapi")
+    serper_key = get_api_key("serper")
     llm7_key = get_api_key("llm7")
     
     warnings = []
@@ -164,6 +172,9 @@ def check_config():
     
     if serpapi_key == "your_serpapi_api_key_here":
         warnings.append("⚠️  SERPAPI_API_KEY chưa được cấu hình")
+    
+    if not serper_key or serper_key == "your_serper_api_key_here":
+        warnings.append("⚠️  SERPER_API_KEY chưa được cấu hình (cần cho chức năng Search)")
     
     if llm7_key == "your_llm7_api_key_here":
         warnings.append("⚠️  LLM7_API_KEY chưa được cấu hình")

@@ -5,7 +5,51 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 04/12/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
-✨ CẬP NHẬT MỚI NHẤT - 04/12/2025 (Buổi 22 - Fix Dual Chat Model Selection):
+✨ CẬP NHẬT MỚI NHẤT - 04/12/2025 (Buổi 23 - Đổi Search từ LLM7 sang Serper):
+-----------------------------------------------------------------------------
+
+BD. ✅ ĐỔI MODEL SEARCH TỪ GEMINI SEARCH (LLM7) SANG SERPER API
+   - Yêu cầu: Thay thế chức năng search của LLM7 gemini-search bằng Serper API
+   - API Key: 5b17b86a5ff09e83a338cef0d5eb9edb99defa5e
+   
+   **GIẢI PHÁP:**
+   
+   1. ✅ **Cập nhật config.py:**
+      * Thêm SERPER_API_KEY = "5b17b86a5ff09e83a338cef0d5eb9edb99defa5e"
+      * Cập nhật hàm get_api_key() để hỗ trợ service="serper"
+   
+   2. ✅ **Refactor handle_llm7_gemini_search() trong server.py:**
+      * Thay thế LLM7 API call bằng Serper API (https://google.serper.dev/search)
+      * Kết hợp với Gemini AI để xử lý và tổng hợp kết quả tìm kiếm
+      * Thêm 2 hàm helper mới:
+        - _format_serper_context_for_ai(): Format kết quả Serper cho AI
+        - _create_serper_enhanced_prompt(): Tạo prompt kết hợp query + search results
+   
+   3. ✅ **Cải thiện kết quả tìm kiếm:**
+      * Hỗ trợ Answer Box (câu trả lời nhanh)
+      * Hỗ trợ Knowledge Graph (thông tin chi tiết)
+      * Hiển thị 7 kết quả organic với title, snippet, link
+      * Hiển thị "People Also Ask" (câu hỏi liên quan)
+      * Hiển thị "Related Searches" (tìm kiếm liên quan)
+   
+   **DANH SÁCH FILE ĐÃ THAY ĐỔI:**
+   - config.py: Thêm SERPER_API_KEY, cập nhật get_api_key()
+   - server.py: Refactor handle_llm7_gemini_search() + 2 helper functions mới
+   
+   **LƯU Ý:**
+   - Endpoint vẫn giữ nguyên: /api/llm7/gemini-search (để tương thích frontend)
+   - Frontend không cần thay đổi gì
+   - Model trả về vẫn giữ "gemini-search" (để tương thích frontend)
+   - Metadata có thêm 'powered_by': 'serper+gemini' để phân biệt
+   
+   **KẾT QUẢ:**
+   ✅ Server restart thành công
+   ✅ Serper API đã được tích hợp
+   ✅ Kết quả tìm kiếm được xử lý bởi Gemini AI
+   ✅ Không cần thay đổi frontend
+
+-----------------------------------------------------------------------------
+CẬP NHẬT TRƯỚC ĐÓ - 04/12/2025 (Buổi 22 - Fix Dual Chat Model Selection):
 -----------------------------------------------------------------------------
 
 BC. ✅ FIX LỖI DUAL CHAT DROPDOWN KHÔNG CẬP NHẬT APP INSTANCE

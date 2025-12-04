@@ -1192,17 +1192,26 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
 
     def handle_llm7_gemini_search(self):
-        """Handle Gemini-search requests via LLM7.io"""
+        """Handle Search requests via Serper API + Gemini AI processing
+        Đã thay thế LLM7 gemini-search bằng Serper API (04/12/2025)
+        """
         try:
             # Get username from session cookie
             username = self._get_username_from_cookie()
             
-            # Get API key from config
-            api_key = get_api_key('llm7')
-            logger.info(f"LLM7 API Key configured: {'Yes' if api_key else 'No'}")
-            if not api_key:
+            # Get API keys from config
+            serper_key = get_api_key('serper')
+            gemini_key = get_api_key('gemini')
+            
+            if not serper_key:
                 self._send_json_error(500, 
-                    "LLM7 API key chưa được cấu hình. Vui lòng kiểm tra config.py",
+                    "Serper API key chưa được cấu hình. Vui lòng kiểm tra config.py",
+                    "API_KEY_MISSING")
+                return
+            
+            if not gemini_key or gemini_key == "your_gemini_api_key_here":
+                self._send_json_error(500, 
+                    "Gemini API key chưa được cấu hình. Vui lòng kiểm tra config.py",
                     "API_KEY_MISSING")
                 return
             
@@ -1217,85 +1226,99 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self._send_json_error(400, "Message không được để trống", "MISSING_MESSAGE")
                 return
             
-            # Extract files from request (for vision/image analysis)
+            # Extract files from request (for potential future use)
             files = request_data.get('files', [])
             
-            # Build LLM7.io API URL for Gemini-search
-            llm7_url = "https://api.llm7.io/v1/chat/completions"
-            llm7_headers = {
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {api_key}"
+            logger.info(f"Serper Search starting for query: {message}")
+            
+            # Step 1: Search using Serper API
+            serper_url = "https://google.serper.dev/search"
+            serper_headers = {
+                "X-API-KEY": serper_key,
+                "Content-Type": "application/json"
+            }
+            serper_payload = {
+                "q": message,
+                "gl": "vn",
+                "hl": "vi",
+                "num": 10
             }
             
-            # Support conversation history - check if messages array is provided
-            conversation_messages = request_data.get('messages', [])
+            serper_request = urllib.request.Request(
+                serper_url,
+                data=json.dumps(serper_payload).encode('utf-8'),
+                headers=serper_headers,
+                method='POST'
+            )
             
-            # Build messages array with system prompt and conversation history
-            messages: list = [
-                {"role": "system", "content": get_llm7_search_system_prompt()}
-            ]
+            with urllib.request.urlopen(serper_request, timeout=REQUEST_TIMEOUT) as response:
+                serper_response = response.read().decode('utf-8')
+                serper_data = json.loads(serper_response)
             
-            # Add conversation history if provided
-            if conversation_messages:
-                messages.extend(conversation_messages)
-            else:
-                # Fallback to old format for backward compatibility
-                messages.append({"role": "user", "content": message})
+            logger.info(f"Serper returned {len(serper_data.get('organic', []))} organic results")
             
-            # Add files to the last user message if present (for vision models)
-            if files and len(files) > 0:
-                # Find the last user message
-                for i in range(len(messages) - 1, -1, -1):
-                    if messages[i].get('role') == 'user':
-                        current_content = messages[i].get('content', '')
-                        # Convert to vision format: content becomes array with text and images
-                        content_array: list = [{"type": "text", "text": current_content}]
-                        
-                        # Add each file as image_url
-                        for file in files:
-                            content_array.append({
-                                "type": "image_url",
-                                "image_url": {
-                                    "url": file.get('base64', '')  # base64 string with data:image prefix
-                                }
-                            })
-                        
-                        messages[i]['content'] = content_array
-                        break
+            # Step 2: Format search context for AI
+            search_context = self._format_serper_context_for_ai(serper_data, message)
             
-            llm7_payload = {
-                "model": "gemini-search",
-                "messages": messages,
-                "temperature": 0.7
+            # Step 3: Create enhanced prompt for Gemini
+            enhanced_prompt = self._create_serper_enhanced_prompt(message, search_context)
+            
+            # Step 4: Send to Gemini for AI-powered response
+            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key={gemini_key}"
+            
+            gemini_payload = {
+                "contents": [{
+                    "parts": [{"text": enhanced_prompt}]
+                }],
+                "generationConfig": {
+                    "temperature": 0.7,
+                    "topK": 40,
+                    "topP": 0.95,
+                    "maxOutputTokens": 8192,
+                },
+                "safetySettings": [
+                    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+                    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+                    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+                    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"}
+                ]
             }
             
-            # Make request to LLM7.io with retry logic
-            with retry_request_with_backoff(
-                llm7_url,
-                llm7_headers,
-                json.dumps(llm7_payload).encode('utf-8'),
-                timeout=REQUEST_TIMEOUT
-            ) as response:
-                llm7_response = response.read().decode('utf-8')
-                llm7_data = json.loads(llm7_response)
+            gemini_request = urllib.request.Request(
+                gemini_url,
+                data=json.dumps(gemini_payload).encode('utf-8'),
+                headers={'Content-Type': 'application/json'}
+            )
             
-            # Extract response
+            with urllib.request.urlopen(gemini_request, timeout=REQUEST_TIMEOUT) as response:
+                gemini_response = response.read().decode('utf-8')
+                gemini_data = json.loads(gemini_response)
+            
+            # Extract AI response
             reply = ""
-            if "choices" in llm7_data and len(llm7_data["choices"]) > 0:
-                reply = llm7_data["choices"][0]["message"]["content"]
-            else:
-                reply = str(llm7_data)
+            if "candidates" in gemini_data and len(gemini_data["candidates"]) > 0:
+                candidate = gemini_data["candidates"][0]
+                if "content" in candidate and "parts" in candidate["content"]:
+                    reply = candidate["content"]["parts"][0].get("text", "")
             
-            # Save AI history
+            if not reply:
+                reply = "Không thể tạo phản hồi từ kết quả tìm kiếm. Vui lòng thử lại."
+            
+            # Save AI history (giữ model="gemini-search" để tương thích frontend)
             save_ai_history(
                 username=username,
                 model="gemini-search",
                 prompt=message,
                 response=reply,
-                metadata={'endpoint': 'llm7_gemini_search', 'has_files': len(files) > 0}
+                metadata={
+                    'endpoint': 'serper_gemini_search',
+                    'has_files': len(files) > 0,
+                    'search_results_count': len(serper_data.get('organic', [])),
+                    'powered_by': 'serper+gemini'
+                }
             )
             
-            # Return response to client
+            # Return response to client (giữ model="gemini-search" để tương thích frontend)
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self._send_cors_headers()
@@ -1307,25 +1330,103 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             }, ensure_ascii=False)
             self.wfile.write(response_json.encode('utf-8'))
             
-            logger.info("LLM7 Gemini-search completed successfully")
+            logger.info("Serper Search + Gemini completed successfully")
             
         except urllib.error.HTTPError as e:
             try:
                 error_body = e.read().decode('utf-8')
-                self._send_json_error(e.code, f"LLM7 API lỗi: {error_body}", "UPSTREAM_ERROR")
+                logger.error(f"Search API HTTP error: {e.code} - {error_body}")
+                self._send_json_error(e.code, f"Search API lỗi: {error_body}", "UPSTREAM_ERROR")
             except:
-                self._send_json_error(e.code, f"LLM7 API lỗi: {e.reason}", "UPSTREAM_ERROR")
+                self._send_json_error(e.code, f"Search API lỗi: {e.reason}", "UPSTREAM_ERROR")
         except urllib.error.URLError as e:
-            logger.error(f"LLM7 connection error: {e}")
-            self._send_json_error(502, "Không thể kết nối đến LLM7 API", "CONNECTION_ERROR")
+            logger.error(f"Search connection error: {e}")
+            self._send_json_error(502, "Không thể kết nối đến dịch vụ tìm kiếm", "CONNECTION_ERROR")
         except json.JSONDecodeError as e:
-            logger.error(f"Invalid JSON in LLM7 request: {e}")
+            logger.error(f"Invalid JSON in Search request: {e}")
             self._send_json_error(400, "Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra định dạng JSON.", "INVALID_JSON")
         except Exception as e:
-            logger.error(f"LLM7 Gemini-search error: {e}")
+            logger.error(f"Serper Search error: {e}")
             logger.error(f"Exception type: {type(e)}")
             logger.error(f"Exception args: {e.args}")
             self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
+    
+    def _format_serper_context_for_ai(self, serper_data, query):
+        """Format Serper search results into context for AI processing"""
+        context_parts = []
+        
+        # Answer Box (nếu có)
+        if serper_data.get('answerBox'):
+            answer_box = serper_data['answerBox']
+            if answer_box.get('answer'):
+                context_parts.append(f"📋 Trả lời nhanh: {answer_box['answer']}")
+            elif answer_box.get('snippet'):
+                context_parts.append(f"📋 Tóm tắt: {answer_box['snippet']}")
+        
+        # Knowledge Graph (nếu có)
+        if serper_data.get('knowledgeGraph'):
+            kg = serper_data['knowledgeGraph']
+            if kg.get('title'):
+                kg_info = f"📚 {kg['title']}"
+                if kg.get('type'):
+                    kg_info += f" ({kg['type']})"
+                if kg.get('description'):
+                    kg_info += f": {kg['description']}"
+                context_parts.append(kg_info)
+        
+        # Organic Results
+        organic = serper_data.get('organic', [])
+        if organic:
+            context_parts.append("\n🔍 Kết quả tìm kiếm:")
+            for i, result in enumerate(organic[:7], 1):
+                title = result.get('title', 'Không có tiêu đề')
+                snippet = result.get('snippet', '')
+                link = result.get('link', '')
+                context_parts.append(f"\n{i}. **{title}**")
+                if snippet:
+                    context_parts.append(f"   {snippet}")
+                if link:
+                    context_parts.append(f"   🔗 {link}")
+        
+        # People Also Ask (nếu có)
+        if serper_data.get('peopleAlsoAsk'):
+            context_parts.append("\n❓ Câu hỏi liên quan:")
+            for paa in serper_data['peopleAlsoAsk'][:3]:
+                question = paa.get('question', '')
+                answer = paa.get('snippet', '')
+                if question:
+                    context_parts.append(f"   • {question}")
+                    if answer:
+                        context_parts.append(f"     → {answer[:200]}...")
+        
+        # Related Searches (nếu có)
+        if serper_data.get('relatedSearches'):
+            related = [rs.get('query', '') for rs in serper_data['relatedSearches'][:5] if rs.get('query')]
+            if related:
+                context_parts.append(f"\n🔄 Tìm kiếm liên quan: {', '.join(related)}")
+        
+        return '\n'.join(context_parts) if context_parts else f"Không tìm thấy kết quả phù hợp cho: {query}"
+    
+    def _create_serper_enhanced_prompt(self, user_query, search_context):
+        """Create an enhanced prompt combining user query with Serper search results"""
+        return f"""Bạn là trợ lý AI thông minh chuyên tìm kiếm và tổng hợp thông tin.
+
+🎯 CÂU HỎI CỦA NGƯỜI DÙNG:
+{user_query}
+
+📊 KẾT QUẢ TÌM KIẾM TỪ GOOGLE (qua Serper API):
+{search_context}
+
+📝 YÊU CẦU:
+1. Trả lời bằng tiếng Việt, rõ ràng và dễ hiểu
+2. Tổng hợp thông tin từ các nguồn tìm kiếm trên
+3. Trích dẫn nguồn khi cần thiết (đề cập tên website)
+4. Nếu thông tin không chắc chắn, hãy nói rõ
+5. Sử dụng emoji phù hợp để làm rõ nội dung
+6. Định dạng câu trả lời với markdown (headings, lists, bold) để dễ đọc
+7. Nếu có link hữu ích, hãy đề cập để người dùng có thể tham khảo thêm
+
+Hãy trả lời câu hỏi một cách đầy đủ và hữu ích nhất có thể dựa trên kết quả tìm kiếm."""
 
     def handle_llm7_chat(self):
         """Generic handler for all LLM7 models via LLM7.io"""
