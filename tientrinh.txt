@@ -61,6 +61,11 @@ BE. ✅ KẾT HỢP SERPER API VỚI GEMINI 2.5 FLASH ĐỂ TÓM GỌN VÀ PHÂN
    - Model response giữ nguyên: "gemini-search" (tương thích frontend)
    - System prompt tuân thủ quy tắc từ vựng (không dùng "biomimicry")
    
+   5. ✅ **Fix lỗi model name Gemini:**
+      * Lỗi: Model `gemini-2.5-flash-preview-05-20` không tồn tại (404 error)
+      * Fix: Đổi thành `gemini-2.5-flash` (tên model đúng)
+      * Cập nhật cả URL API và metadata summary_model
+   
    **KẾT QUẢ:**
    ✅ Server restart thành công
    ✅ Serper + Gemini 2.5 Flash hoạt động tốt
