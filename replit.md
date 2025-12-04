@@ -3,7 +3,15 @@
 ## Overview
 NexoraX AI is a modern Vietnamese AI chat application designed for the Replit environment. It leverages Google Gemini, search-enhanced AI, and LLM7.io for GPT-5 Mini and Gemini Search models. The project emphasizes a modular ES6 architecture and is configured for seamless deployment, offering a feature-rich, responsive user experience with advanced Markdown rendering and conversation memory.
 
-## Recent Changes (30/10/2025 - Buổi 13)
+## Recent Changes (04/12/2025 - Buổi 24)
+- **Serper + Gemini 2.5 Flash Search Integration**: Kết hợp Serper API với Gemini 2.5 Flash để tóm gọn và phân tích kết quả tìm kiếm:
+  - Serper API lấy kết quả tìm kiếm từ Google
+  - Gemini 2.5 Flash tóm tắt và phân tích kết quả (format: Tóm tắt, Phân tích, Nguồn tham khảo)
+  - Fallback tự động: Nếu Gemini lỗi, trả về Serper Markdown thuần
+  - History metadata: `powered_by: "serper+gemini"` hoặc `"serper"` (khi fallback)
+  - Response bao gồm expandable raw sources cho tham khảo chi tiết
+
+## Previous Changes (30/10/2025 - Buổi 13)
 - **Admin Panel API Expansion**: Built comprehensive admin APIs for system management without modifying AI endpoints. Includes:
   - Logs API: `/api/admin/logs` with pagination and log level filtering (rotating file handler)
   - AI History Tracking: `/api/admin/history` - tracks all AI calls (prompt + response) in JSONL format
@@ -51,6 +59,6 @@ NexoraX AI is a modern Vietnamese AI chat application designed for the Replit en
 - **Deployment**: Configured for autoscale deployment on Koyeb.com. Uses `Procfile` (`web: python3 server.py`). Server auto-detects Koyeb via `KOYEB_APP_NAME` environment variable. No build step required; uses static files and Python server. See `KOYEB_DEPLOYMENT.md` for complete deployment guide.
 
 ## External Dependencies
-- **Google Gemini API**: For Gemini Flash 2.5 conversations.
-- **SerpAPI**: For web search functionality.
-- **LLM7.io API**: Integrates GPT-5 Mini and Gemini Search models.
+- **Google Gemini API**: For Gemini 2.5 Flash conversations and search result analysis.
+- **Serper API**: For Google search functionality (replaced SerpAPI).
+- **LLM7.io API**: Integrates GPT-5, Gemini Search, and other AI models.
