@@ -5,7 +5,50 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 04/12/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
-✨ CẬP NHẬT MỚI NHẤT - 04/12/2025 (Buổi 20 - Thêm Quy Tắc Từ Vựng):
+✨ CẬP NHẬT MỚI NHẤT - 04/12/2025 (Buổi 21 - Fix Gemini & Dual Chat):
+-----------------------------------------------------------------------------
+
+BB. ✅ FIX LỖI GEMINI API VÀ CẢI THIỆN DUAL CHAT
+   - Vấn đề 1: Gemini 3 Pro API bị lỗi quota exceeded (429) do không có free tier
+   - Vấn đề 2: Dual Chat chọn model mới nhưng vẫn gửi đến model cũ
+   - Vấn đề 3: Dual Chat bị cross-contamination - model trả lời dựa trên tin nhắn của model khác
+   
+   **GIẢI PHÁP:**
+   
+   1. ✅ **Downgrade Gemini 3 Pro → Gemini 2.5 Flash:**
+      * server.py: Đổi tất cả gemini-3-pro-preview → gemini-2.5-flash-preview-05-20
+      * ai-api.js: Đổi model trong API request
+      * constants.js: Cập nhật MODEL_NAMES, MODEL_METADATA, DUAL_CHAT_MODELS
+      * index.html: Cập nhật 4 buttons trong quick model dropdown
+   
+   2. ✅ **Fix Dual Chat Model Selection Bug:**
+      * Nguyên nhân: Khi đổi model trong dropdown, chỉ context được update,
+        nhưng this.dualChatPrimaryModel/SecondaryModel không được cập nhật
+      * Fix: Reload models từ localStorage trước khi gửi message (chat-app.js dòng 549-557)
+      * Thêm fallback handling để tránh null khi localStorage trống
+   
+   3. ✅ **Thêm No Cross-Contamination cho Dual Chat:**
+      * Nguyên nhân: Model trả lời dựa trên tin nhắn của model khác trong history
+      * Fix: Mỗi model chỉ nhận được history của riêng nó (chat-app.js dòng 588-616)
+        - Primary model: user messages + isPrimary=true responses
+        - Secondary model: user messages + isPrimary=false responses
+      * Điều này ngăn cross-contamination nhưng vẫn giữ context của từng model
+   
+   **DANH SÁCH FILE ĐÃ THAY ĐỔI:**
+   - server.py: Đổi model Gemini
+   - src/js/ai-api.js: Đổi model trong API request
+   - src/js/constants.js: Cập nhật model metadata
+   - src/js/chat-app.js: Fix dual chat model reload + no-history
+   - index.html: Cập nhật quick model dropdown buttons
+   
+   **KẾT QUẢ:**
+   ✅ Server restart thành công
+   ✅ Gemini 2.5 Flash hoạt động ổn định (có free tier)
+   ✅ Dual Chat đổi model đúng khi user thay đổi dropdown
+   ✅ Dual Chat không bị cross-contamination giữa các model
+
+-----------------------------------------------------------------------------
+CẬP NHẬT TRƯỚC ĐÓ - 04/12/2025 (Buổi 20 - Thêm Quy Tắc Từ Vựng):
 -----------------------------------------------------------------------------
 
 BA. ✅ THÊM QUY TẮC CẤM SỬ DỤNG TỪ "BIOMIMICRY" CHO TẤT CẢ MODEL (TRỪ BIDARA)

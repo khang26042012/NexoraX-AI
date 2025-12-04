@@ -543,6 +543,16 @@ export class NexoraXChat {
     }
     
     async sendDualChatMessage(message, attachedFiles, chat) {
+        // QUAN TRỌNG: Reload models từ localStorage để đảm bảo dùng đúng model đã chọn
+        const savedModels = loadDualChatModels();
+        // Chỉ cập nhật nếu có giá trị hợp lệ, nếu không giữ nguyên giá trị hiện tại
+        if (savedModels.primaryModel) {
+            this.dualChatPrimaryModel = savedModels.primaryModel;
+        }
+        if (savedModels.secondaryModel) {
+            this.dualChatSecondaryModel = savedModels.secondaryModel;
+        }
+        
         // Tạo 2 AI message placeholders
         const primaryMessage = {
             id: Date.now() + '_primary',
@@ -571,17 +581,30 @@ export class NexoraXChat {
         try {
             const primaryType = this.getModelType(this.dualChatPrimaryModel);
             const secondaryType = this.getModelType(this.dualChatSecondaryModel);
-            const conversationHistoryGemini = prepareConversationHistoryGemini(chat.messages, 20);
-            const conversationHistoryLLM7 = prepareConversationHistoryLLM7(chat.messages, 15);
+            
+            // DUAL CHAT: Mỗi model chỉ nhận được history của riêng nó
+            // Primary: user messages + primary AI responses (isPrimary=true)
+            // Secondary: user messages + secondary AI responses (isPrimary=false)
+            const primaryHistory = chat.messages.filter(msg => 
+                msg.role === 'user' || (msg.role === 'assistant' && msg.isPrimary === true)
+            );
+            const secondaryHistory = chat.messages.filter(msg => 
+                msg.role === 'user' || (msg.role === 'assistant' && msg.isPrimary === false)
+            );
+            
+            const conversationHistoryGeminiPrimary = prepareConversationHistoryGemini(primaryHistory, 20);
+            const conversationHistoryLLM7Primary = prepareConversationHistoryLLM7(primaryHistory, 15);
+            const conversationHistoryGeminiSecondary = prepareConversationHistoryGemini(secondaryHistory, 20);
+            const conversationHistoryLLM7Secondary = prepareConversationHistoryLLM7(secondaryHistory, 15);
             
             await Promise.allSettled([
-                this.getDualModelResponse(this.dualChatPrimaryModel, primaryType, message, primaryMessage, attachedFiles, conversationHistoryGemini, conversationHistoryLLM7).catch(error => {
+                this.getDualModelResponse(this.dualChatPrimaryModel, primaryType, message, primaryMessage, attachedFiles, conversationHistoryGeminiPrimary, conversationHistoryLLM7Primary).catch(error => {
                     console.error(`${this.dualChatPrimaryModel} Error in dual mode:`, error);
                     primaryMessage.content = `Xin lỗi, ${this.getModelDisplayName(this.dualChatPrimaryModel)} gặp lỗi. Vui lòng thử lại.`;
                     primaryMessage.isTyping = false;
                     this.updateMessage(primaryMessage);
                 }),
-                this.getDualModelResponse(this.dualChatSecondaryModel, secondaryType, message, secondaryMessage, attachedFiles, conversationHistoryGemini, conversationHistoryLLM7).catch(error => {
+                this.getDualModelResponse(this.dualChatSecondaryModel, secondaryType, message, secondaryMessage, attachedFiles, conversationHistoryGeminiSecondary, conversationHistoryLLM7Secondary).catch(error => {
                     console.error(`${this.dualChatSecondaryModel} Error in dual mode:`, error);
                     secondaryMessage.content = `Xin lỗi, ${this.getModelDisplayName(this.dualChatSecondaryModel)} gặp lỗi. Vui lòng thử lại.`;
                     secondaryMessage.isTyping = false;

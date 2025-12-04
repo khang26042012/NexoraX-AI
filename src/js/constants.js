@@ -18,12 +18,11 @@
  * Key: ID model, Value: Tên hiển thị
  */
 export const MODEL_NAMES = {
-    'nexorax1': 'Gemini 3 Pro',
+    'nexorax1': 'Gemini 2.5 Flash',
     'nexorax2': 'Search',
     'gpt-5-chat': 'GPT-5',
     'image-gen': 'Image Generator',
     'deepseek-reasoning': 'DeepSeek Reasoning',
-    'gemini-3-pro-preview': 'Gemini 3 Pro',
     'nova-fast': 'Nova Fast',
     'gpt-5-mini': 'GPT-5 Mini',
     'gpt-5-nano-2025-08-07': 'GPT-5 Nano',
@@ -55,11 +54,11 @@ export const MODEL_METADATA = {
         useCases: ['Phân tích dữ liệu phức tạp', 'Viết code chuyên sâu', 'Tư vấn chuyên môn', 'Giải quyết bài toán khó']
     },
     'nexorax1': {
-        name: 'Gemini 3 Pro',
+        name: 'Gemini 2.5 Flash',
         icon: '⚡',
         category: 'chat',
-        description: 'Model tiên tiến nhất từ Google với khả năng suy luận mạnh mẽ và context 1 triệu tokens',
-        useCases: ['Chat nhanh', 'Phân tích hình ảnh', 'Xử lý file đa dạng', 'Suy luận phức tạp']
+        description: 'Model Gemini 2.5 Flash từ Google, nhanh chóng và thông minh với khả năng xử lý đa phương tiện',
+        useCases: ['Chat nhanh', 'Phân tích hình ảnh', 'Xử lý file đa dạng', 'Tác vụ hàng ngày']
     },
     'nexorax2': {
         name: 'Search',
@@ -81,13 +80,6 @@ export const MODEL_METADATA = {
         category: 'reasoning',
         description: 'Chuyên về suy luận logic, toán học và phân tích phức tạp',
         useCases: ['Giải toán', 'Phân tích logic', 'Chứng minh định lý', 'Suy luận khoa học']
-    },
-    'gemini-3-pro-preview': {
-        name: 'Gemini 3 Pro',
-        icon: '💫',
-        category: 'chat',
-        description: 'Model Gemini 3 Pro từ Google với khả năng suy luận và context 1 triệu tokens',
-        useCases: ['Chat thường ngày', 'Câu hỏi nhanh', 'Dịch thuật', 'Tóm tắt văn bản']
     },
     'mistral-medium-2508': {
         name: 'Mistral Medium',
@@ -209,10 +201,9 @@ export const MODEL_METADATA = {
  */
 export const DUAL_CHAT_MODELS = [
     { value: 'gpt-5-chat', label: 'GPT-5' },
-    { value: 'nexorax1', label: 'Gemini 3 Pro' },
+    { value: 'nexorax1', label: 'Gemini 2.5 Flash' },
     { value: 'bidara', label: 'Bidara' },
     { value: 'deepseek-reasoning', label: 'DeepSeek Reasoning' },
-    { value: 'gemini-3-pro-preview', label: 'Gemini 3 Pro' },
     { value: 'mistral-medium-2508', label: 'Mistral Medium' },
     { value: 'mistral-small-2503', label: 'Mistral Small' },
     { value: 'open-mixtral-8x7b', label: 'Mixtral 8x7B' },
