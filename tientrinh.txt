@@ -5,7 +5,47 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 04/12/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
-✨ CẬP NHẬT MỚI NHẤT - 04/12/2025 (Buổi 18 - Fix Model Identity Cross-contamination):
+✨ CẬP NHẬT MỚI NHẤT - 04/12/2025 (Buổi 19 - Cập nhật AI Models từ LLM7 API):
+-----------------------------------------------------------------------------
+
+AZ. ✅ CẬP NHẬT DANH SÁCH AI MODELS THEO API LLM7
+   - Vấn đề 1: Model `deepseek-v3.1` gây lỗi "Upgrade required to access pro models"
+   - Vấn đề 2: Model `roblox-rp` không tồn tại trong API LLM7 nữa
+   - Yêu cầu: Cập nhật models theo https://api.llm7.io/v1/models
+   
+   **THAY ĐỔI ĐÃ THỰC HIỆN:**
+   
+   1. ✅ **Đổi tên model `roblox-rp` → `llama-3.1-8B-instruct`:**
+      * Tên hiển thị mới: "Llama 3.1" với icon 🦙
+      * Cập nhật trong: server.py, constants.js, index.html (cả 2 dropdowns)
+   
+   2. ✅ **Loại bỏ 4 PRO models khỏi UI** (gây lỗi "Upgrade required"):
+      * `deepseek-v3.1` - DeepSeek V3.1
+      * `gemini-search` - Gemini Search
+      * `gpt-o4-mini-2025-04-16` - GPT-O4 Mini
+      * `mistral-small-3.1-24b-instruct-2503` - Mistral Small 3.1
+      * GIỮ LẠI trong server.py để backward compatibility
+   
+   3. ✅ **Thêm 5 models FREE mới:**
+      * `gpt-4.1-nano-2025-04-14` - GPT-4.1 Nano ⚡ (chat)
+      * `codestral-2501` - Codestral 💻 (coding)
+      * `ministral-3b-2512` - Ministral 3B 🌟 (chat)
+      * `gemini-2.5-flash-lite` - Gemini 2.5 Flash Lite ✨ (chat)
+      * `glm-4.5-flash` - GLM 4.5 Flash 🔮 (chat)
+   
+   **DANH SÁCH FILE ĐÃ THAY ĐỔI:**
+   - server.py: Cập nhật model_names mapping
+   - src/js/constants.js: MODEL_NAMES, MODEL_METADATA, DUAL_CHAT_MODELS
+   - index.html: Cập nhật cả homeQuickModelDropdown và chatQuickModelDropdown
+   
+   **KẾT QUẢ:**
+   ✅ Server restart thành công
+   ✅ Không còn lỗi "Upgrade required" khi chọn model
+   ✅ Models mới hoạt động bình thường
+   ✅ UI hiển thị đúng tên và icon các models
+
+-----------------------------------------------------------------------------
+CẬP NHẬT TRƯỚC ĐÓ - 04/12/2025 (Buổi 18 - Fix Model Identity Cross-contamination):
 -----------------------------------------------------------------------------
 
 AX. ✅ FIX LỖI CÁC MODEL TỰ NHẬN MÌNH LÀ BIDARA SAU KHI CHUYỂN MODEL
