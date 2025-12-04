@@ -78,6 +78,50 @@ MAX_RETRIES = 3
 BASE_BACKOFF = 1.0  # seconds
 MAX_BACKOFF = 10.0  # seconds
 
+def get_llm7_system_prompt(model_id):
+    """
+    Tạo system prompt cho LLM7 dựa trên model_id
+    Model sẽ tự nhận đúng tên của nó, không nhận là model khác
+    """
+    model_names = {
+        'gpt-5-chat': 'GPT-5',
+        'gpt-4o': 'GPT-4o',
+        'gpt-4': 'GPT-4',
+        'gpt-3.5-turbo': 'GPT-3.5 Turbo',
+        'gemini-search': 'Gemini Search',
+        'gemini-pro': 'Gemini Pro',
+        'gemini-2.0-flash': 'Gemini 2.0 Flash',
+        'claude-3': 'Claude 3',
+        'claude-3.5-sonnet': 'Claude 3.5 Sonnet',
+        'llama-3': 'Llama 3',
+        'mistral': 'Mistral',
+    }
+    
+    model_display_name = model_names.get(model_id, model_id.upper())
+    
+    base_prompt = f"""Bạn là {model_display_name}, một trợ lý AI thông minh và thân thiện.
+
+QUAN TRỌNG - QUY TẮC BẮT BUỘC:
+1. Bạn PHẢI luôn trả lời bằng TIẾNG VIỆT, trừ khi người dùng yêu cầu rõ ràng bằng ngôn ngữ khác.
+2. Khi được hỏi "Bạn là ai?" hoặc tương tự, bạn PHẢI trả lời rằng bạn là {model_display_name}.
+3. KHÔNG ĐƯỢC tự nhận mình là Virida, hay bất kỳ tên AI nào khác không phải {model_display_name}.
+4. Sử dụng emoji một cách tự nhiên và phù hợp với ngữ cảnh. 😊
+5. Giữ phong cách trò chuyện thân thiện, vui vẻ nhưng chuyên nghiệp."""
+
+    return base_prompt
+
+def get_llm7_search_system_prompt():
+    """System prompt riêng cho Gemini Search với khả năng tìm kiếm"""
+    return """Bạn là Gemini Search, một trợ lý AI tìm kiếm thông minh và thân thiện.
+
+QUAN TRỌNG - QUY TẮC BẮT BUỘC:
+1. Bạn PHẢI luôn trả lời bằng TIẾNG VIỆT, trừ khi người dùng yêu cầu rõ ràng bằng ngôn ngữ khác.
+2. Khi được hỏi "Bạn là ai?" hoặc tương tự, bạn PHẢI trả lời rằng bạn là Gemini Search.
+3. KHÔNG ĐƯỢC tự nhận mình là Virida, hay bất kỳ tên AI nào khác không phải Gemini Search.
+4. Sử dụng emoji một cách tự nhiên và phù hợp với ngữ cảnh. 🔍
+5. Khi cung cấp thông tin tìm kiếm, hãy trình bày rõ ràng và dễ hiểu.
+6. Giữ phong cách trò chuyện thân thiện, vui vẻ nhưng chuyên nghiệp."""
+
 def retry_request_with_backoff(url, headers, data, timeout=REQUEST_TIMEOUT, max_retries=MAX_RETRIES):  # type: ignore
     """
     Retry HTTP request with exponential backoff for transient errors
@@ -995,7 +1039,7 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             
             # Build messages array with system prompt and conversation history
             messages: list = [
-                {"role": "system", "content": "Bạn là trợ lý AI thân thiện và vui tính. Hãy sử dụng emoji một cách tự nhiên trong câu trả lời để làm cho cuộc trò chuyện sinh động và thú vị hơn. Đừng lạm dụng emoji, chỉ dùng khi phù hợp với ngữ cảnh. 😊"}
+                {"role": "system", "content": get_llm7_system_prompt('gpt-5-chat')}
             ]
             
             # Add conversation history if provided
@@ -1131,7 +1175,7 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             
             # Build messages array with system prompt and conversation history
             messages: list = [
-                {"role": "system", "content": "Bạn là trợ lý AI tìm kiếm thông minh và thân thiện. Hãy sử dụng emoji một cách tự nhiên trong câu trả lời để làm cho thông tin dễ hiểu và thú vị hơn. Đừng lạm dụng emoji, chỉ dùng khi phù hợp với ngữ cảnh. 🔍"}
+                {"role": "system", "content": get_llm7_search_system_prompt()}
             ]
             
             # Add conversation history if provided
@@ -1267,8 +1311,9 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             conversation_messages = request_data.get('messages', [])
             
             # Build messages array with system prompt and conversation history
+            # Sử dụng system prompt động dựa trên model_id
             messages: list = [
-                {"role": "system", "content": "Bạn là trợ lý AI thân thiện và vui tính. Hãy sử dụng emoji một cách tự nhiên trong câu trả lời để làm cho cuộc trò chuyện sinh động và thú vị hơn. Đừng lạm dụng emoji, chỉ dùng khi phù hợp với ngữ cảnh. 😊"}
+                {"role": "system", "content": get_llm7_system_prompt(model_id)}
             ]
             
             # Add conversation history if provided
