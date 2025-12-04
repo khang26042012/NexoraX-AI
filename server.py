@@ -78,6 +78,10 @@ MAX_RETRIES = 3
 BASE_BACKOFF = 1.0  # seconds
 MAX_BACKOFF = 10.0  # seconds
 
+# Gemini fallback configuration - khi model chính hết quota thì fallback sang model phụ
+GEMINI_FALLBACK_MODELS = ['gemini-2.0-flash', 'gemini-1.5-flash']
+GEMINI_PRIMARY_MODEL = 'gemini-3-pro-preview'
+
 def get_llm7_system_prompt(model_id):
     """
     Tạo system prompt cho LLM7 dựa trên model_id
