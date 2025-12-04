@@ -11,7 +11,6 @@
 import { formatMessage, formatFileSize } from './message-formatter.js';
 import { MODEL_NAMES } from './constants.js';
 import { scrollToBottom } from './utils.js';
-import { saveDualChatModels } from './dual-chat.js';
 
 // ===================================
 // MESSAGE RENDERING
@@ -254,19 +253,17 @@ export function renderDualChatLayout(chat, context) {
             
             // Xóa tất cả tin nhắn của model cũ (primary panel)
             chat.messages = chat.messages.filter(msg => {
-                // Giữ lại user messages
                 if (msg.role === 'user') return true;
-                // Giữ lại secondary messages
                 if (msg.isPrimary === false) return true;
-                // Xóa primary messages của model cũ
                 if (msg.isPrimary === true || msg.model === oldPrimaryModel) return false;
                 return true;
             });
             
             context.dualChatPrimaryModel = newPrimaryModel;
-            saveDualChatModels(context.dualChatPrimaryModel, context.dualChatSecondaryModel);
+            if (context.saveDualChatModels) {
+                context.saveDualChatModels(newPrimaryModel, context.dualChatSecondaryModel);
+            }
             
-            // Lưu chat sau khi xóa messages
             if (context.saveChats) {
                 context.saveChats();
             }
@@ -282,19 +279,17 @@ export function renderDualChatLayout(chat, context) {
             
             // Xóa tất cả tin nhắn của model cũ (secondary panel)
             chat.messages = chat.messages.filter(msg => {
-                // Giữ lại user messages
                 if (msg.role === 'user') return true;
-                // Giữ lại primary messages
                 if (msg.isPrimary === true) return true;
-                // Xóa secondary messages của model cũ
                 if (msg.isPrimary === false || msg.model === oldSecondaryModel) return false;
                 return true;
             });
             
             context.dualChatSecondaryModel = newSecondaryModel;
-            saveDualChatModels(context.dualChatPrimaryModel, context.dualChatSecondaryModel);
+            if (context.saveDualChatModels) {
+                context.saveDualChatModels(context.dualChatPrimaryModel, newSecondaryModel);
+            }
             
-            // Lưu chat sau khi xóa messages
             if (context.saveChats) {
                 context.saveChats();
             }

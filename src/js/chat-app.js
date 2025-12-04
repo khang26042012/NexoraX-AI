@@ -1206,6 +1206,7 @@ export class NexoraXChat {
     // ===================================
     
     getContext() {
+        const self = this;
         return {
             messagesContainer: this.messagesContainer,
             dualChatMode: this.dualChatMode,
@@ -1213,7 +1214,12 @@ export class NexoraXChat {
             dualChatSecondaryModel: this.dualChatSecondaryModel,
             DUAL_CHAT_MODELS: DUAL_CHAT_MODELS,
             typewriterEffect: (elem, text, cb) => this.typewriterEffect(elem, text, cb),
-            saveDualChatModels: () => this.saveDualChatModels(),
+            saveDualChatModels: (primary, secondary) => {
+                if (primary !== undefined) self.dualChatPrimaryModel = primary;
+                if (secondary !== undefined) self.dualChatSecondaryModel = secondary;
+                saveDualChatModels(self.dualChatPrimaryModel, self.dualChatSecondaryModel);
+            },
+            saveChats: () => this.saveChats(),
             renderMessage: (msg) => this.renderMessage(msg),
             renderDualChatLayout: (chat, ctx) => renderDualChatLayout(chat, ctx)
         };
