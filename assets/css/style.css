@@ -580,14 +580,14 @@
     }
 }
 
-/* Modern AI Loading Animation like Replit */
+/* Modern AI Loading Animation - Logo + Rainbow Spinner */
 .ai-loading {
     display: flex;
     align-items: center;
-    gap: 2px;
-    padding: 8px 12px;
+    gap: 12px;
+    padding: 10px 16px;
     background: #f8fafc;
-    border-radius: 8px;
+    border-radius: 12px;
     border: 1px solid #e2e8f0;
     width: fit-content;
     align-self: flex-start;
@@ -601,51 +601,114 @@ body.dark-mode .ai-loading {
     border: 1px solid #262626;
 }
 
-.dark .ai-loading-text,
-[data-theme="dark"] .ai-loading-text,
-body.dark-mode .ai-loading-text {
-    color: #a3a3a3;
-}
-
-.ai-loading-text {
-    color: #64748b;
-    font-size: 14px;
-    margin-right: 8px;
-}
-
-.ai-loading-dots {
+/* Logo wrapper với spinner xoay quanh */
+.ai-loading-logo-wrapper {
+    position: relative;
+    width: 36px;
+    height: 36px;
     display: flex;
-    gap: 2px;
+    align-items: center;
+    justify-content: center;
 }
 
-.ai-loading-dot {
-    width: 4px;
-    height: 4px;
+/* Logo ở giữa */
+.ai-loading-logo {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    z-index: 2;
+    position: relative;
+}
+
+/* Rainbow spinner xoay quanh logo */
+.ai-loading-spinner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    background-color: #3b82f6;
-    animation: replitTyping 1.2s infinite ease-in-out;
+    /* Đường cong ngắn với gradient rainbow */
+    border: 3px solid transparent;
+    border-top-color: #ff0000;
+    border-right-color: transparent;
+    border-bottom-color: transparent;
+    border-left-color: transparent;
+    /* Rainbow gradient sử dụng conic-gradient */
+    background: 
+        linear-gradient(#f8fafc, #f8fafc) padding-box,
+        conic-gradient(
+            from 0deg,
+            #ff0000 0%,
+            #ff8000 15%,
+            #ffff00 30%,
+            #00ff00 45%,
+            #00ffff 60%,
+            #0080ff 75%,
+            #8000ff 90%,
+            transparent 90%,
+            transparent 100%
+        ) border-box;
+    border: 3px solid transparent;
+    animation: rainbowSpin 1.2s linear infinite;
 }
 
-.ai-loading-dot:nth-child(1) {
-    animation-delay: 0s;
+/* Dark mode spinner background */
+.dark .ai-loading-spinner,
+[data-theme="dark"] .ai-loading-spinner,
+body.dark-mode .ai-loading-spinner {
+    background: 
+        linear-gradient(#1e1e1e, #1e1e1e) padding-box,
+        conic-gradient(
+            from 0deg,
+            #ff0000 0%,
+            #ff8000 15%,
+            #ffff00 30%,
+            #00ff00 45%,
+            #00ffff 60%,
+            #0080ff 75%,
+            #8000ff 90%,
+            transparent 90%,
+            transparent 100%
+        ) border-box;
 }
 
-.ai-loading-dot:nth-child(2) {
-    animation-delay: 0.15s;
-}
-
-.ai-loading-dot:nth-child(3) {
-    animation-delay: 0.3s;
-}
-
-@keyframes replitTyping {
-    0%, 60%, 100% {
-        transform: translateY(0px);
-        opacity: 0.4;
+@keyframes rainbowSpin {
+    0% {
+        transform: rotate(0deg);
     }
-    30% {
-        transform: translateY(-8px);
-        opacity: 1;
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Text "Thinking" với rainbow gradient */
+.ai-loading-text {
+    font-size: 15px;
+    font-weight: 600;
+    background: linear-gradient(
+        90deg,
+        #ff0000,
+        #ff8000,
+        #ffff00,
+        #00ff00,
+        #00ffff,
+        #0080ff,
+        #8000ff
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: rainbowText 2s linear infinite;
+}
+
+@keyframes rainbowText {
+    0% {
+        background-position: 0% center;
+    }
+    100% {
+        background-position: 200% center;
     }
 }
 

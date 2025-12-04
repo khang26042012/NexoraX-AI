@@ -61,7 +61,7 @@ export function renderMessage(message, context) {
     // Tạo message content
     let contentHtml = '';
     if (message.isTyping) {
-        contentHtml = '<div class="ai-loading"><span class="ai-loading-text">Đang suy nghĩ</span><div class="ai-loading-dots"><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div></div></div>';
+        contentHtml = '<div class="ai-loading"><div class="ai-loading-logo-wrapper"><img src="assets/images/brand-logo.png" alt="Logo" class="ai-loading-logo"><div class="ai-loading-spinner"></div></div><span class="ai-loading-text">Thinking</span></div>';
     } else if (message.isHtml) {
         contentHtml = message.content;
     } else {
@@ -116,7 +116,7 @@ export function updateMessage(message, context) {
     if (messageElement) {
         const contentElement = messageElement.querySelector('.message-content');
         if (message.isTyping) {
-            contentElement.innerHTML = '<div class="ai-loading"><span class="ai-loading-text">Đang suy nghĩ</span><div class="ai-loading-dots"><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div></div></div>';
+            contentElement.innerHTML = '<div class="ai-loading"><div class="ai-loading-logo-wrapper"><img src="assets/images/brand-logo.png" alt="Logo" class="ai-loading-logo"><div class="ai-loading-spinner"></div></div><span class="ai-loading-text">Thinking</span></div>';
         } else {
             // Check nếu message là raw HTML (VD: cho images)
             if (message.isHtml) {
