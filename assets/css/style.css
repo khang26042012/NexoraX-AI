@@ -1,45 +1,28 @@
-/* Brand Logo - Vietnamball với nón lá */
+/* Brand Logo - Vietnamball với nón lá (PNG với nền transparent) */
 .brand-logo {
-    /* Nền trong suốt cho light mode */
     background: transparent !important;
-    backdrop-filter: none !important;
-    mix-blend-mode: normal !important;
-    /* Smooth transitions for theme changes */
+    /* Smooth transitions */
     transition: all 0.3s ease;
-    /* Ensure crisp rendering */
+    /* Crisp rendering */
     image-rendering: crisp-edges;
     image-rendering: -webkit-optimize-contrast;
-    /* Bo tròn nhẹ */
-    border-radius: 8px;
-    padding: 2px;
 }
 
-/* Light mode - hiển thị bình thường */
-.brand-logo {
-    filter: none;
-    opacity: 1;
-}
-
-/* Dark mode - nền đen xung quanh logo */
+/* Dark mode - thêm subtle glow */
 .dark .brand-logo {
-    /* Nền đen xung quanh logo khi dark mode */
-    background-color: #000000 !important;
-    border-radius: 10px;
-    padding: 4px;
-    /* Thêm subtle glow */
-    box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
-    opacity: 1;
+    /* Subtle glow tím cho dark mode */
+    filter: drop-shadow(0 0 6px rgba(168, 85, 247, 0.4));
 }
 
-/* Hover effects cho logo */
+/* Hover effects */
 .brand-logo:hover {
     transform: scale(1.05);
     transition: all 0.2s ease;
 }
 
 .dark .brand-logo:hover {
-    box-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
     transform: scale(1.05);
+    filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.6));
 }
 
 /* Modern Settings Modal Styles - Easy to Read */

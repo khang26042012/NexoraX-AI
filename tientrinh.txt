@@ -10,7 +10,8 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 04/12/2025
 
 BF. ✅ ĐỔI LOGO WEBSITE THÀNH HÌNH VIETNAMBALL VỚI NÓN LÁ
    - Yêu cầu: Đổi logo hiện tại thành hình Vietnamball (countryball) với nón lá
-   - Thêm CSS để khi dark mode thì nền xung quanh logo thành màu đen
+   - Xóa nền của logo (không có hình vuông bọc xung quanh)
+   - Dark mode: Logo blend tự nhiên với nền tối
    
    **GIẢI PHÁP:**
    
@@ -18,28 +19,32 @@ BF. ✅ ĐỔI LOGO WEBSITE THÀNH HÌNH VIETNAMBALL VỚI NÓN LÁ
       * File: attached_assets/20251204_194051_0000_1764852267168.png
       * Đích: assets/images/brand-logo.png
    
-   2. ✅ **Cập nhật index.html (3 vị trí):**
+   2. ✅ **Xóa nền trắng của PNG bằng Python/Pillow:**
+      * Sử dụng Pillow để convert pixels màu trắng (R,G,B > 240) thành transparent
+      * Kết quả: Logo có nền trong suốt, không còn hình vuông trắng
+   
+   3. ✅ **Cập nhật index.html (3 vị trí):**
       * Favicon (dòng 7): Đổi type sang image/png, src sang brand-logo.png
       * Logo sidebar (dòng 22): Đổi src + thêm class "brand-logo"
       * Logo About Modal (dòng 868): Đổi src + thêm class "brand-logo"
    
-   3. ✅ **Cập nhật assets/css/style.css:**
+   4. ✅ **Cập nhật assets/css/style.css:**
       * Xóa selector cũ: img[src*="nexorax-logo.svg"]
       * Thêm class mới: .brand-logo
-      * Light mode: Nền trong suốt, bo tròn nhẹ
-      * Dark mode: Nền đen (#000000), box-shadow tím nhẹ
-      * Hover effects: Scale 1.05 + glow tím khi dark mode
+      * Light mode: Background transparent
+      * Dark mode: Subtle glow tím (drop-shadow)
+      * Hover effects: Scale 1.05 + glow tím mạnh hơn
    
    **DANH SÁCH FILE ĐÃ THAY ĐỔI:**
-   - assets/images/brand-logo.png (file mới)
+   - assets/images/brand-logo.png (file mới với nền transparent)
    - index.html: Cập nhật favicon + 2 logo img tags
    - assets/css/style.css: Thay thế CSS logo hoàn toàn
    
    **KẾT QUẢ:**
    ✅ Server restart thành công
-   ✅ Logo mới hiển thị đúng (GET /assets/images/brand-logo.png 200)
-   ✅ Dark mode có nền đen xung quanh logo
-   ✅ Light mode giữ nền trong suốt
+   ✅ Logo mới hiển thị đúng với nền transparent
+   ✅ Không còn hình vuông bọc xung quanh logo
+   ✅ Dark mode có subtle glow tím
    ✅ ARCHITECT REVIEW: PASS
 
 -----------------------------------------------------------------------------
