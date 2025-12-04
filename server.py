@@ -1192,26 +1192,19 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
 
     def handle_llm7_gemini_search(self):
-        """Handle Search requests via Serper API + Gemini AI processing
-        Đã thay thế LLM7 gemini-search bằng Serper API (04/12/2025)
+        """Handle Search requests via Serper API ONLY (không dùng AI)
+        Đã thay thế HOÀN TOÀN LLM7 gemini-search bằng Serper API thuần túy (04/12/2025)
         """
         try:
             # Get username from session cookie
             username = self._get_username_from_cookie()
             
-            # Get API keys from config
+            # Get Serper API key from config
             serper_key = get_api_key('serper')
-            gemini_key = get_api_key('gemini')
             
             if not serper_key:
                 self._send_json_error(500, 
                     "Serper API key chưa được cấu hình. Vui lòng kiểm tra config.py",
-                    "API_KEY_MISSING")
-                return
-            
-            if not gemini_key or gemini_key == "your_gemini_api_key_here":
-                self._send_json_error(500, 
-                    "Gemini API key chưa được cấu hình. Vui lòng kiểm tra config.py",
                     "API_KEY_MISSING")
                 return
             
@@ -1226,12 +1219,9 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self._send_json_error(400, "Message không được để trống", "MISSING_MESSAGE")
                 return
             
-            # Extract files from request (for potential future use)
-            files = request_data.get('files', [])
+            logger.info(f"Serper Search (pure) starting for query: {message}")
             
-            logger.info(f"Serper Search starting for query: {message}")
-            
-            # Step 1: Search using Serper API
+            # Call Serper API
             serper_url = "https://google.serper.dev/search"
             serper_headers = {
                 "X-API-KEY": serper_key,
@@ -1257,68 +1247,23 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             
             logger.info(f"Serper returned {len(serper_data.get('organic', []))} organic results")
             
-            # Step 2: Format search context for AI
-            search_context = self._format_serper_context_for_ai(serper_data, message)
+            # Format search results as markdown (NO AI processing)
+            reply = self._format_serper_results_markdown(serper_data, message)
             
-            # Step 3: Create enhanced prompt for Gemini
-            enhanced_prompt = self._create_serper_enhanced_prompt(message, search_context)
-            
-            # Step 4: Send to Gemini for AI-powered response
-            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key={gemini_key}"
-            
-            gemini_payload = {
-                "contents": [{
-                    "parts": [{"text": enhanced_prompt}]
-                }],
-                "generationConfig": {
-                    "temperature": 0.7,
-                    "topK": 40,
-                    "topP": 0.95,
-                    "maxOutputTokens": 8192,
-                },
-                "safetySettings": [
-                    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-                    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-                    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-                    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"}
-                ]
-            }
-            
-            gemini_request = urllib.request.Request(
-                gemini_url,
-                data=json.dumps(gemini_payload).encode('utf-8'),
-                headers={'Content-Type': 'application/json'}
-            )
-            
-            with urllib.request.urlopen(gemini_request, timeout=REQUEST_TIMEOUT) as response:
-                gemini_response = response.read().decode('utf-8')
-                gemini_data = json.loads(gemini_response)
-            
-            # Extract AI response
-            reply = ""
-            if "candidates" in gemini_data and len(gemini_data["candidates"]) > 0:
-                candidate = gemini_data["candidates"][0]
-                if "content" in candidate and "parts" in candidate["content"]:
-                    reply = candidate["content"]["parts"][0].get("text", "")
-            
-            if not reply:
-                reply = "Không thể tạo phản hồi từ kết quả tìm kiếm. Vui lòng thử lại."
-            
-            # Save AI history (giữ model="gemini-search" để tương thích frontend)
+            # Save history
             save_ai_history(
                 username=username,
-                model="gemini-search",
+                model="serper-search",
                 prompt=message,
                 response=reply,
                 metadata={
-                    'endpoint': 'serper_gemini_search',
-                    'has_files': len(files) > 0,
+                    'endpoint': 'serper_pure',
                     'search_results_count': len(serper_data.get('organic', [])),
-                    'powered_by': 'serper+gemini'
+                    'powered_by': 'serper'
                 }
             )
             
-            # Return response to client (giữ model="gemini-search" để tương thích frontend)
+            # Return response to client
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self._send_cors_headers()
@@ -1330,18 +1275,18 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             }, ensure_ascii=False)
             self.wfile.write(response_json.encode('utf-8'))
             
-            logger.info("Serper Search + Gemini completed successfully")
+            logger.info("Serper Search (pure) completed successfully")
             
         except urllib.error.HTTPError as e:
             try:
                 error_body = e.read().decode('utf-8')
-                logger.error(f"Search API HTTP error: {e.code} - {error_body}")
-                self._send_json_error(e.code, f"Search API lỗi: {error_body}", "UPSTREAM_ERROR")
+                logger.error(f"Serper API HTTP error: {e.code} - {error_body}")
+                self._send_json_error(e.code, f"Serper API lỗi: {error_body}", "UPSTREAM_ERROR")
             except:
-                self._send_json_error(e.code, f"Search API lỗi: {e.reason}", "UPSTREAM_ERROR")
+                self._send_json_error(e.code, f"Serper API lỗi: {e.reason}", "UPSTREAM_ERROR")
         except urllib.error.URLError as e:
-            logger.error(f"Search connection error: {e}")
-            self._send_json_error(502, "Không thể kết nối đến dịch vụ tìm kiếm", "CONNECTION_ERROR")
+            logger.error(f"Serper connection error: {e}")
+            self._send_json_error(502, "Không thể kết nối đến Serper API", "CONNECTION_ERROR")
         except json.JSONDecodeError as e:
             logger.error(f"Invalid JSON in Search request: {e}")
             self._send_json_error(400, "Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra định dạng JSON.", "INVALID_JSON")
@@ -1351,82 +1296,67 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             logger.error(f"Exception args: {e.args}")
             self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
     
-    def _format_serper_context_for_ai(self, serper_data, query):
-        """Format Serper search results into context for AI processing"""
-        context_parts = []
+    def _format_serper_results_markdown(self, serper_data, query):
+        """Format Serper search results into markdown (NO AI processing)"""
+        parts = []
         
-        # Answer Box (nếu có)
+        parts.append(f"## Kết quả tìm kiếm cho: \"{query}\"\n")
+        
+        # Answer Box (câu trả lời nhanh)
         if serper_data.get('answerBox'):
-            answer_box = serper_data['answerBox']
-            if answer_box.get('answer'):
-                context_parts.append(f"📋 Trả lời nhanh: {answer_box['answer']}")
-            elif answer_box.get('snippet'):
-                context_parts.append(f"📋 Tóm tắt: {answer_box['snippet']}")
+            ab = serper_data['answerBox']
+            parts.append("### Trả lời nhanh")
+            if ab.get('answer'):
+                parts.append(f"{ab['answer']}\n")
+            elif ab.get('snippet'):
+                parts.append(f"{ab['snippet']}\n")
+            if ab.get('title'):
+                parts.append(f"*Nguồn: {ab['title']}*\n")
         
-        # Knowledge Graph (nếu có)
+        # Knowledge Graph
         if serper_data.get('knowledgeGraph'):
             kg = serper_data['knowledgeGraph']
+            parts.append("### Thông tin")
             if kg.get('title'):
-                kg_info = f"📚 {kg['title']}"
-                if kg.get('type'):
-                    kg_info += f" ({kg['type']})"
-                if kg.get('description'):
-                    kg_info += f": {kg['description']}"
-                context_parts.append(kg_info)
+                parts.append(f"**{kg['title']}**")
+            if kg.get('type'):
+                parts.append(f"*{kg['type']}*")
+            if kg.get('description'):
+                parts.append(f"{kg['description']}\n")
         
-        # Organic Results
+        # Organic results
         organic = serper_data.get('organic', [])
         if organic:
-            context_parts.append("\n🔍 Kết quả tìm kiếm:")
+            parts.append("### Kết quả tìm kiếm")
             for i, result in enumerate(organic[:7], 1):
                 title = result.get('title', 'Không có tiêu đề')
                 snippet = result.get('snippet', '')
-                link = result.get('link', '')
-                context_parts.append(f"\n{i}. **{title}**")
+                link = result.get('link', '#')
+                parts.append(f"**{i}. [{title}]({link})**")
                 if snippet:
-                    context_parts.append(f"   {snippet}")
-                if link:
-                    context_parts.append(f"   🔗 {link}")
+                    parts.append(f"{snippet}\n")
         
-        # People Also Ask (nếu có)
-        if serper_data.get('peopleAlsoAsk'):
-            context_parts.append("\n❓ Câu hỏi liên quan:")
-            for paa in serper_data['peopleAlsoAsk'][:3]:
-                question = paa.get('question', '')
-                answer = paa.get('snippet', '')
-                if question:
-                    context_parts.append(f"   • {question}")
-                    if answer:
-                        context_parts.append(f"     → {answer[:200]}...")
+        # People Also Ask
+        paa = serper_data.get('peopleAlsoAsk', [])
+        if paa:
+            parts.append("### Câu hỏi liên quan")
+            for item in paa[:4]:
+                q = item.get('question', '')
+                a = item.get('snippet', '')
+                if q:
+                    parts.append(f"- **{q}**")
+                    if a:
+                        parts.append(f"  {a}")
         
-        # Related Searches (nếu có)
-        if serper_data.get('relatedSearches'):
-            related = [rs.get('query', '') for rs in serper_data['relatedSearches'][:5] if rs.get('query')]
-            if related:
-                context_parts.append(f"\n🔄 Tìm kiếm liên quan: {', '.join(related)}")
+        # Related Searches
+        related = serper_data.get('relatedSearches', [])
+        if related:
+            parts.append("\n### Tìm kiếm liên quan")
+            related_terms = [r.get('query', '') for r in related[:5] if r.get('query')]
+            if related_terms:
+                parts.append(", ".join(related_terms))
         
-        return '\n'.join(context_parts) if context_parts else f"Không tìm thấy kết quả phù hợp cho: {query}"
-    
-    def _create_serper_enhanced_prompt(self, user_query, search_context):
-        """Create an enhanced prompt combining user query with Serper search results"""
-        return f"""Bạn là trợ lý AI thông minh chuyên tìm kiếm và tổng hợp thông tin.
-
-🎯 CÂU HỎI CỦA NGƯỜI DÙNG:
-{user_query}
-
-📊 KẾT QUẢ TÌM KIẾM TỪ GOOGLE (qua Serper API):
-{search_context}
-
-📝 YÊU CẦU:
-1. Trả lời bằng tiếng Việt, rõ ràng và dễ hiểu
-2. Tổng hợp thông tin từ các nguồn tìm kiếm trên
-3. Trích dẫn nguồn khi cần thiết (đề cập tên website)
-4. Nếu thông tin không chắc chắn, hãy nói rõ
-5. Sử dụng emoji phù hợp để làm rõ nội dung
-6. Định dạng câu trả lời với markdown (headings, lists, bold) để dễ đọc
-7. Nếu có link hữu ích, hãy đề cập để người dùng có thể tham khảo thêm
-
-Hãy trả lời câu hỏi một cách đầy đủ và hữu ích nhất có thể dựa trên kết quả tìm kiếm."""
+        return "\n".join(parts) if parts else "Không tìm thấy kết quả phù hợp."
 
     def handle_llm7_chat(self):
         """Generic handler for all LLM7 models via LLM7.io"""
