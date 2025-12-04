@@ -5,7 +5,50 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 04/12/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
-✨ CẬP NHẬT MỚI NHẤT - 04/12/2025 (Buổi 19 - Cập nhật AI Models từ LLM7 API):
+✨ CẬP NHẬT MỚI NHẤT - 04/12/2025 (Buổi 20 - Thêm Quy Tắc Từ Vựng):
+-----------------------------------------------------------------------------
+
+BA. ✅ THÊM QUY TẮC CẤM SỬ DỤNG TỪ "BIOMIMICRY" CHO TẤT CẢ MODEL (TRỪ BIDARA)
+   - Yêu cầu: Tất cả AI models KHÔNG được sử dụng từ "biomimicry" trong câu trả lời
+   - Ngoại lệ: Chỉ có BIDARA mới được phép sử dụng từ này (vì đây là chuyên môn của BIDARA)
+   
+   **THAY ĐỔI ĐÃ THỰC HIỆN:**
+   
+   1. ✅ **Cập nhật get_llm7_system_prompt()** (server.py dòng 127-162):
+      * Tách riêng system prompt cho BIDARA và các model khác
+      * BIDARA: Prompt riêng với quyền sử dụng "biomimicry"
+      * Các model khác: Thêm "🚫 QUY TẮC TỪ VỰNG - BẮT BUỘC":
+        - KHÔNG ĐƯỢC sử dụng từ "biomimicry"
+        - Dùng từ thay thế: "thiết kế lấy cảm hứng từ thiên nhiên", "học hỏi từ sinh vật", 
+          "mô phỏng tự nhiên", "thiết kế sinh học"
+   
+   2. ✅ **Cập nhật get_llm7_search_system_prompt()** (server.py dòng 164-184):
+      * Thêm cùng quy tắc từ vựng cho Gemini Search
+      * Đảm bảo tất cả model LLM7 đều tuân thủ quy tắc
+   
+   3. ✅ **System prompt riêng cho BIDARA:**
+      * Tên đầy đủ: "BIDARA (Bio-Inspired Design and Research Assistant)"
+      * Được phép sử dụng thuật ngữ "biomimicry" 
+      * Chuyên môn: Thiết kế lấy cảm hứng từ sinh học
+      * Icon riêng: 🌿🔬
+   
+   **TỪ THAY THẾ CHO "BIOMIMICRY":**
+   - "Thiết kế lấy cảm hứng từ thiên nhiên"
+   - "Học hỏi từ sinh vật"
+   - "Mô phỏng tự nhiên"
+   - "Thiết kế sinh học"
+   
+   **DANH SÁCH FILE ĐÃ THAY ĐỔI:**
+   - server.py: Cập nhật 2 hàm system prompt
+   
+   **KẾT QUẢ:**
+   ✅ Server restart thành công
+   ✅ BIDARA: Được phép sử dụng "biomimicry"
+   ✅ Tất cả model khác: Sẽ dùng từ thay thế thay vì "biomimicry"
+   ✅ Không ảnh hưởng đến các tính năng khác
+
+-----------------------------------------------------------------------------
+CẬP NHẬT TRƯỚC ĐÓ - 04/12/2025 (Buổi 19 - Cập nhật AI Models từ LLM7 API):
 -----------------------------------------------------------------------------
 
 AZ. ✅ CẬP NHẬT DANH SÁCH AI MODELS THEO API LLM7
