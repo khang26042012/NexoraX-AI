@@ -5,7 +5,43 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 04/12/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
-✨ CẬP NHẬT MỚI NHẤT - 04/12/2025 (Buổi 21 - Fix Gemini & Dual Chat):
+✨ CẬP NHẬT MỚI NHẤT - 04/12/2025 (Buổi 22 - Fix Dual Chat Model Selection):
+-----------------------------------------------------------------------------
+
+BC. ✅ FIX LỖI DUAL CHAT DROPDOWN KHÔNG CẬP NHẬT APP INSTANCE
+   - Vấn đề: Khi thay đổi model trong dropdown Dual Chat, các model vẫn tự nhận
+     là GPT (hàng trên) và Gemini (hàng dưới) thay vì model đã chọn (ví dụ: Mistral)
+   - Nguyên nhân: 
+     * getContext() tạo object mới mỗi lần gọi
+     * dualChatPrimaryModel/SecondaryModel là primitives được copy by value
+     * Khi cập nhật context.dualChatPrimaryModel, app instance KHÔNG được cập nhật
+     * message-renderer.js gọi saveDualChatModels() từ import, không qua context
+   
+   **GIẢI PHÁP:**
+   
+   1. ✅ **Sửa getContext() trong chat-app.js (dòng 1211-1229):**
+      * saveDualChatModels bây giờ nhận tham số (primary, secondary)
+      * Cập nhật self.dualChatPrimaryModel và self.dualChatSecondaryModel trực tiếp
+      * Sau đó gọi saveDualChatModels() từ dual-chat.js để lưu localStorage
+      * Thêm saveChats() vào context để message-renderer có thể gọi
+   
+   2. ✅ **Sửa message-renderer.js:**
+      * Xóa import saveDualChatModels từ dual-chat.js
+      * Gọi context.saveDualChatModels(newPrimaryModel, context.dualChatSecondaryModel)
+      * Đảm bảo cả app instance VÀ localStorage đều được cập nhật
+   
+   **DANH SÁCH FILE ĐÃ THAY ĐỔI:**
+   - src/js/chat-app.js: Sửa getContext() để saveDualChatModels nhận tham số
+   - src/js/message-renderer.js: Gọi context.saveDualChatModels() thay vì import
+   
+   **KẾT QUẢ:**
+   ✅ Server restart thành công
+   ✅ Model selection propagate đúng vào app state và localStorage
+   ✅ Khi gửi message, đúng model được gọi thay vì fallback GPT/Gemini
+   ✅ ARCHITECT REVIEW: PASS
+
+-----------------------------------------------------------------------------
+CẬP NHẬT TRƯỚC ĐÓ - 04/12/2025 (Buổi 21 - Fix Gemini & Dual Chat):
 -----------------------------------------------------------------------------
 
 BB. ✅ FIX LỖI GEMINI API VÀ CẢI THIỆN DUAL CHAT
