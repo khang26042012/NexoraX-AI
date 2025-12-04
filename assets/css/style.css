@@ -1,40 +1,45 @@
-/* New AI Logo - Transparent background and adaptive theming */
-img[src*="nexorax-logo.svg"] {
+/* Brand Logo - Vietnamball với nón lá */
+.brand-logo {
+    /* Nền trong suốt cho light mode */
     background: transparent !important;
-    /* AI logo naturally transparent - no background needed */
     backdrop-filter: none !important;
-    filter: none !important;
     mix-blend-mode: normal !important;
     /* Smooth transitions for theme changes */
-    transition: filter 0.3s ease, opacity 0.3s ease;
+    transition: all 0.3s ease;
     /* Ensure crisp rendering */
     image-rendering: crisp-edges;
     image-rendering: -webkit-optimize-contrast;
+    /* Bo tròn nhẹ */
+    border-radius: 8px;
+    padding: 2px;
 }
 
-/* Light mode - optimal visibility */
-img[src*="nexorax-logo.svg"] {
-    filter: brightness(1) contrast(1) saturate(1.1);
+/* Light mode - hiển thị bình thường */
+.brand-logo {
+    filter: none;
     opacity: 1;
 }
 
-/* Dark mode - enhanced visibility and glow effect */
-.dark img[src*="nexorax-logo.svg"] {
-    /* Enhance brightness and add subtle glow for dark backgrounds */
-    filter: brightness(1.2) contrast(1.1) saturate(1.2) drop-shadow(0 0 8px rgba(168, 85, 247, 0.3));
-    opacity: 0.95;
+/* Dark mode - nền đen xung quanh logo */
+.dark .brand-logo {
+    /* Nền đen xung quanh logo khi dark mode */
+    background-color: #000000 !important;
+    border-radius: 10px;
+    padding: 4px;
+    /* Thêm subtle glow */
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
+    opacity: 1;
 }
 
-/* Hover effects for interactive elements */
-img[src*="nexorax-logo.svg"]:hover {
-    filter: brightness(1.1) contrast(1.1) saturate(1.2);
-    transform: scale(1.02);
+/* Hover effects cho logo */
+.brand-logo:hover {
+    transform: scale(1.05);
     transition: all 0.2s ease;
 }
 
-.dark img[src*="nexorax-logo.svg"]:hover {
-    filter: brightness(1.3) contrast(1.2) saturate(1.3) drop-shadow(0 0 12px rgba(168, 85, 247, 0.5));
-    transform: scale(1.02);
+.dark .brand-logo:hover {
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
+    transform: scale(1.05);
 }
 
 /* Modern Settings Modal Styles - Easy to Read */

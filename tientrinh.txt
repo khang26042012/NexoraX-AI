@@ -5,7 +5,45 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 04/12/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
-✨ CẬP NHẬT MỚI NHẤT - 04/12/2025 (Buổi 24 - Kết hợp Serper + Gemini 2.5 Flash):
+✨ CẬP NHẬT MỚI NHẤT - 04/12/2025 (Buổi 25 - Đổi Logo Website):
+-----------------------------------------------------------------------------
+
+BF. ✅ ĐỔI LOGO WEBSITE THÀNH HÌNH VIETNAMBALL VỚI NÓN LÁ
+   - Yêu cầu: Đổi logo hiện tại thành hình Vietnamball (countryball) với nón lá
+   - Thêm CSS để khi dark mode thì nền xung quanh logo thành màu đen
+   
+   **GIẢI PHÁP:**
+   
+   1. ✅ **Copy hình ảnh logo mới:**
+      * File: attached_assets/20251204_194051_0000_1764852267168.png
+      * Đích: assets/images/brand-logo.png
+   
+   2. ✅ **Cập nhật index.html (3 vị trí):**
+      * Favicon (dòng 7): Đổi type sang image/png, src sang brand-logo.png
+      * Logo sidebar (dòng 22): Đổi src + thêm class "brand-logo"
+      * Logo About Modal (dòng 868): Đổi src + thêm class "brand-logo"
+   
+   3. ✅ **Cập nhật assets/css/style.css:**
+      * Xóa selector cũ: img[src*="nexorax-logo.svg"]
+      * Thêm class mới: .brand-logo
+      * Light mode: Nền trong suốt, bo tròn nhẹ
+      * Dark mode: Nền đen (#000000), box-shadow tím nhẹ
+      * Hover effects: Scale 1.05 + glow tím khi dark mode
+   
+   **DANH SÁCH FILE ĐÃ THAY ĐỔI:**
+   - assets/images/brand-logo.png (file mới)
+   - index.html: Cập nhật favicon + 2 logo img tags
+   - assets/css/style.css: Thay thế CSS logo hoàn toàn
+   
+   **KẾT QUẢ:**
+   ✅ Server restart thành công
+   ✅ Logo mới hiển thị đúng (GET /assets/images/brand-logo.png 200)
+   ✅ Dark mode có nền đen xung quanh logo
+   ✅ Light mode giữ nền trong suốt
+   ✅ ARCHITECT REVIEW: PASS
+
+-----------------------------------------------------------------------------
+CẬP NHẬT TRƯỚC ĐÓ - 04/12/2025 (Buổi 24 - Kết hợp Serper + Gemini 2.5 Flash):
 -----------------------------------------------------------------------------
 
 BE. ✅ KẾT HỢP SERPER API VỚI GEMINI 2.5 FLASH ĐỂ TÓM GỌN VÀ PHÂN TÍCH KẾT QUẢ TÌM KIẾM
