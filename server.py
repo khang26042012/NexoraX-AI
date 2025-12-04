@@ -91,6 +91,7 @@ def get_llm7_system_prompt(model_id):
         'gemini-search': 'Gemini Search',
         'gemini-pro': 'Gemini Pro',
         'gemini-2.0-flash': 'Gemini 2.0 Flash',
+        'gemini-3-pro-preview': 'Gemini 3 Pro',
         'claude-3': 'Claude 3',
         'claude-3.5-sonnet': 'Claude 3.5 Sonnet',
         'llama-3': 'Llama 3',
@@ -634,7 +635,7 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             request_data = json.loads(post_data.decode('utf-8'))
             
             # Extract model from request
-            model = request_data.get('model', 'gemini-2.5-flash')
+            model = request_data.get('model', 'gemini-3-pro-preview')
             
             # Build Gemini API URL
             gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
@@ -901,8 +902,8 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             # Support conversation history - check if provided
             conversation_history = request_data.get('conversation_history', [])
             
-            # Step 3: Send to Gemini Flash 2.5
-            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_key}"
+            # Step 3: Send to Gemini 3 Pro
+            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent?key={gemini_key}"
             
             # Build contents array with conversation history + enhanced prompt
             contents = []
@@ -1469,8 +1470,8 @@ Output: "Image of Cho Ray Hospital in Ho Chi Minh City, Vietnam, modern medical 
 
 Hãy xử lý prompt sau:"""
             
-            # Build Gemini API URL
-            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_key}"
+            # Build Gemini API URL - Gemini 3 Pro
+            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent?key={gemini_key}"
             
             # Prepare Gemini request
             gemini_payload = {

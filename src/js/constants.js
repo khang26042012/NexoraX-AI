@@ -18,14 +18,14 @@
  * Key: ID model, Value: Tên hiển thị
  */
 export const MODEL_NAMES = {
-    'nexorax1': 'Gemini Flash 2.5',
+    'nexorax1': 'Gemini 3 Pro',
     'nexorax2': 'Search',
     'gpt-5-chat': 'GPT-5',
     'gemini-search': 'Gemini Search',
     'image-gen': 'Image Generator',
     'deepseek-v3.1': 'DeepSeek V3.1',
     'deepseek-reasoning': 'DeepSeek Reasoning',
-    'gemini-2.5-flash-lite': 'Gemini 2.5 Flash',
+    'gemini-3-pro-preview': 'Gemini 3 Pro',
     'mistral-small-3.1-24b-instruct-2503': 'Mistral Small 3.1',
     'nova-fast': 'Nova Fast',
     'gpt-5-mini': 'GPT-5 Mini',
@@ -54,11 +54,11 @@ export const MODEL_METADATA = {
         useCases: ['Phân tích dữ liệu phức tạp', 'Viết code chuyên sâu', 'Tư vấn chuyên môn', 'Giải quyết bài toán khó']
     },
     'nexorax1': {
-        name: 'Gemini Flash 2.5',
+        name: 'Gemini 3 Pro',
         icon: '⚡',
         category: 'chat',
-        description: 'Model siêu nhanh từ Google, xử lý đa phương tiện và tối ưu cho tốc độ phản hồi',
-        useCases: ['Chat nhanh', 'Phân tích hình ảnh', 'Xử lý file đa dạng', 'Trả lời tức thì']
+        description: 'Model tiên tiến nhất từ Google với khả năng suy luận mạnh mẽ và context 1 triệu tokens',
+        useCases: ['Chat nhanh', 'Phân tích hình ảnh', 'Xử lý file đa dạng', 'Suy luận phức tạp']
     },
     'nexorax2': {
         name: 'Search',
@@ -95,11 +95,11 @@ export const MODEL_METADATA = {
         description: 'Chuyên về suy luận logic, toán học và phân tích phức tạp',
         useCases: ['Giải toán', 'Phân tích logic', 'Chứng minh định lý', 'Suy luận khoa học']
     },
-    'gemini-2.5-flash-lite': {
-        name: 'Gemini 2.5 Flash Lite',
+    'gemini-3-pro-preview': {
+        name: 'Gemini 3 Pro',
         icon: '💫',
         category: 'chat',
-        description: 'Phiên bản nhẹ của Gemini Flash, tối ưu hiệu năng và tốc độ',
+        description: 'Model Gemini 3 Pro từ Google với khả năng suy luận và context 1 triệu tokens',
         useCases: ['Chat thường ngày', 'Câu hỏi nhanh', 'Dịch thuật', 'Tóm tắt văn bản']
     },
     'mistral-small-3.1-24b-instruct-2503': {
@@ -201,12 +201,12 @@ export const MODEL_METADATA = {
  */
 export const DUAL_CHAT_MODELS = [
     { value: 'gpt-5-chat', label: 'GPT-5' },
-    { value: 'nexorax1', label: 'Gemini Flash 2.5' },
+    { value: 'nexorax1', label: 'Gemini 3 Pro' },
     { value: 'gemini-search', label: 'Gemini Search' },
     { value: 'bidara', label: 'Bidara' },
     { value: 'deepseek-v3.1', label: 'DeepSeek V3.1' },
     { value: 'deepseek-reasoning', label: 'DeepSeek Reasoning' },
-    { value: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite' },
+    { value: 'gemini-3-pro-preview', label: 'Gemini 3 Pro' },
     { value: 'mistral-small-3.1-24b-instruct-2503', label: 'Mistral Small 3.1' },
     { value: 'mistral-medium-2508', label: 'Mistral Medium' },
     { value: 'mistral-small-2503', label: 'Mistral Small' },

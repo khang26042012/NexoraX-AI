@@ -5,7 +5,39 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 04/12/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
-✨ CẬP NHẬT MỚI NHẤT - 04/12/2025 (Buổi 17 - Fix Model Identity):
+✨ CẬP NHẬT MỚI NHẤT - 04/12/2025 (Buổi 17 - Cập nhật Gemini 3):
+-----------------------------------------------------------------------------
+
+AW. ✅ NÂNG CẤP GEMINI 2.5 LÊN GEMINI 3 PRO
+   - Yêu cầu: Đổi API key Gemini và nâng cấp model từ Gemini 2.5 lên Gemini 3
+   
+   **THAY ĐỔI ĐÃ THỰC HIỆN:**
+   
+   1. ✅ **Cập nhật API Key Gemini** (config.py):
+      * API key mới đã được cập nhật
+   
+   2. ✅ **Đổi model từ Gemini 2.5 sang Gemini 3 Pro**:
+      * server.py: 4 vị trí đổi sang gemini-3-pro-preview
+      * ai-api.js: Model chính đổi sang gemini-3-pro-preview
+      * constants.js: MODEL_NAMES, MODEL_METADATA, DUAL_CHAT_MODELS
+      * index.html: 4 buttons trong model selector
+   
+   3. ✅ **Tên hiển thị mới**: "Gemini 3 Pro"
+   
+   **DANH SÁCH FILE ĐÃ THAY ĐỔI:**
+   - config.py: API key mới
+   - server.py: Model name + mapping
+   - src/js/ai-api.js: Model trong requestBody
+   - src/js/constants.js: MODEL_NAMES, MODEL_METADATA, DUAL_CHAT_MODELS
+   - index.html: Quick model selector buttons
+   
+   **KẾT QUẢ:**
+   ✅ Server restart thành công
+   ✅ Tất cả Gemini calls giờ dùng Gemini 3 Pro
+   ✅ UI hiển thị đúng tên "Gemini 3 Pro"
+
+-----------------------------------------------------------------------------
+CẬP NHẬT TRƯỚC ĐÓ - 04/12/2025 (Buổi 17 - Fix Model Identity):
 -----------------------------------------------------------------------------
 
 AV. ✅ FIX LỖI CÁC MODEL LLM7 TỰ NHẬN MÌNH LÀ MODEL KHÁC

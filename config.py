@@ -16,7 +16,7 @@ from threading import Lock
 # Google Gemini API Key
 # Lấy miễn phí tại: https://aistudio.google.com/app/apikey
 # Environment variable GEMINI_API_KEY will override this if set
-GEMINI_API_KEY = "AIzaSyDhWAco4k7ajmzonA97uoRgVJvxfQblJFI"
+GEMINI_API_KEY = "AIzaSyCeVTZ25XREVzIjGIuMHBnwoN1a1MBo10g"
 
 # SerpAPI Search API Key
 # API tìm kiếm web để lấy kết quả từ Google, Bing, etc: https://serpapi.com
