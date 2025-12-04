@@ -21,24 +21,25 @@ export const MODEL_NAMES = {
     'nexorax1': 'Gemini 3 Pro',
     'nexorax2': 'Search',
     'gpt-5-chat': 'GPT-5',
-    'gemini-search': 'Gemini Search',
     'image-gen': 'Image Generator',
-    'deepseek-v3.1': 'DeepSeek V3.1',
     'deepseek-reasoning': 'DeepSeek Reasoning',
     'gemini-3-pro-preview': 'Gemini 3 Pro',
-    'mistral-small-3.1-24b-instruct-2503': 'Mistral Small 3.1',
     'nova-fast': 'Nova Fast',
     'gpt-5-mini': 'GPT-5 Mini',
     'gpt-5-nano-2025-08-07': 'GPT-5 Nano',
-    'gpt-o4-mini-2025-04-16': 'GPT-O4 Mini',
+    'gpt-4.1-nano-2025-04-14': 'GPT-4.1 Nano',
     'qwen2.5-coder-32b-instruct': 'Qwen Coder',
-    'roblox-rp': 'Roblox RP',
+    'codestral-2501': 'Codestral',
+    'llama-3.1-8B-instruct': 'Llama 3.1',
     'bidara': 'Bidara',
     'mistral-medium-2508': 'Mistral Medium',
     'mistral-small-2503': 'Mistral Small',
+    'ministral-3b-2512': 'Ministral 3B',
     'open-mixtral-8x7b': 'Mixtral 8x7B',
     'Steelskull/L3.3-MS-Nevoria-70b': 'Nevoria 70B',
-    'gemma-2-2b-it': 'Gemma 2'
+    'gemma-2-2b-it': 'Gemma 2',
+    'gemini-2.5-flash-lite': 'Gemini 2.5 Flash Lite',
+    'glm-4.5-flash': 'GLM 4.5 Flash'
 };
 
 /**
@@ -67,26 +68,12 @@ export const MODEL_METADATA = {
         description: 'Tìm kiếm thông tin thời gian thực từ internet với độ chính xác cao',
         useCases: ['Tìm tin tức mới nhất', 'Research chủ đề', 'Kiểm tra thông tin', 'Dữ liệu thời gian thực']
     },
-    'gemini-search': {
-        name: 'Gemini Search',
-        icon: '🌐',
-        category: 'search',
-        description: 'Công cụ tìm kiếm AI của Google, kết hợp search với phân tích thông minh',
-        useCases: ['Research toàn diện', 'Tổng hợp thông tin web', 'Tìm kiếm học thuật', 'Fact-checking']
-    },
     'image-gen': {
         name: 'Image Generator',
         icon: '🎨',
         category: 'image',
         description: 'Tạo hình ảnh từ văn bản với AI, chất lượng cao và đa dạng phong cách',
         useCases: ['Tạo artwork', 'Design concept', 'Minh họa ý tưởng', 'Tạo logo/banner']
-    },
-    'deepseek-v3.1': {
-        name: 'DeepSeek V3.1',
-        icon: '🧠',
-        category: 'chat',
-        description: 'Model AI mạnh mẽ, chuyên sâu về logic và lập trình',
-        useCases: ['Code generation', 'Debug code', 'Giải thuật', 'Technical writing']
     },
     'deepseek-reasoning': {
         name: 'DeepSeek Reasoning',
@@ -101,13 +88,6 @@ export const MODEL_METADATA = {
         category: 'chat',
         description: 'Model Gemini 3 Pro từ Google với khả năng suy luận và context 1 triệu tokens',
         useCases: ['Chat thường ngày', 'Câu hỏi nhanh', 'Dịch thuật', 'Tóm tắt văn bản']
-    },
-    'mistral-small-3.1-24b-instruct-2503': {
-        name: 'Mistral Small 3.1',
-        icon: '🌪️',
-        category: 'chat',
-        description: 'Model hiệu quả từ Mistral AI, cân bằng giữa chất lượng và tốc độ',
-        useCases: ['Chat đa mục đích', 'Content writing', 'Brainstorming', 'Q&A']
     },
     'mistral-medium-2508': {
         name: 'Mistral Medium',
@@ -151,12 +131,12 @@ export const MODEL_METADATA = {
         description: 'Phiên bản siêu nhỏ gọn, tối ưu tốc độ phản hồi',
         useCases: ['Chat đơn giản', 'Q&A nhanh', 'Suggestions', 'Basic assistance']
     },
-    'gpt-o4-mini-2025-04-16': {
-        name: 'GPT-O4 Mini',
-        icon: '🔧',
+    'gpt-4.1-nano-2025-04-14': {
+        name: 'GPT-4.1 Nano',
+        icon: '⚡',
         category: 'chat',
-        description: 'Model optimization-focused, cân bằng chất lượng và hiệu suất',
-        useCases: ['Optimized tasks', 'Efficient coding', 'Quick analysis', 'Smart replies']
+        description: 'Model siêu nhẹ từ OpenAI, tối ưu cho phản hồi nhanh chóng',
+        useCases: ['Chat đơn giản', 'Q&A nhanh', 'Trả lời tức thì', 'Hỗ trợ cơ bản']
     },
     'qwen2.5-coder-32b-instruct': {
         name: 'Qwen Coder',
@@ -165,12 +145,40 @@ export const MODEL_METADATA = {
         description: 'Chuyên gia coding AI, hỗ trợ đa ngôn ngữ lập trình',
         useCases: ['Code generation', 'Debug & refactor', 'Code review', 'Algorithm design']
     },
-    'roblox-rp': {
-        name: 'Roblox RP',
-        icon: '🎮',
-        category: 'roleplay',
-        description: 'AI roleplay chuyên về Roblox và gaming scenarios',
-        useCases: ['Roblox roleplay', 'Game scenarios', 'Creative stories', 'Character chat']
+    'llama-3.1-8B-instruct': {
+        name: 'Llama 3.1',
+        icon: '🦙',
+        category: 'chat',
+        description: 'Model Llama 3.1 từ Meta với hiệu năng cao và đa dụng',
+        useCases: ['Chat đa mục đích', 'Viết nội dung', 'Hỏi đáp', 'Hỗ trợ học tập']
+    },
+    'codestral-2501': {
+        name: 'Codestral',
+        icon: '💻',
+        category: 'coding',
+        description: 'Model chuyên về lập trình từ Mistral, hỗ trợ code hiệu quả',
+        useCases: ['Code generation', 'Debug code', 'Refactor', 'Giải thuật']
+    },
+    'ministral-3b-2512': {
+        name: 'Ministral 3B',
+        icon: '🌟',
+        category: 'chat',
+        description: 'Model nhỏ gọn từ Mistral, phản hồi nhanh và hiệu quả',
+        useCases: ['Chat nhanh', 'Q&A đơn giản', 'Tác vụ cơ bản', 'Trợ lý thường ngày']
+    },
+    'gemini-2.5-flash-lite': {
+        name: 'Gemini 2.5 Flash Lite',
+        icon: '✨',
+        category: 'chat',
+        description: 'Phiên bản nhẹ của Gemini 2.5 Flash, nhanh và tiết kiệm',
+        useCases: ['Chat nhanh', 'Tác vụ đơn giản', 'Phản hồi tức thì', 'Hỗ trợ cơ bản']
+    },
+    'glm-4.5-flash': {
+        name: 'GLM 4.5 Flash',
+        icon: '🔮',
+        category: 'chat',
+        description: 'Model GLM 4.5 từ Tsinghua, mạnh mẽ và thông minh',
+        useCases: ['Chat thông minh', 'Phân tích nội dung', 'Viết sáng tạo', 'Hỗ trợ học tập']
     },
     'bidara': {
         name: 'Bidara',
@@ -202,21 +210,22 @@ export const MODEL_METADATA = {
 export const DUAL_CHAT_MODELS = [
     { value: 'gpt-5-chat', label: 'GPT-5' },
     { value: 'nexorax1', label: 'Gemini 3 Pro' },
-    { value: 'gemini-search', label: 'Gemini Search' },
     { value: 'bidara', label: 'Bidara' },
-    { value: 'deepseek-v3.1', label: 'DeepSeek V3.1' },
     { value: 'deepseek-reasoning', label: 'DeepSeek Reasoning' },
     { value: 'gemini-3-pro-preview', label: 'Gemini 3 Pro' },
-    { value: 'mistral-small-3.1-24b-instruct-2503', label: 'Mistral Small 3.1' },
     { value: 'mistral-medium-2508', label: 'Mistral Medium' },
     { value: 'mistral-small-2503', label: 'Mistral Small' },
     { value: 'open-mixtral-8x7b', label: 'Mixtral 8x7B' },
     { value: 'nova-fast', label: 'Nova Fast' },
     { value: 'gpt-5-mini', label: 'GPT-5 Mini' },
     { value: 'gpt-5-nano-2025-08-07', label: 'GPT-5 Nano' },
-    { value: 'gpt-o4-mini-2025-04-16', label: 'GPT-O4 Mini' },
+    { value: 'gpt-4.1-nano-2025-04-14', label: 'GPT-4.1 Nano' },
     { value: 'qwen2.5-coder-32b-instruct', label: 'Qwen Coder' },
-    { value: 'roblox-rp', label: 'Roblox RP' },
+    { value: 'codestral-2501', label: 'Codestral' },
+    { value: 'llama-3.1-8B-instruct', label: 'Llama 3.1' },
+    { value: 'ministral-3b-2512', label: 'Ministral 3B' },
+    { value: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite' },
+    { value: 'glm-4.5-flash', label: 'GLM 4.5 Flash' },
     { value: 'Steelskull/L3.3-MS-Nevoria-70b', label: 'Nevoria 70B' },
     { value: 'gemma-2-2b-it', label: 'Gemma 2' }
 ];
