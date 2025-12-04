@@ -1192,8 +1192,10 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
 
     def handle_llm7_gemini_search(self):
-        """Handle Search requests via Serper API ONLY (không dùng AI)
-        Đã thay thế HOÀN TOÀN LLM7 gemini-search bằng Serper API thuần túy (04/12/2025)
+        """Handle Search requests via Serper API + Gemini 2.5 Flash Analysis
+        Kết hợp Serper (lấy data) + Gemini 2.5 Flash (tóm tắt & phân tích)
+        Fallback: Nếu Gemini lỗi, trả về Serper Markdown thuần
+        Cập nhật: 04/12/2025
         """
         try:
             # Get username from session cookie
@@ -1219,9 +1221,9 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self._send_json_error(400, "Message không được để trống", "MISSING_MESSAGE")
                 return
             
-            logger.info(f"Serper Search (pure) starting for query: {message}")
+            logger.info(f"Serper + Gemini Search starting for query: {message}")
             
-            # Call Serper API
+            # Step 1: Call Serper API to get search results
             serper_url = "https://google.serper.dev/search"
             serper_headers = {
                 "X-API-KEY": serper_key,
@@ -1245,22 +1247,55 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 serper_response = response.read().decode('utf-8')
                 serper_data = json.loads(serper_response)
             
-            logger.info(f"Serper returned {len(serper_data.get('organic', []))} organic results")
+            search_results_count = len(serper_data.get('organic', []))
+            logger.info(f"Serper returned {search_results_count} organic results")
             
-            # Format search results as markdown (NO AI processing)
-            reply = self._format_serper_results_markdown(serper_data, message)
+            # Step 2: Build context for Gemini and format Markdown fallback
+            search_context = self._build_gemini_search_context(serper_data, message)
+            serper_markdown = self._format_serper_results_markdown(serper_data, message)
             
-            # Save history
+            # Step 3: Call Gemini 2.5 Flash to analyze and summarize
+            gemini_success, gemini_result = self._invoke_gemini_summary(message, search_context)
+            
+            if gemini_success:
+                # Gemini success: Use AI summary + append source links
+                logger.info("Gemini summary generated successfully")
+                
+                # Build final response: Gemini summary + Serper sources
+                reply = gemini_result
+                
+                # Append raw Serper sources at the end for reference
+                reply += "\n\n---\n\n<details>\n<summary>📋 Xem chi tiết kết quả tìm kiếm</summary>\n\n"
+                reply += serper_markdown
+                reply += "\n</details>"
+                
+                powered_by = 'serper+gemini'
+                summary_model = 'gemini-2.5-flash-preview-05-20'
+            else:
+                # Gemini failed: Fallback to Serper-only Markdown
+                logger.warning(f"Gemini failed, using Serper fallback: {gemini_result}")
+                
+                reply = serper_markdown
+                reply += f"\n\n---\n*⚠️ Lưu ý: Kết quả chưa được AI phân tích ({gemini_result})*"
+                
+                powered_by = 'serper'
+                summary_model = None
+            
+            # Save history with appropriate metadata
+            history_metadata = {
+                'endpoint': 'serper_gemini_search',
+                'search_results_count': search_results_count,
+                'powered_by': powered_by
+            }
+            if summary_model:
+                history_metadata['summary_model'] = summary_model
+            
             save_ai_history(
                 username=username,
-                model="serper-search",
+                model="gemini-search",
                 prompt=message,
                 response=reply,
-                metadata={
-                    'endpoint': 'serper_pure',
-                    'search_results_count': len(serper_data.get('organic', [])),
-                    'powered_by': 'serper'
-                }
+                metadata=history_metadata
             )
             
             # Return response to client
@@ -1275,7 +1310,7 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             }, ensure_ascii=False)
             self.wfile.write(response_json.encode('utf-8'))
             
-            logger.info("Serper Search (pure) completed successfully")
+            logger.info(f"Serper + Gemini Search completed (powered_by: {powered_by})")
             
         except urllib.error.HTTPError as e:
             try:
@@ -1357,6 +1392,163 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 parts.append(", ".join(related_terms))
         
         return "\n".join(parts) if parts else "Không tìm thấy kết quả phù hợp."
+
+    def _build_gemini_search_context(self, serper_data, query):
+        """Build context string from Serper results for Gemini to analyze"""
+        context_parts = []
+        
+        # Answer Box
+        if serper_data.get('answerBox'):
+            ab = serper_data['answerBox']
+            context_parts.append("📦 Trả lời nhanh:")
+            if ab.get('answer'):
+                context_parts.append(f"  - Đáp án: {ab['answer']}")
+            elif ab.get('snippet'):
+                context_parts.append(f"  - Tóm tắt: {ab['snippet']}")
+            if ab.get('title'):
+                context_parts.append(f"  - Nguồn: {ab['title']}")
+        
+        # Knowledge Graph
+        if serper_data.get('knowledgeGraph'):
+            kg = serper_data['knowledgeGraph']
+            context_parts.append("\n📚 Thông tin nền:")
+            if kg.get('title'):
+                context_parts.append(f"  - Chủ đề: {kg['title']}")
+            if kg.get('type'):
+                context_parts.append(f"  - Loại: {kg['type']}")
+            if kg.get('description'):
+                context_parts.append(f"  - Mô tả: {kg['description']}")
+        
+        # Organic Results (top 6)
+        organic = serper_data.get('organic', [])
+        if organic:
+            context_parts.append("\n🔍 Kết quả tìm kiếm:")
+            for i, result in enumerate(organic[:6], 1):
+                title = result.get('title', 'Không có tiêu đề')
+                snippet = result.get('snippet', '')
+                link = result.get('link', '')
+                context_parts.append(f"\nNguồn {i}:")
+                context_parts.append(f"  - Tiêu đề: {title}")
+                if snippet:
+                    context_parts.append(f"  - Tóm tắt: {snippet}")
+                if link:
+                    context_parts.append(f"  - URL: {link}")
+        
+        # People Also Ask (top 3)
+        paa = serper_data.get('peopleAlsoAsk', [])
+        if paa:
+            context_parts.append("\n❓ Câu hỏi liên quan:")
+            for item in paa[:3]:
+                q = item.get('question', '')
+                a = item.get('snippet', '')
+                if q:
+                    context_parts.append(f"  - Q: {q}")
+                    if a:
+                        context_parts.append(f"    A: {a}")
+        
+        return "\n".join(context_parts)
+
+    def _invoke_gemini_summary(self, query, search_context):
+        """Call Gemini 2.5 Flash to summarize and analyze search results
+        
+        Returns:
+            tuple: (success: bool, result: str)
+            - If success: (True, summary_text)
+            - If error: (False, error_message)
+        """
+        try:
+            gemini_key = get_api_key('gemini')
+            if not gemini_key:
+                return (False, "Gemini API key chưa được cấu hình")
+            
+            # System prompt for search summarization
+            system_prompt = """Bạn là Gemini 2.5 Flash, một trợ lý AI chuyên tóm tắt và phân tích kết quả tìm kiếm.
+
+⚠️ QUY TẮC BẮT BUỘC:
+- Tên của bạn là Gemini 2.5 Flash. Khi được hỏi, trả lời: "Mình là Gemini 2.5 Flash".
+- PHẢI trả lời hoàn toàn bằng TIẾNG VIỆT.
+- KHÔNG ĐƯỢC sử dụng từ "biomimicry". Dùng thay thế: "thiết kế lấy cảm hứng từ thiên nhiên", "mô phỏng tự nhiên".
+
+📝 NHIỆM VỤ:
+Dựa trên kết quả tìm kiếm được cung cấp, hãy:
+1. TÓM TẮT ngắn gọn (≤150 từ) các thông tin quan trọng nhất
+2. PHÂN TÍCH và đưa ra insight hữu ích
+3. Trả lời trực tiếp câu hỏi của người dùng nếu có thể
+4. Sử dụng emoji phù hợp 🔍✨📌
+
+FORMAT RESPONSE:
+### 📌 Tóm tắt
+[Tóm tắt ngắn gọn các điểm chính]
+
+### 💡 Phân tích
+[Insight và phân tích từ kết quả tìm kiếm]
+
+### 🔗 Nguồn tham khảo
+[Liệt kê 2-3 nguồn chính với link]"""
+
+            user_prompt = f"""Người dùng tìm kiếm: "{query}"
+
+KẾT QUẢ TÌM KIẾM TỪ SERPER:
+{search_context}
+
+Hãy tóm tắt và phân tích kết quả tìm kiếm trên để trả lời câu hỏi của người dùng."""
+
+            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key={gemini_key}"
+            
+            gemini_payload = {
+                "contents": [
+                    {
+                        "role": "user",
+                        "parts": [{"text": f"{system_prompt}\n\n{user_prompt}"}]
+                    }
+                ],
+                "generationConfig": {
+                    "temperature": 0.7,
+                    "topK": 40,
+                    "topP": 0.95,
+                    "maxOutputTokens": 2048,
+                },
+                "safetySettings": [
+                    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+                    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+                    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+                    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"}
+                ]
+            }
+            
+            gemini_request = urllib.request.Request(
+                gemini_url,
+                data=json.dumps(gemini_payload).encode('utf-8'),
+                headers={'Content-Type': 'application/json'}
+            )
+            
+            with urllib.request.urlopen(gemini_request, timeout=REQUEST_TIMEOUT) as response:
+                gemini_response = response.read().decode('utf-8')
+                gemini_data = json.loads(gemini_response)
+            
+            # Extract text from Gemini response
+            candidates = gemini_data.get('candidates', [])
+            if candidates and candidates[0].get('content', {}).get('parts'):
+                summary_text = candidates[0]['content']['parts'][0].get('text', '')
+                if summary_text:
+                    return (True, summary_text)
+            
+            return (False, "Gemini không trả về kết quả hợp lệ")
+            
+        except urllib.error.HTTPError as e:
+            error_msg = f"Gemini API lỗi HTTP {e.code}"
+            try:
+                error_body = e.read().decode('utf-8')
+                logger.warning(f"Gemini HTTP error: {e.code} - {error_body}")
+            except:
+                logger.warning(f"Gemini HTTP error: {e.code}")
+            return (False, error_msg)
+        except urllib.error.URLError as e:
+            logger.warning(f"Gemini connection error: {e}")
+            return (False, "Không thể kết nối đến Gemini")
+        except Exception as e:
+            logger.warning(f"Gemini summary error: {e}")
+            return (False, str(e))
 
     def handle_llm7_chat(self):
         """Generic handler for all LLM7 models via LLM7.io"""

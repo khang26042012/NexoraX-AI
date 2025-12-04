@@ -5,7 +5,71 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 04/12/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
-✨ CẬP NHẬT MỚI NHẤT - 04/12/2025 (Buổi 23 - Đổi HOÀN TOÀN Search sang Serper):
+✨ CẬP NHẬT MỚI NHẤT - 04/12/2025 (Buổi 24 - Kết hợp Serper + Gemini 2.5 Flash):
+-----------------------------------------------------------------------------
+
+BE. ✅ KẾT HỢP SERPER API VỚI GEMINI 2.5 FLASH ĐỂ TÓM GỌN VÀ PHÂN TÍCH KẾT QUẢ TÌM KIẾM
+   - Yêu cầu: Kết hợp Gemini 2.5 Flash với Serper để tóm gọn và phân tích kết quả tìm kiếm
+   - Trước đó: Serper API trả về kết quả Markdown TRỰC TIẾP (không qua AI)
+   - Bây giờ: Serper lấy data → Gemini 2.5 Flash tóm tắt & phân tích → Response
+   
+   **GIẢI PHÁP:**
+   
+   1. ✅ **Thêm helper function _build_gemini_search_context():**
+      * Chuyển đổi kết quả Serper JSON thành context text cho Gemini
+      * Bao gồm: Answer Box, Knowledge Graph, Organic Results (top 6), People Also Ask
+      * Format gọn gàng, dễ đọc cho AI
+   
+   2. ✅ **Thêm helper function _invoke_gemini_summary():**
+      * Gọi Gemini 2.5 Flash API (gemini-2.5-flash-preview-05-20)
+      * System prompt tiếng Việt với quy tắc danh tính và từ vựng
+      * Format response: 📌 Tóm tắt, 💡 Phân tích, 🔗 Nguồn tham khảo
+      * Trả về tuple (success: bool, result: str)
+      * Error handling đầy đủ cho HTTP errors, timeout, connection errors
+   
+   3. ✅ **Cập nhật handle_llm7_gemini_search():**
+      * Luồng xử lý mới:
+        - Bước 1: Gọi Serper API lấy kết quả tìm kiếm
+        - Bước 2: Build context cho Gemini + format Markdown fallback
+        - Bước 3: Gọi Gemini 2.5 Flash để tóm tắt/phân tích
+        - Bước 4: Nếu Gemini thành công → trả về summary + expandable raw sources
+        - Bước 5: Nếu Gemini lỗi → fallback về Serper Markdown thuần
+      * Response format khi Gemini thành công:
+        - Gemini summary (📌 Tóm tắt, 💡 Phân tích, 🔗 Nguồn)
+        - Expandable <details> với kết quả Serper gốc
+      * Response format khi Gemini lỗi:
+        - Serper Markdown như cũ
+        - Thông báo "Kết quả chưa được AI phân tích"
+   
+   4. ✅ **Cập nhật History Metadata:**
+      * Khi Gemini thành công:
+        - powered_by: "serper+gemini"
+        - summary_model: "gemini-2.5-flash-preview-05-20"
+      * Khi Gemini lỗi (fallback):
+        - powered_by: "serper"
+      * Endpoint mới: "serper_gemini_search"
+   
+   **DANH SÁCH FILE ĐÃ THAY ĐỔI:**
+   - server.py: 
+     * Thêm _build_gemini_search_context()
+     * Thêm _invoke_gemini_summary()
+     * Cập nhật handle_llm7_gemini_search() với luồng Serper + Gemini
+   
+   **QUAN TRỌNG:**
+   - Fallback tự động: Nếu Gemini lỗi, vẫn trả về kết quả Serper thuần
+   - Endpoint giữ nguyên: /api/llm7/gemini-search (tương thích frontend)
+   - Model response giữ nguyên: "gemini-search" (tương thích frontend)
+   - System prompt tuân thủ quy tắc từ vựng (không dùng "biomimicry")
+   
+   **KẾT QUẢ:**
+   ✅ Server restart thành công
+   ✅ Serper + Gemini 2.5 Flash hoạt động tốt
+   ✅ Kết quả tìm kiếm được tóm tắt và phân tích bằng AI
+   ✅ Fallback về Serper thuần khi Gemini lỗi
+   ✅ ARCHITECT REVIEW: PASS
+
+-----------------------------------------------------------------------------
+CẬP NHẬT TRƯỚC ĐÓ - 04/12/2025 (Buổi 23 - Đổi HOÀN TOÀN Search sang Serper):
 -----------------------------------------------------------------------------
 
 BD. ✅ THAY THẾ HOÀN TOÀN MODEL GEMINI SEARCH BẰNG SERPER API (KHÔNG DÙNG AI)
