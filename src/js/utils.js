@@ -144,6 +144,158 @@ export function isSearchQuery(message) {
 }
 
 /**
+ * Kiểm tra xem message có CẦN tìm kiếm web hay không
+ * Logic thông minh để phân biệt:
+ * - Tin nhắn cần search: câu hỏi về thông tin, tin tức, sự kiện, giá cả, thời tiết...
+ * - Tin nhắn KHÔNG cần search: chào hỏi, small talk, câu hỏi về AI, hướng dẫn đơn giản
+ * 
+ * @param {string} message - Tin nhắn cần kiểm tra
+ * @returns {boolean} true nếu CẦN tìm kiếm web
+ */
+export function shouldSearchWeb(message) {
+    const normalized = message.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim();
+    const originalLower = message.toLowerCase().trim();
+    
+    // === DANH SÁCH TIN NHẮN KHÔNG CẦN SEARCH (Small talk, chào hỏi) ===
+    // Pattern STRICT: chỉ match đầu-cuối câu
+    const noSearchPatternsStrict = [
+        // Chào hỏi đơn giản (Việt + Anh)
+        /^(hi|hello|hey|xin\s*chao|chao(\s+ban)?|alo|yo|sup|heya?)[\s!.,?]*$/i,
+        /^(good\s*(morning|afternoon|evening|night)|chao\s*(buoi\s*)?(sang|trua|chieu|toi))[\s!.,?]*$/i,
+        
+        // Phản hồi ngắn
+        /^(ok|okay|duoc|duoc\s*roi|alright|sure|vang|da|yes|no|co|khong)[\s!.,?]*$/i,
+        /^(good|tot|hay|nice|great|tuyet|dep|wow|cool)[\s!.,?]*$/i,
+        
+        // Cảm ơn, tạm biệt (đơn giản)
+        /^(thanks?|thank\s+you|cam\s*on)[\s!.,?]*$/i,
+        /^(bye|goodbye|tam\s*biet|hen\s*gap\s*lai|see\s*you)[\s!.,?]*$/i,
+        
+        // Emoji hoặc tin nhắn rất ngắn
+        /^[\p{Emoji}\s]+$/u,
+    ];
+    
+    // Pattern LOOSE: match ở bất kỳ đâu trong câu (để bắt small talk dài hơn)
+    const noSearchPatternsLoose = [
+        // Hỏi thăm sức khỏe (bất kỳ đâu trong câu)
+        /how\s+are\s+you/i,
+        /how('s|'s)?\s+(it\s+going|everything|things)/i,
+        /what('s|'s)?\s+up/i,
+        /how\s+do\s+you\s+do/i,
+        /ban\s*(khoe|co\s*khoe)/i,
+        /khoe\s*khong/i,
+        
+        // Câu hỏi về AI/bot (bất kỳ đâu)
+        /who\s+are\s+you/i,
+        /what\s+are\s+you/i,
+        /ban\s*la\s*ai/i,
+        /may\s*la\s*ai/i,
+        /ten\s*(cua\s*)?ban/i,
+        /introduce\s+(yourself|you)/i,
+        /gioi\s*thieu\s*(ban|ve\s*ban)/i,
+        
+        // Hỏi về khả năng của AI
+        /what\s+can\s+you\s+do/i,
+        /can\s+you\s+help/i,
+        /co\s*the\s*giup/i,
+        /ban\s*lam\s*gi\s*duoc/i,
+        
+        // Small talk thông thường
+        /nice\s+to\s+meet/i,
+        /pleased\s+to\s+meet/i,
+        /rat\s*vui\s*duoc\s*gap/i,
+        /long\s+time\s+no\s+see/i,
+        /lau\s*roi\s*khong\s*gap/i,
+        
+        // Câu hỏi cá nhân về AI (why/when/where + you/your/yourself)
+        /why\s+(are|do|did|would|should)\s+you/i,
+        /when\s+(are|do|did|will|would|is)\s+you/i,
+        /when\s+is\s+your/i,
+        /what\s+is\s+your/i,
+        /where\s+(are|do|did)\s+you/i,
+        /how\s+(old|tall)\s+are\s+you/i,
+        /how\s+do\s+you\s+(feel|think|know|work)/i,
+        
+        // Câu hỏi về AI/bot tiếng Việt
+        /tai\s*sao\s*(ban|may)/i,
+        /khi\s*nao\s*(ban|may)/i,
+        /ban\s*co\s*the/i,
+        /ban\s*biet\s*gi/i,
+    ];
+    
+    // Nếu match với pattern strict → không cần search
+    if (noSearchPatternsStrict.some(pattern => pattern.test(normalized) || pattern.test(originalLower))) {
+        return false;
+    }
+    
+    // Nếu match với pattern loose (small talk ở bất kỳ đâu) → không cần search
+    if (noSearchPatternsLoose.some(pattern => pattern.test(normalized) || pattern.test(originalLower))) {
+        return false;
+    }
+    
+    // Tin nhắn quá ngắn (< 5 ký tự) thường không cần search
+    if (originalLower.length < 5) {
+        return false;
+    }
+    
+    // === DANH SÁCH TIN NHẮN NÊN SEARCH (Thông tin thực tế, tin tức...) ===
+    const searchIndicators = [
+        // Từ khóa tìm kiếm rõ ràng
+        /tim\s*kiem|search|tra\s*cuu|google/i,
+        
+        // Tin tức, sự kiện
+        /tin\s*tuc|news|su\s*kien|event|moi\s*nhat|latest|cap\s*nhat|update/i,
+        
+        // Thời tiết
+        /thoi\s*tiet|weather|nhiet\s*do|temperature|mua|rain|nang|sunny/i,
+        
+        // Giá cả, tỷ giá
+        /gia\s*(ca)?|price|ty\s*gia|exchange\s*rate|bao\s*nhieu\s*tien|cost/i,
+        
+        // Thể thao, kết quả
+        /ket\s*qua|result|score|ty\s*so|tran\s*dau|match|world\s*cup|premier\s*league|bong\s*da/i,
+        
+        // Người nổi tiếng, tổ chức
+        /tong\s*thong|president|thu\s*tuong|prime\s*minister|ceo|founder|singer|actor|dien\s*vien/i,
+        
+        // Địa điểm, du lịch
+        /o\s*dau|where\s+is|dia\s*chi|address|khoang\s*cach|distance|du\s*lich|travel/i,
+        
+        // Thông tin thực tế cần cập nhật
+        /hom\s*nay|today|bay\s*gio|now|hien\s*tai|current|nam\s*(20\d{2})|year\s*(20\d{2})/i,
+        
+        // Câu hỏi về ngày/giờ (cần search để lấy thời gian thực)
+        /nay\s*ngay|ngay\s*may|ngay\s*bao\s*nhieu|what\s+day|what\s+date/i,
+        /may\s*gio|gio\s*may|what\s+time|time\s+now/i,
+        /thu\s*may|ngay\s*thu\s*may|what\s+day\s+(is\s+)?(it|today)/i,
+        
+        // Câu hỏi cần thông tin thực tế (YÊU CẦU CONTEXT CỤ THỂ)
+        // "la gi" phải đi kèm với chủ đề: "bitcoin la gi", "AI la gi"
+        /\w+\s+la\s*gi\?/i,
+        // "what is" phải đi kèm chủ đề: "what is bitcoin", "what is AI"
+        /what\s+is\s+\w{3,}/i,
+        // "who is" phải đi kèm tên: "who is Elon Musk"
+        /who\s+is\s+[A-Z]/i,
+        
+        // Sản phẩm, công nghệ
+        /iphone|samsung|macbook|laptop|dien\s*thoai|phone|may\s*tinh|computer|app|ung\s*dung/i,
+        
+        // Công ty, thương hiệu
+        /apple|google|microsoft|facebook|meta|amazon|tesla|nvidia|openai|anthropic/i,
+    ];
+    
+    // Nếu tin nhắn chứa từ khóa cần search → return true
+    if (searchIndicators.some(pattern => pattern.test(normalized) || pattern.test(originalLower))) {
+        return true;
+    }
+    
+    // === MẶC ĐỊNH: KHÔNG SEARCH ===
+    // Chỉ search khi có từ khóa rõ ràng (đã check ở trên)
+    // Điều này đảm bảo small talk dài không bị nhầm thành search query
+    return false;
+}
+
+/**
  * Trích xuất search query bằng cách loại bỏ các từ khóa tìm kiếm
  * @param {string} message - Tin nhắn chứa search query
  * @returns {string} Query đã được làm sạch

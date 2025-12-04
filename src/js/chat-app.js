@@ -93,7 +93,7 @@ import {
     DEFAULTS,
     TYPING_SPEEDS
 } from './constants.js';
-import { migrateLocalStorageKeys, isTimeRelatedQuery, isSearchQuery, extractSearchQuery } from './utils.js';
+import { migrateLocalStorageKeys, isTimeRelatedQuery, isSearchQuery, extractSearchQuery, shouldSearchWeb } from './utils.js';
 import { startOnboardingManually } from './onboarding.js';
 
 /**
@@ -533,7 +533,20 @@ export class NexoraXChat {
                 await getLLM7GPT5ChatResponse(message, aiMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg));
             } else if (modelType === 'search') {
                 const conversationHistory = prepareConversationHistoryLLM7(chat.messages, 15);
-                await getLLM7GeminiSearchResponse(message, aiMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg));
+                
+                // Kiểm tra xem tin nhắn có CẦN tìm kiếm web không
+                // Nếu là chào hỏi/small talk → gọi chat API thường (không search)
+                // Nếu cần thông tin thực tế → gọi search API
+                if (shouldSearchWeb(message)) {
+                    // Tin nhắn cần tìm kiếm web (tin tức, thông tin, giá cả...)
+                    console.log('[Gemini Search] Tin nhắn cần search web:', message);
+                    await getLLM7GeminiSearchResponse(message, aiMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg));
+                } else {
+                    // Tin nhắn không cần search (chào hỏi, small talk...)
+                    // Gọi Gemini 2.5 Flash Lite qua LLM7 chat API
+                    console.log('[Gemini Search] Tin nhắn không cần search, dùng chat thường:', message);
+                    await getLLM7Response('gemini-2.5-flash-lite', message, aiMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg));
+                }
             } else if (modelType === 'image') {
                 await getImageGenerationResponse(message, aiMessage, (msg) => this.updateMessage(msg));
             }

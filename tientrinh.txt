@@ -5,7 +5,68 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 04/12/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
-✨ CẬP NHẬT MỚI NHẤT - 04/12/2025 (Buổi 25 - Đổi Logo + Loading Animation):
+✨ CẬP NHẬT MỚI NHẤT - 04/12/2025 (Buổi 26 - Fix Gemini Search Thông Minh):
+-----------------------------------------------------------------------------
+
+BH. ✅ FIX CHỨC NĂNG SEARCH CHO GEMINI 2.5 FLASH - PHÂN LOẠI INTENT THÔNG MINH
+   - Vấn đề 1: Gemini 2.5 Flash xử lý không tự nhiên - nói "Hi" thì vẫn search và phân tích dài dòng
+   - Vấn đề 2: Mọi tin nhắn đều được gửi qua search API thay vì chỉ những tin nhắn thực sự cần tìm kiếm
+   - Vấn đề 3: Câu hỏi cá nhân về AI ("Why are you so smart?") bị nhầm là cần search
+   - Vấn đề 4: Câu hỏi về ngày/giờ ("Nay ngày mấy") không được nhận diện cần search
+   
+   **GIẢI PHÁP:**
+   
+   1. ✅ **Thêm hàm shouldSearchWeb() trong utils.js:**
+      * Logic thông minh phân biệt tin nhắn cần search vs không cần search
+      
+      **A. Pattern STRICT (match đầu-cuối câu):**
+      * Chào hỏi đơn giản: hi, hello, hey, xin chào...
+      * Phản hồi ngắn: ok, thanks, bye...
+      * Emoji hoặc tin nhắn rất ngắn
+      
+      **B. Pattern LOOSE (match ở bất kỳ đâu - để bắt small talk dài):**
+      * Hỏi thăm sức khỏe: how are you, what's up, how's it going...
+      * Câu hỏi về AI/bot: who are you, introduce yourself, what can you do...
+      * Câu hỏi cá nhân về AI: why are you, when is your, what is your...
+      * Small talk: nice to meet, long time no see...
+      
+      **C. Pattern SEARCH (cần tìm kiếm web):**
+      * Từ khóa tìm kiếm: tìm kiếm, search, google...
+      * Tin tức, sự kiện: tin tức, news, latest, update...
+      * Thời tiết: thời tiết, weather, nhiệt độ...
+      * Giá cả: giá, price, tỷ giá, bao nhiêu tiền...
+      * Ngày/giờ: nay ngày, ngày mấy, mấy giờ, thứ mấy...
+      * Sản phẩm công nghệ: iPhone, Samsung, MacBook...
+      * Công ty: Apple, Google, Microsoft, Tesla...
+   
+   2. ✅ **Cập nhật chat-app.js:**
+      * Import hàm shouldSearchWeb từ utils.js
+      * Khi modelType === 'search':
+        - Nếu shouldSearchWeb(message) = true → gọi getLLM7GeminiSearchResponse (search web)
+        - Nếu shouldSearchWeb(message) = false → gọi getLLM7Response('gemini-2.5-flash-lite') (chat thường)
+      * Console log để debug intent classification
+   
+   3. ✅ **Cải thiện System Prompt Gemini 2.5 Flash trong server.py:**
+      * Thay thế format cứng nhắc (Tóm tắt/Phân tích/Nguồn) bằng hướng dẫn linh hoạt
+      * Câu hỏi đơn giản → trả lời ngắn gọn 1-3 câu
+      * Câu hỏi phức tạp → có cấu trúc khi cần
+      * Nhấn mạnh: TỰ NHIÊN như trò chuyện, không máy móc
+   
+   **DANH SÁCH FILE ĐÃ THAY ĐỔI:**
+   - src/js/utils.js: Thêm hàm shouldSearchWeb() với logic phân loại intent nâng cao
+   - src/js/chat-app.js: Import shouldSearchWeb, thêm logic kiểm tra trước khi search
+   - server.py: Cập nhật system prompt _invoke_gemini_summary() linh hoạt hơn
+   
+   **KẾT QUẢ:**
+   ✅ Nói "Hi" → AI chào hỏi đơn giản, không search web
+   ✅ Hỏi "Hey, how are you doing today?" → Không search (có "how are you")
+   ✅ Hỏi "Why are you so smart?" → Không search (câu hỏi về AI)
+   ✅ Hỏi "Nay ngày mấy" → Search web để lấy ngày thực tế
+   ✅ Hỏi tin tức/giá cả → AI search web và tóm tắt thông tin
+   ✅ Console log hiển thị intent classification để debug
+
+-----------------------------------------------------------------------------
+CẬP NHẬT TRƯỚC ĐÓ - 04/12/2025 (Buổi 25 - Đổi Logo + Loading Animation):
 -----------------------------------------------------------------------------
 
 BG. ✅ THAY ĐỔI LOADING ANIMATION THÀNH LOGO + RAINBOW SPINNER
