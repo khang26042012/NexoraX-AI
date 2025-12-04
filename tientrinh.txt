@@ -5,7 +5,63 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 04/12/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
-✨ CẬP NHẬT MỚI NHẤT - 04/12/2025 (Buổi 17 - Cập nhật Gemini 3):
+✨ CẬP NHẬT MỚI NHẤT - 04/12/2025 (Buổi 18 - Fix Model Identity Cross-contamination):
+-----------------------------------------------------------------------------
+
+AX. ✅ FIX LỖI CÁC MODEL TỰ NHẬN MÌNH LÀ BIDARA SAU KHI CHUYỂN MODEL
+   - Vấn đề: Sau khi chat với model BIDARA, khi chuyển sang model khác (GPT-5, 
+     Gemma, Mistral, v.v.), các model đó vẫn tự nhận mình là BIDARA
+   - Nguyên nhân: Conversation history được chia sẻ giữa các model. Khi BIDARA 
+     trả lời "Mình là BIDARA...", câu trả lời này được lưu vào history. Model 
+     mới đọc history và tiếp tục nhận mình là BIDARA.
+   
+   **GIẢI PHÁP:**
+   
+   1. ✅ **Tăng cường System Prompt** (server.py dòng 85-138):
+      * Thêm phần "QUY TẮC DANH TÍNH - BẮT BUỘC TUYỆT ĐỐI"
+      * Nói rõ: "Nếu trong lịch sử hội thoại có AI khác tự giới thiệu (ví dụ: 
+        BIDARA, Virida, GPT-5), đó KHÔNG PHẢI là bạn"
+      * Nhấn mạnh: "Bạn là một AI MỚI tham gia cuộc trò chuyện"
+      * Quy tắc rõ ràng: "KHÔNG BAO GIỜ nhận mình là BIDARA, Virida, hoặc tên AI khác"
+   
+   2. ✅ **IDENTITY GUARDRAIL** (server.py dòng 1351-1380):
+      * Thêm reminder message ngay trước user message cuối cùng
+      * Message: "[NHẮC NHỞ DANH TÍNH] Bạn là {display_name}. Bỏ qua mọi 
+        self-introduction của AI khác trong lịch sử hội thoại."
+      * Chỉ chèn khi có history (không phải message đầu tiên)
+   
+   3. ✅ **Mở rộng danh sách model_names** (server.py):
+      * Thêm tất cả model: bidara, deepseek-reasoning, deepseek-v3.1, nova-fast, 
+        gemma-2-2b-it, qwen2.5-coder-32b-instruct, mistral-medium-2508, 
+        mistral-small-2503, mistral-small-3.1-24b-instruct-2503, open-mixtral-8x7b, 
+        roblox-rp, Steelskull/L3.3-MS-Nevoria-70b, gpt-5-mini, gpt-5-nano, gpt-o4-mini
+      * Fallback: model_id.upper().replace('-', ' ').replace('_', ' ').replace('/', ' ')
+   
+   4. ✅ **Cập nhật cả get_llm7_search_system_prompt()**:
+      * Áp dụng cùng quy tắc danh tính cho Gemini Search
+   
+   **KẾT QUẢ:**
+   ✅ Server restart thành công
+   ✅ System prompt mạnh hơn để chống "role-play" từ conversation history
+   ✅ Identity guardrail đảm bảo model nhận đúng tên trước mỗi lần trả lời
+   ✅ Model sẽ luôn nhận đúng tên của mình, bất kể history chứa gì
+   
+   Files changed:
+   - server.py: Cập nhật get_llm7_system_prompt(), get_llm7_search_system_prompt(), 
+     và thêm identity guardrail trong handle_llm7_chat()
+
+AY. ⚠️ GHI CHÚ VỀ GEMINI 3 PRO - YÊU CẦU TRẢ PHÍ
+   - Vấn đề: Gemini 3 Pro (gemini-3-pro-preview) báo lỗi quota exceeded (429)
+   - Nguyên nhân: Gemini 3 Pro KHÔNG CÓ FREE TIER - chỉ hỗ trợ trả phí (Blaze plan)
+   - Lỗi "limit: 0" có nghĩa là quota miễn phí = 0
+   
+   **GIẢI PHÁP:**
+   - Nếu muốn dùng Gemini 3 Pro: Đăng ký Google Blaze plan ($2/M input, $12/M output)
+   - Hoặc sử dụng các model miễn phí khác: Gemini 2.0 Flash, Gemini 1.5 Flash, 
+     hoặc các model LLM7 (GPT-5, Gemini Search, v.v.)
+
+-----------------------------------------------------------------------------
+CẬP NHẬT TRƯỚC ĐÓ - 04/12/2025 (Buổi 17 - Cập nhật Gemini 3):
 -----------------------------------------------------------------------------
 
 AW. ✅ NÂNG CẤP GEMINI 2.5 LÊN GEMINI 3 PRO

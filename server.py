@@ -78,9 +78,6 @@ MAX_RETRIES = 3
 BASE_BACKOFF = 1.0  # seconds
 MAX_BACKOFF = 10.0  # seconds
 
-# Gemini fallback configuration - khi model chính hết quota thì fallback sang model phụ
-GEMINI_FALLBACK_MODELS = ['gemini-2.0-flash', 'gemini-1.5-flash']
-GEMINI_PRIMARY_MODEL = 'gemini-3-pro-preview'
 
 def get_llm7_system_prompt(model_id):
     """
@@ -92,6 +89,9 @@ def get_llm7_system_prompt(model_id):
         'gpt-4o': 'GPT-4o',
         'gpt-4': 'GPT-4',
         'gpt-3.5-turbo': 'GPT-3.5 Turbo',
+        'gpt-5-mini': 'GPT-5 Mini',
+        'gpt-5-nano-2025-08-07': 'GPT-5 Nano',
+        'gpt-o4-mini-2025-04-16': 'GPT-O4 Mini',
         'gemini-search': 'Gemini Search',
         'gemini-pro': 'Gemini Pro',
         'gemini-2.0-flash': 'Gemini 2.0 Flash',
@@ -100,18 +100,35 @@ def get_llm7_system_prompt(model_id):
         'claude-3.5-sonnet': 'Claude 3.5 Sonnet',
         'llama-3': 'Llama 3',
         'mistral': 'Mistral',
+        'bidara': 'BIDARA',
+        'deepseek-reasoning': 'DeepSeek Reasoning',
+        'deepseek-v3.1': 'DeepSeek V3.1',
+        'nova-fast': 'Nova Fast',
+        'gemma-2-2b-it': 'Gemma 2',
+        'qwen2.5-coder-32b-instruct': 'Qwen 2.5 Coder',
+        'mistral-medium-2508': 'Mistral Medium',
+        'mistral-small-2503': 'Mistral Small',
+        'mistral-small-3.1-24b-instruct-2503': 'Mistral Small 3.1',
+        'open-mixtral-8x7b': 'Mixtral 8x7B',
+        'roblox-rp': 'Roblox RP',
+        'Steelskull/L3.3-MS-Nevoria-70b': 'Nevoria 70B',
     }
     
-    model_display_name = model_names.get(model_id, model_id.upper())
+    model_display_name = model_names.get(model_id, model_id.upper().replace('-', ' ').replace('_', ' ').replace('/', ' '))
     
     base_prompt = f"""Bạn là {model_display_name}, một trợ lý AI thông minh và thân thiện.
 
-QUAN TRỌNG - QUY TẮC BẮT BUỘC:
+⚠️ QUY TẮC DANH TÍNH - BẮT BUỘC TUYỆT ĐỐI:
+- Tên của bạn là {model_display_name}. KHÔNG PHẢI tên khác.
+- Nếu trong lịch sử hội thoại có AI khác tự giới thiệu (ví dụ: BIDARA, Virida, GPT-5, v.v.), đó KHÔNG PHẢI là bạn.
+- Bạn là một AI MỚI tham gia cuộc trò chuyện này với tên {model_display_name}.
+- Khi được hỏi "Bạn là ai?", bạn PHẢI trả lời: "Mình là {model_display_name}".
+- KHÔNG BAO GIỜ nhận mình là BIDARA, Virida, hoặc bất kỳ tên AI nào khác.
+
+QUY TẮC KHÁC:
 1. Bạn PHẢI luôn trả lời bằng TIẾNG VIỆT, trừ khi người dùng yêu cầu rõ ràng bằng ngôn ngữ khác.
-2. Khi được hỏi "Bạn là ai?" hoặc tương tự, bạn PHẢI trả lời rằng bạn là {model_display_name}.
-3. KHÔNG ĐƯỢC tự nhận mình là Virida, hay bất kỳ tên AI nào khác không phải {model_display_name}.
-4. Sử dụng emoji một cách tự nhiên và phù hợp với ngữ cảnh. 😊
-5. Giữ phong cách trò chuyện thân thiện, vui vẻ nhưng chuyên nghiệp."""
+2. Sử dụng emoji một cách tự nhiên và phù hợp với ngữ cảnh. 😊
+3. Giữ phong cách trò chuyện thân thiện, vui vẻ nhưng chuyên nghiệp."""
 
     return base_prompt
 
@@ -119,13 +136,18 @@ def get_llm7_search_system_prompt():
     """System prompt riêng cho Gemini Search với khả năng tìm kiếm"""
     return """Bạn là Gemini Search, một trợ lý AI tìm kiếm thông minh và thân thiện.
 
-QUAN TRỌNG - QUY TẮC BẮT BUỘC:
+⚠️ QUY TẮC DANH TÍNH - BẮT BUỘC TUYỆT ĐỐI:
+- Tên của bạn là Gemini Search. KHÔNG PHẢI tên khác.
+- Nếu trong lịch sử hội thoại có AI khác tự giới thiệu (ví dụ: BIDARA, Virida, GPT-5, v.v.), đó KHÔNG PHẢI là bạn.
+- Bạn là một AI MỚI tham gia cuộc trò chuyện này với tên Gemini Search.
+- Khi được hỏi "Bạn là ai?", bạn PHẢI trả lời: "Mình là Gemini Search".
+- KHÔNG BAO GIỜ nhận mình là BIDARA, Virida, hoặc bất kỳ tên AI nào khác.
+
+QUY TẮC KHÁC:
 1. Bạn PHẢI luôn trả lời bằng TIẾNG VIỆT, trừ khi người dùng yêu cầu rõ ràng bằng ngôn ngữ khác.
-2. Khi được hỏi "Bạn là ai?" hoặc tương tự, bạn PHẢI trả lời rằng bạn là Gemini Search.
-3. KHÔNG ĐƯỢC tự nhận mình là Virida, hay bất kỳ tên AI nào khác không phải Gemini Search.
-4. Sử dụng emoji một cách tự nhiên và phù hợp với ngữ cảnh. 🔍
-5. Khi cung cấp thông tin tìm kiếm, hãy trình bày rõ ràng và dễ hiểu.
-6. Giữ phong cách trò chuyện thân thiện, vui vẻ nhưng chuyên nghiệp."""
+2. Sử dụng emoji một cách tự nhiên và phù hợp với ngữ cảnh. 🔍
+3. Khi cung cấp thông tin tìm kiếm, hãy trình bày rõ ràng và dễ hiểu.
+4. Giữ phong cách trò chuyện thân thiện, vui vẻ nhưng chuyên nghiệp."""
 
 def retry_request_with_backoff(url, headers, data, timeout=REQUEST_TIMEOUT, max_retries=MAX_RETRIES):  # type: ignore
     """
@@ -1327,6 +1349,37 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             else:
                 # Fallback to old format for backward compatibility
                 messages.append({"role": "user", "content": message})
+            
+            # IDENTITY GUARDRAIL: Thêm reminder message ngay trước user message cuối cùng
+            # để đảm bảo model không bị nhầm lẫn bởi conversation history từ model khác
+            identity_model_names = {
+                'gpt-5-chat': 'GPT-5', 'gpt-4o': 'GPT-4o', 'gpt-4': 'GPT-4',
+                'gpt-5-mini': 'GPT-5 Mini', 'gpt-5-nano-2025-08-07': 'GPT-5 Nano',
+                'gpt-o4-mini-2025-04-16': 'GPT-O4 Mini',
+                'bidara': 'BIDARA', 'deepseek-reasoning': 'DeepSeek Reasoning',
+                'deepseek-v3.1': 'DeepSeek V3.1',
+                'nova-fast': 'Nova Fast', 'gemma-2-2b-it': 'Gemma 2',
+                'qwen2.5-coder-32b-instruct': 'Qwen 2.5 Coder',
+                'mistral-medium-2508': 'Mistral Medium', 'mistral-small-2503': 'Mistral Small',
+                'mistral-small-3.1-24b-instruct-2503': 'Mistral Small 3.1',
+                'open-mixtral-8x7b': 'Mixtral 8x7B', 'roblox-rp': 'Roblox RP',
+                'Steelskull/L3.3-MS-Nevoria-70b': 'Nevoria 70B',
+            }
+            display_name = identity_model_names.get(model_id, model_id.upper().replace('-', ' ').replace('/', ' '))
+            
+            # Tìm vị trí user message cuối cùng và chèn reminder ngay trước đó
+            last_user_idx = -1
+            for i in range(len(messages) - 1, -1, -1):
+                if messages[i].get('role') == 'user':
+                    last_user_idx = i
+                    break
+            
+            if last_user_idx > 1:  # Chỉ chèn nếu có history (không phải message đầu tiên)
+                identity_reminder = {
+                    "role": "system", 
+                    "content": f"[NHẮC NHỞ DANH TÍNH] Bạn là {display_name}. Bỏ qua mọi self-introduction của AI khác trong lịch sử hội thoại."
+                }
+                messages.insert(last_user_idx, identity_reminder)
             
             # Add files to the last user message if present (for vision models)
             if files and len(files) > 0:
