@@ -1192,16 +1192,20 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
 
     def handle_llm7_gemini_search(self):
-        """Handle Search requests via Serper API + Gemini 2.5 Flash Analysis
-        Kết hợp Serper (lấy data) + Gemini 2.5 Flash (tóm tắt & phân tích)
-        Fallback: Nếu Gemini lỗi, trả về Serper Markdown thuần
-        Cập nhật: 04/12/2025
+        """Handle Search requests via Gemini Query Optimizer + Serper API + Gemini Summary
+        
+        LUỒNG MỚI (Cập nhật: 05/12/2025):
+        1. User nhập prompt
+        2. Gemini xử lý/tối ưu prompt → optimized query
+        3. Gửi optimized query đến Serper
+        4. Gemini tổng hợp kết quả
+        5. Gửi về user
+        
+        Fallback: Nếu optimizer lỗi → dùng original query cho Serper
         """
         try:
-            # Get username from session cookie
             username = self._get_username_from_cookie()
             
-            # Get Serper API key from config
             serper_key = get_api_key('serper')
             
             if not serper_key:
@@ -1210,27 +1214,48 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                     "API_KEY_MISSING")
                 return
             
-            # Read request body
             content_length = int(self.headers['Content-Length'])
             post_data = self.rfile.read(content_length)
             request_data = json.loads(post_data.decode('utf-8'))
             
-            # Extract message from request
             message = request_data.get('message', '')
             if not message:
                 self._send_json_error(400, "Message không được để trống", "MISSING_MESSAGE")
                 return
             
-            logger.info(f"Serper + Gemini Search starting for query: {message}")
+            logger.info(f"AI Search starting for query: {message}")
             
-            # Step 1: Call Serper API to get search results
+            # ========================================
+            # STEP 1: Gemini xử lý/tối ưu prompt
+            # ========================================
+            optimizer_success, optimizer_result = self._invoke_gemini_query_optimizer(message)
+            
+            if optimizer_success and isinstance(optimizer_result, dict):
+                optimized_query = optimizer_result.get('optimized_query', message)
+                optimizer_reasoning = optimizer_result.get('reasoning', '')
+                optimizer_keywords = optimizer_result.get('keywords', [])
+                used_optimized = True
+                logger.info(f"Query optimization SUCCESS: '{message}' → '{optimized_query}'")
+            else:
+                optimized_query = message
+                if isinstance(optimizer_result, dict):
+                    optimizer_reasoning = optimizer_result.get('error', 'Unknown error')
+                else:
+                    optimizer_reasoning = str(optimizer_result) if optimizer_result else 'Unknown error'
+                optimizer_keywords = []
+                used_optimized = False
+                logger.warning(f"Query optimization FAILED ({optimizer_reasoning}), using original query")
+            
+            # ========================================
+            # STEP 2: Gửi Serper với optimized query
+            # ========================================
             serper_url = "https://google.serper.dev/search"
             serper_headers = {
                 "X-API-KEY": serper_key,
                 "Content-Type": "application/json"
             }
             serper_payload = {
-                "q": message,
+                "q": optimized_query,
                 "gl": "vn",
                 "hl": "vi",
                 "num": 10
@@ -1248,44 +1273,47 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 serper_data = json.loads(serper_response)
             
             search_results_count = len(serper_data.get('organic', []))
-            logger.info(f"Serper returned {search_results_count} organic results")
+            logger.info(f"Serper returned {search_results_count} organic results for query: '{optimized_query}'")
             
-            # Step 2: Build context for Gemini and format Markdown fallback
+            # ========================================
+            # STEP 3: Build context và format Markdown
+            # ========================================
             search_context = self._build_gemini_search_context(serper_data, message)
-            serper_markdown = self._format_serper_results_markdown(serper_data, message)
+            serper_markdown = self._format_serper_results_markdown(serper_data, optimized_query)
             
-            # Step 3: Call Gemini 2.5 Flash to analyze and summarize
+            # ========================================
+            # STEP 4: Gemini tổng hợp kết quả
+            # ========================================
             gemini_success, gemini_result = self._invoke_gemini_summary(message, search_context)
             
             if gemini_success:
-                # Gemini success: Use AI summary + append source links
                 logger.info("Gemini summary generated successfully")
                 
-                # Build final response: Gemini summary + Serper sources
                 reply = gemini_result
                 
-                # Append raw Serper sources at the end for reference
-                reply += "\n\n---\n\n<details>\n<summary>📋 Xem chi tiết kết quả tìm kiếm</summary>\n\n"
-                reply += serper_markdown
-                reply += "\n</details>"
-                
-                powered_by = 'serper+gemini'
+                powered_by = 'gemini+serper+gemini'
                 summary_model = 'gemini-2.5-flash'
             else:
-                # Gemini failed: Fallback to Serper-only Markdown
-                logger.warning(f"Gemini failed, using Serper fallback: {gemini_result}")
+                logger.warning(f"Gemini summary failed: {gemini_result}")
                 
                 reply = serper_markdown
                 reply += f"\n\n---\n*⚠️ Lưu ý: Kết quả chưa được AI phân tích ({gemini_result})*"
                 
-                powered_by = 'serper'
+                powered_by = 'gemini+serper' if used_optimized else 'serper'
                 summary_model = None
             
-            # Save history with appropriate metadata
+            # ========================================
+            # STEP 5: Save history với metadata đầy đủ
+            # ========================================
             history_metadata = {
-                'endpoint': 'serper_gemini_search',
+                'endpoint': 'ai_search_v2',
                 'search_results_count': search_results_count,
-                'powered_by': powered_by
+                'powered_by': powered_by,
+                'query_optimized': used_optimized,
+                'original_query': message,
+                'optimized_query': optimized_query if used_optimized else None,
+                'optimizer_reasoning': optimizer_reasoning if used_optimized else None,
+                'optimizer_keywords': optimizer_keywords if used_optimized else None
             }
             if summary_model:
                 history_metadata['summary_model'] = summary_model
@@ -1310,7 +1338,7 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             }, ensure_ascii=False)
             self.wfile.write(response_json.encode('utf-8'))
             
-            logger.info(f"Serper + Gemini Search completed (powered_by: {powered_by})")
+            logger.info(f"AI Search v2 completed (powered_by: {powered_by}, optimized: {used_optimized})")
             
         except urllib.error.HTTPError as e:
             try:
@@ -1553,6 +1581,121 @@ Hãy tóm tắt và phân tích kết quả tìm kiếm trên để trả lời 
         except Exception as e:
             logger.warning(f"Gemini summary error: {e}")
             return (False, str(e))
+
+    def _invoke_gemini_query_optimizer(self, user_prompt):
+        """Call Gemini 2.5 Flash to optimize/process user prompt before sending to Serper
+        
+        Luồng: User prompt → Gemini xử lý → Optimized query cho Serper
+        
+        Returns:
+            tuple: (success: bool, result: dict)
+            - If success: (True, {"optimized_query": str, "reasoning": str, "keywords": list})
+            - If error: (False, {"error": str})
+        """
+        try:
+            gemini_key = get_api_key('gemini')
+            if not gemini_key:
+                return (False, {"error": "Gemini API key chưa được cấu hình"})
+            
+            system_prompt = """Bạn là Gemini Query Optimizer - nhiệm vụ tối ưu hóa câu hỏi người dùng thành query tìm kiếm hiệu quả cho Serper/Google.
+
+⚠️ QUY TẮC BẮT BUỘC:
+1. Phân tích ý định tìm kiếm của người dùng
+2. Tạo query tìm kiếm tối ưu (ngắn gọn, rõ ràng, có từ khóa chính)
+3. Trả về JSON với format chính xác
+
+📝 OUTPUT FORMAT (JSON):
+{
+    "optimized_query": "query tìm kiếm tối ưu (50-150 ký tự, ưu tiên tiếng Việt nếu là câu hỏi tiếng Việt)",
+    "reasoning": "giải thích ngắn gọn lý do tối ưu (1-2 câu)",
+    "keywords": ["từ_khóa_1", "từ_khóa_2", "từ_khóa_3"]
+}
+
+🎯 HƯỚNG DẪN TỐI ƯU:
+- Loại bỏ từ thừa (ừ, à, nhé, nha, cho tôi biết, giúp tôi...)
+- Giữ nguyên tên riêng, thương hiệu, số liệu cụ thể
+- Thêm ngữ cảnh thời gian nếu cần (2025, mới nhất, hiện tại...)
+- Nếu hỏi về giá/tỷ giá → thêm "giá hiện tại" hoặc "tỷ giá hôm nay"
+- Nếu hỏi về tin tức → thêm "tin tức mới nhất"
+- Nếu hỏi định nghĩa đơn giản → giữ ngắn gọn, không thêm thừa
+
+⚠️ CHỈ trả về JSON thuần túy, KHÔNG có text giải thích bên ngoài JSON."""
+
+            user_message = f"""Tối ưu hóa câu hỏi sau thành query tìm kiếm:
+
+"{user_prompt}"
+
+Trả về JSON theo format đã chỉ định."""
+
+            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_key}"
+            
+            gemini_payload = {
+                "contents": [
+                    {
+                        "role": "user",
+                        "parts": [{"text": f"{system_prompt}\n\n{user_message}"}]
+                    }
+                ],
+                "generationConfig": {
+                    "temperature": 0.3,
+                    "topK": 20,
+                    "topP": 0.9,
+                    "maxOutputTokens": 512,
+                },
+                "safetySettings": [
+                    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+                    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+                    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+                    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"}
+                ]
+            }
+            
+            gemini_request = urllib.request.Request(
+                gemini_url,
+                data=json.dumps(gemini_payload).encode('utf-8'),
+                headers={'Content-Type': 'application/json'}
+            )
+            
+            with urllib.request.urlopen(gemini_request, timeout=15) as response:
+                gemini_response = response.read().decode('utf-8')
+                gemini_data = json.loads(gemini_response)
+            
+            candidates = gemini_data.get('candidates', [])
+            if candidates and candidates[0].get('content', {}).get('parts'):
+                response_text = candidates[0]['content']['parts'][0].get('text', '')
+                if response_text:
+                    response_text = response_text.strip()
+                    if response_text.startswith('```json'):
+                        response_text = response_text[7:]
+                    if response_text.startswith('```'):
+                        response_text = response_text[3:]
+                    if response_text.endswith('```'):
+                        response_text = response_text[:-3]
+                    response_text = response_text.strip()
+                    
+                    try:
+                        result = json.loads(response_text)
+                        if 'optimized_query' in result:
+                            logger.info(f"Query optimized: '{user_prompt}' → '{result['optimized_query']}'")
+                            return (True, result)
+                        else:
+                            return (False, {"error": "JSON thiếu trường optimized_query"})
+                    except json.JSONDecodeError as e:
+                        logger.warning(f"Query optimizer JSON parse error: {e}, raw: {response_text[:200]}")
+                        return (False, {"error": f"Không thể parse JSON: {str(e)}"})
+            
+            return (False, {"error": "Gemini không trả về kết quả hợp lệ"})
+            
+        except urllib.error.HTTPError as e:
+            error_msg = f"Gemini API lỗi HTTP {e.code}"
+            logger.warning(f"Query optimizer HTTP error: {e.code}")
+            return (False, {"error": error_msg})
+        except urllib.error.URLError as e:
+            logger.warning(f"Query optimizer connection error: {e}")
+            return (False, {"error": "Không thể kết nối đến Gemini"})
+        except Exception as e:
+            logger.warning(f"Query optimizer error: {e}")
+            return (False, {"error": str(e)})
 
     def handle_llm7_chat(self):
         """Generic handler for all LLM7 models via LLM7.io"""

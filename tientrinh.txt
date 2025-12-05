@@ -1,11 +1,92 @@
 =============================================================================
-TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 04/12/2025
+TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 05/12/2025
 =============================================================================
 
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
-✨ CẬP NHẬT MỚI NHẤT - 04/12/2025 (Buổi 26 - Fix Gemini Search Thông Minh):
+✨ CẬP NHẬT MỚI NHẤT - 05/12/2025 (Buổi 27 - AI Search v2: Gemini Query Optimizer):
+-----------------------------------------------------------------------------
+
+BI. ✅ LÀM LẠI TÍNH NĂNG AI SEARCH VỚI GEMINI QUERY OPTIMIZER
+   - Yêu cầu: Thay đổi luồng xử lý AI Search để Gemini xử lý prompt TRƯỚC khi gửi Serper
+   - Mục tiêu: Tăng độ chính xác kết quả tìm kiếm bằng cách tối ưu hóa query
+   
+   **LUỒNG XỬ LÝ MỚI (AI Search v2):**
+   
+   ```
+   User nhập prompt → Gemini xử lý/tối ưu prompt → Gửi Serper → Gemini tổng hợp → Gửi về user
+   ```
+   
+   **SO SÁNH VỚI LUỒNG CŨ:**
+   - Luồng cũ: User prompt → Serper (trực tiếp) → Gemini tổng hợp → User
+   - Luồng mới: User prompt → Gemini tối ưu → Serper → Gemini tổng hợp → User
+   
+   **GIẢI PHÁP:**
+   
+   1. ✅ **Tạo hàm _invoke_gemini_query_optimizer() trong server.py:**
+      * Gọi Gemini 2.5 Flash để tối ưu hóa user prompt thành search query
+      * System prompt: "Gemini Query Optimizer" - phân tích ý định, tối ưu query
+      * Output JSON: {optimized_query, reasoning, keywords}
+      * Temperature thấp (0.3) để đảm bảo kết quả nhất quán
+      * Timeout 15 giây để không làm chậm quá nhiều
+      
+   2. ✅ **Cập nhật handle_llm7_gemini_search() với luồng mới:**
+      * STEP 1: Gọi _invoke_gemini_query_optimizer() để xử lý prompt
+      * STEP 2: Dùng optimized_query để gọi Serper API
+      * STEP 3: Build context và format Markdown
+      * STEP 4: Gọi _invoke_gemini_summary() để tổng hợp
+      * STEP 5: Save history với metadata đầy đủ
+      
+   3. ✅ **Fallback mechanism:**
+      * Nếu optimizer lỗi → dùng original query cho Serper
+      * Log warning và tiếp tục xử lý bình thường
+      * Metadata ghi nhận: used_optimized = false
+      
+   4. ✅ **Metadata mở rộng cho history:**
+      * endpoint: 'ai_search_v2'
+      * query_optimized: boolean (có dùng optimized query không)
+      * original_query: user prompt gốc
+      * optimized_query: query sau khi tối ưu
+      * optimizer_reasoning: lý do tối ưu
+      * optimizer_keywords: từ khóa trích xuất
+      * powered_by: 'gemini+serper+gemini' (đầy đủ luồng)
+      
+   **HƯỚNG DẪN TỐI ƯU QUERY (trong system prompt):**
+   - Loại bỏ từ thừa (ừ, à, nhé, nha, cho tôi biết...)
+   - Giữ nguyên tên riêng, thương hiệu, số liệu cụ thể
+   - Thêm ngữ cảnh thời gian nếu cần (2025, mới nhất...)
+   - Hỏi về giá → thêm "giá hiện tại"
+   - Hỏi về tin tức → thêm "tin tức mới nhất"
+   
+   **DANH SÁCH FILE ĐÃ THAY ĐỔI:**
+   - server.py: 
+     * Thêm hàm _invoke_gemini_query_optimizer() (dòng 1560-1673)
+     * Cập nhật handle_llm7_gemini_search() với luồng 5 bước (dòng 1197-1363)
+   
+   **VÍ DỤ TỐI ƯU QUERY:**
+   - "ừ cho tôi biết giá bitcoin đi" → "giá bitcoin hiện tại 2025"
+   - "thời tiết hôm nay ở Hà Nội thế nào nhỉ" → "thời tiết Hà Nội hôm nay"
+   - "ai là tổng thống Mỹ hiện tại vậy" → "tổng thống Mỹ hiện tại 2025"
+   
+   5. ✅ **Xóa phần "Xem chi tiết kết quả tìm kiếm":**
+      * Theo yêu cầu user: không hiển thị expandable details với kết quả Serper raw
+      * Response chỉ chứa phần tóm tắt của Gemini, không có phần mở rộng
+      
+   6. ✅ **Sửa lỗi fallback optimizer (theo Architect review):**
+      * Kiểm tra isinstance(optimizer_result, dict) trước khi gọi .get()
+      * Xử lý an toàn khi optimizer_result không phải là dict
+   
+   **KẾT QUẢ:**
+   ✅ Server restart thành công
+   ✅ Luồng mới: Gemini xử lý prompt → Serper → Gemini tổng hợp
+   ✅ Fallback: Nếu optimizer lỗi, vẫn hoạt động bình thường
+   ✅ Metadata đầy đủ để tracking và debugging
+   ✅ Xóa phần "Xem chi tiết kết quả tìm kiếm" theo yêu cầu
+   ✅ ARCHITECT REVIEW: PASS (sau khi sửa lỗi fallback)
+
+-----------------------------------------------------------------------------
+CẬP NHẬT TRƯỚC ĐÓ - 04/12/2025 (Buổi 26 - Fix Gemini Search Thông Minh):
 -----------------------------------------------------------------------------
 
 BH. ✅ FIX CHỨC NĂNG SEARCH CHO GEMINI 2.5 FLASH - PHÂN LOẠI INTENT THÔNG MINH
