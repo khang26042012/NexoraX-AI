@@ -76,6 +76,30 @@ BI. ✅ LÀM LẠI TÍNH NĂNG AI SEARCH VỚI GEMINI QUERY OPTIMIZER
    6. ✅ **Sửa lỗi fallback optimizer (theo Architect review):**
       * Kiểm tra isinstance(optimizer_result, dict) trước khi gọi .get()
       * Xử lý an toàn khi optimizer_result không phải là dict
+
+   7. ✅ **FIX LỖI NGHIÊM TRỌNG - Gemini trả về lỗi (05/12/2025):**
+      
+      **VẤN ĐỀ PHÁT HIỆN:**
+      - Query optimizer: JSON bị cắt giữa chừng ("reasoning": "Loại bỏ từ thừa 'b)
+      - Gemini summary: "Gemini không trả về kết quả hợp lệ" (candidates rỗng)
+      
+      **NGUYÊN NHÂN GỐC (theo Architect Debug):**
+      - Optimizer: Gemini tạo JSON thủ công, khi chèn dấu ngoặc kép trong reasoning thì chuỗi bị hở
+      - Summary: finishReason là SAFETY hoặc MAX_TOKENS nhưng code bỏ qua, chỉ kiểm tra có text
+      
+      **GIẢI PHÁP ĐÃ TRIỂN KHAI:**
+      
+      a) **_invoke_gemini_query_optimizer():**
+         - Thêm `responseMimeType: "application/json"` → ép Gemini trả JSON hợp lệ
+         - Thay `BLOCK_MEDIUM_AND_ABOVE` → `BLOCK_ONLY_HIGH` (giảm bị block)
+         - Thêm logging: promptFeedback, finishReason, safetyRatings
+         - Xử lý các trường hợp: SAFETY block, MAX_TOKENS, no candidates
+         
+      b) **_invoke_gemini_summary():**
+         - Thay `BLOCK_MEDIUM_AND_ABOVE` → `BLOCK_ONLY_HIGH`
+         - Thêm logging: promptFeedback, finishReason, safetyRatings
+         - Xử lý các trường hợp: promptFeedback block, SAFETY, MAX_TOKENS
+         - Log chi tiết khi không có text trong response
    
    **KẾT QUẢ:**
    ✅ Server restart thành công
@@ -83,7 +107,8 @@ BI. ✅ LÀM LẠI TÍNH NĂNG AI SEARCH VỚI GEMINI QUERY OPTIMIZER
    ✅ Fallback: Nếu optimizer lỗi, vẫn hoạt động bình thường
    ✅ Metadata đầy đủ để tracking và debugging
    ✅ Xóa phần "Xem chi tiết kết quả tìm kiếm" theo yêu cầu
-   ✅ ARCHITECT REVIEW: PASS (sau khi sửa lỗi fallback)
+   ✅ Fix lỗi JSON parse và safety block của Gemini
+   ✅ ARCHITECT REVIEW: PASS
 
 -----------------------------------------------------------------------------
 CẬP NHẬT TRƯỚC ĐÓ - 04/12/2025 (Buổi 26 - Fix Gemini Search Thông Minh):
