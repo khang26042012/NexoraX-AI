@@ -1541,10 +1541,10 @@ Hãy tóm tắt và phân tích kết quả tìm kiếm trên để trả lời 
                     "maxOutputTokens": 2048,
                 },
                 "safetySettings": [
-                    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-                    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-                    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-                    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"}
+                    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_ONLY_HIGH"},
+                    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_ONLY_HIGH"},
+                    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_ONLY_HIGH"},
+                    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_ONLY_HIGH"}
                 ]
             }
             
@@ -1558,13 +1558,35 @@ Hãy tóm tắt và phân tích kết quả tìm kiếm trên để trả lời 
                 gemini_response = response.read().decode('utf-8')
                 gemini_data = json.loads(gemini_response)
             
-            # Extract text from Gemini response
             candidates = gemini_data.get('candidates', [])
-            if candidates and candidates[0].get('content', {}).get('parts'):
-                summary_text = candidates[0]['content']['parts'][0].get('text', '')
+            prompt_feedback = gemini_data.get('promptFeedback', {})
+            
+            if prompt_feedback.get('blockReason'):
+                block_reason = prompt_feedback.get('blockReason', 'UNKNOWN')
+                logger.warning(f"Gemini summary blocked by promptFeedback: {block_reason}")
+                return (False, f"Prompt bị chặn: {block_reason}")
+            
+            if not candidates:
+                logger.warning(f"Gemini summary: No candidates. promptFeedback: {prompt_feedback}")
+                return (False, "Gemini không trả về kết quả")
+            
+            candidate = candidates[0]
+            finish_reason = candidate.get('finishReason', 'UNKNOWN')
+            safety_ratings = candidate.get('safetyRatings', [])
+            
+            if finish_reason == 'SAFETY':
+                logger.warning(f"Gemini summary blocked by SAFETY: {safety_ratings}")
+                return (False, "Bị chặn bởi safety filter")
+            
+            if finish_reason == 'MAX_TOKENS':
+                logger.warning("Gemini summary truncated (MAX_TOKENS)")
+            
+            if candidate.get('content', {}).get('parts'):
+                summary_text = candidate['content']['parts'][0].get('text', '')
                 if summary_text:
                     return (True, summary_text)
             
+            logger.warning(f"Gemini summary: No text in response. finishReason: {finish_reason}, safetyRatings: {safety_ratings}")
             return (False, "Gemini không trả về kết quả hợp lệ")
             
         except urllib.error.HTTPError as e:
@@ -1641,12 +1663,13 @@ Trả về JSON theo format đã chỉ định."""
                     "topK": 20,
                     "topP": 0.9,
                     "maxOutputTokens": 512,
+                    "responseMimeType": "application/json"
                 },
                 "safetySettings": [
-                    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-                    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-                    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-                    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"}
+                    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_ONLY_HIGH"},
+                    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_ONLY_HIGH"},
+                    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_ONLY_HIGH"},
+                    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_ONLY_HIGH"}
                 ]
             }
             
@@ -1661,8 +1684,30 @@ Trả về JSON theo format đã chỉ định."""
                 gemini_data = json.loads(gemini_response)
             
             candidates = gemini_data.get('candidates', [])
-            if candidates and candidates[0].get('content', {}).get('parts'):
-                response_text = candidates[0]['content']['parts'][0].get('text', '')
+            prompt_feedback = gemini_data.get('promptFeedback', {})
+            
+            if prompt_feedback.get('blockReason'):
+                block_reason = prompt_feedback.get('blockReason', 'UNKNOWN')
+                logger.warning(f"Query optimizer blocked by promptFeedback: {block_reason}")
+                return (False, {"error": f"Prompt bị chặn: {block_reason}"})
+            
+            if not candidates:
+                logger.warning(f"Query optimizer: No candidates returned. promptFeedback: {prompt_feedback}")
+                return (False, {"error": "Gemini không trả về kết quả"})
+            
+            candidate = candidates[0]
+            finish_reason = candidate.get('finishReason', 'UNKNOWN')
+            safety_ratings = candidate.get('safetyRatings', [])
+            
+            if finish_reason == 'SAFETY':
+                logger.warning(f"Query optimizer blocked by SAFETY: {safety_ratings}")
+                return (False, {"error": "Bị chặn bởi safety filter"})
+            
+            if finish_reason not in ['STOP', 'MAX_TOKENS']:
+                logger.warning(f"Query optimizer unexpected finishReason: {finish_reason}")
+            
+            if candidate.get('content', {}).get('parts'):
+                response_text = candidate['content']['parts'][0].get('text', '')
                 if response_text:
                     response_text = response_text.strip()
                     if response_text.startswith('```json'):
@@ -1679,11 +1724,13 @@ Trả về JSON theo format đã chỉ định."""
                             logger.info(f"Query optimized: '{user_prompt}' → '{result['optimized_query']}'")
                             return (True, result)
                         else:
+                            logger.warning(f"Query optimizer missing optimized_query field: {response_text[:200]}")
                             return (False, {"error": "JSON thiếu trường optimized_query"})
                     except json.JSONDecodeError as e:
-                        logger.warning(f"Query optimizer JSON parse error: {e}, raw: {response_text[:200]}")
+                        logger.warning(f"Query optimizer JSON parse error: {e}, finishReason: {finish_reason}, raw: {response_text[:300]}")
                         return (False, {"error": f"Không thể parse JSON: {str(e)}"})
             
+            logger.warning(f"Query optimizer: No text in response. finishReason: {finish_reason}")
             return (False, {"error": "Gemini không trả về kết quả hợp lệ"})
             
         except urllib.error.HTTPError as e:
