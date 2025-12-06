@@ -783,9 +783,9 @@ body.dark-mode .ai-loading-spinner {
     max-width: 90%;
     display: flex;
     flex-direction: column;
-    gap: 0px;
+    gap: 4px;
     align-items: flex-start;
-    line-height: 1;
+    line-height: 1.6;
 }
 
 .ai-message .message-content {
@@ -794,9 +794,9 @@ body.dark-mode .ai-loading-spinner {
     padding: 0;
     max-width: 100%;
     word-wrap: break-word;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+    display: block;
+    white-space: normal;
+    line-height: 1.6;
 }
 
 /* File attachments - hiển thị NGOÀI message-content, TRONG message-wrapper */
@@ -905,10 +905,14 @@ body.dark-mode .ai-message .message-content {
 .message-content h3 { font-size: 1.1rem; line-height: 1.3; }
 
 .message-content p {
-    margin: 0 !important;
-    padding: 0 !important;
-    line-height: 1.5;
-    display: inline;
+    margin: 0 0 0.5em 0;
+    padding: 0;
+    line-height: 1.6;
+    display: block;
+}
+
+.message-content p:last-of-type {
+    margin-bottom: 0;
 }
 
 .message-content p:first-child {
@@ -928,9 +932,14 @@ body.dark-mode .ai-message .message-content {
 }
 
 .message-content ul, .message-content ol {
-    margin: 0.1rem 0;
+    margin: 0.5em 0;
     padding-left: 1.5rem;
     list-style: none;
+    display: block;
+}
+
+.message-content ul:last-child, .message-content ol:last-child {
+    margin-bottom: 0;
 }
 
 .message-content ul li::before {
@@ -952,6 +961,20 @@ body.dark-mode .ai-message .message-content {
 }
 
 .message-content li {
+    display: list-item;
+    margin-bottom: 0.25em;
+}
+
+.message-content li:last-child {
+    margin-bottom: 0;
+}
+
+.message-content li p {
+    display: inline;
+    margin: 0;
+}
+
+.ai-message .message-content li {
     margin: 0.2rem 0;
     line-height: 1.5;
 }
