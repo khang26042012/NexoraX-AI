@@ -766,6 +766,7 @@ body.dark-mode .ai-loading-spinner {
     font-size: 17px;
     line-height: 1.5;
     width: auto;
+    white-space: normal;
 }
 
 /* AI message styling */
