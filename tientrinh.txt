@@ -5,7 +5,55 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 06/12/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
-✨ CẬP NHẬT MỚI NHẤT - 06/12/2025 (Buổi 30 - Fix Logo Settings + Auth Text Effect):
+✨ CẬP NHẬT MỚI NHẤT - 06/12/2025 (Buổi 30 - System Prompt + NexoraX Info):
+-----------------------------------------------------------------------------
+
+BM. ✅ SYSTEM PROMPT CHUẨN NEXORAX + THÔNG TIN VỀ NEXORAX
+   
+   **YÊU CẦU:**
+   - Các AI model phải biết về NexoraX
+   - Giữ nét đặc trưng của từng model (tên, developer)
+   - Khi hỏi "Bạn là ai?": trả lời có tên model, nhà phát triển và NexoraX
+   - Thêm thông tin: NexoraX là gì, ai tạo ra, mục đích
+   
+   **GIẢI PHÁP ĐÃ TRIỂN KHAI:**
+   
+   1. ✅ **Dictionary model_metadata với 19 models:**
+      * OpenAI: GPT-5, GPT-4o, GPT-4, GPT-3.5-Turbo, GPT-5 Mini/Nano, GPT-O4 Mini, GPT-4.1 Nano
+      * Google: Gemini Search/Pro/2.0 Flash/2.5 Flash Lite, Gemma 2
+      * Anthropic: Claude 3, Claude 3.5 Sonnet
+      * Meta: Llama 3, Llama 3.1
+      * Mistral AI: Mistral, Codestral, Ministral 3B, Mistral Medium/Small/Small 3.1, Mixtral 8x7B
+      * DeepSeek: DeepSeek Reasoning, DeepSeek V3.1
+      * Amazon: Nova Fast
+      * Alibaba: Qwen 2.5 Coder
+      * Zhipu AI: GLM 4.5 Flash
+      * NASA: BIDARA
+      * Steelskull: Nevoria 70B
+   
+   2. ✅ **Cập nhật section "VỀ NEXORAX" với thông tin chi tiết:**
+      * NexoraX là gì? Nền tảng AI thông minh tích hợp nhiều model AI hàng đầu thế giới
+      * NexoraX do ai tạo ra? Phan Trọng Khang, học sinh trường THCS Vĩnh Hoà
+      * Mục đích? Tham gia cuộc thi Khoa học Kỹ thuật (KHKT), mang AI đến gần với mọi người
+   
+   3. ✅ **Quy tắc danh tính:**
+      * "Mình là {model}, được phát triển bởi {developer} và được tích hợp vào NexoraX AI"
+      * BIDARA: thêm "Bio-Inspired Design and Research Assistant"
+   
+   **DANH SÁCH FILE ĐÃ THAY ĐỔI:**
+   - server.py: Cập nhật get_llm7_system_prompt() (dòng 82-180)
+     * Thêm model_metadata dictionary
+     * Cập nhật template BIDARA với thông tin NexoraX đầy đủ
+     * Cập nhật template model thường với thông tin NexoraX đầy đủ
+   
+   **KẾT QUẢ:**
+   ✅ Server restart thành công
+   ✅ Mọi AI model tự nhận diện đúng tên và developer
+   ✅ AI trả lời được: NexoraX là gì, ai tạo ra, mục đích
+   ✅ Đề cập Phan Trọng Khang + THCS Vĩnh Hoà + cuộc thi KHKT
+
+-----------------------------------------------------------------------------
+CẬP NHẬT TRƯỚC ĐÓ - 06/12/2025 (Buổi 30 - Fix Logo Settings + Auth Text Effect):
 -----------------------------------------------------------------------------
 
 BL. ✅ FIX LOGO CÀI ĐẶT MỜ + THÊM HIỆU ỨNG CHỮ "ĐĂNG NHẬP"
