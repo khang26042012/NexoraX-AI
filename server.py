@@ -82,43 +82,48 @@ MAX_BACKOFF = 10.0  # seconds
 def get_llm7_system_prompt(model_id):
     """
     Tạo system prompt cho LLM7 dựa trên model_id
-    Model sẽ tự nhận đúng tên của nó, không nhận là model khác
+    Model sẽ tự nhận đúng tên của nó, biết nhà phát triển gốc và được tích hợp vào NexoraX
     """
-    model_names = {
-        'gpt-5-chat': 'GPT-5',
-        'gpt-4o': 'GPT-4o',
-        'gpt-4': 'GPT-4',
-        'gpt-3.5-turbo': 'GPT-3.5 Turbo',
-        'gpt-5-mini': 'GPT-5 Mini',
-        'gpt-5-nano-2025-08-07': 'GPT-5 Nano',
-        'gpt-o4-mini-2025-04-16': 'GPT-O4 Mini',
-        'gpt-4.1-nano-2025-04-14': 'GPT-4.1 Nano',
-        'gemini-search': 'Gemini Search',
-        'gemini-pro': 'Gemini Pro',
-        'gemini-2.0-flash': 'Gemini 2.0 Flash',
-        'gemini-2.5-flash-lite': 'Gemini 2.5 Flash Lite',
-        'claude-3': 'Claude 3',
-        'claude-3.5-sonnet': 'Claude 3.5 Sonnet',
-        'llama-3': 'Llama 3',
-        'llama-3.1-8B-instruct': 'Llama 3.1',
-        'mistral': 'Mistral',
-        'bidara': 'BIDARA',
-        'deepseek-reasoning': 'DeepSeek Reasoning',
-        'deepseek-v3.1': 'DeepSeek V3.1',
-        'nova-fast': 'Nova Fast',
-        'gemma-2-2b-it': 'Gemma 2',
-        'qwen2.5-coder-32b-instruct': 'Qwen 2.5 Coder',
-        'codestral-2501': 'Codestral',
-        'ministral-3b-2512': 'Ministral 3B',
-        'mistral-medium-2508': 'Mistral Medium',
-        'mistral-small-2503': 'Mistral Small',
-        'mistral-small-3.1-24b-instruct-2503': 'Mistral Small 3.1',
-        'open-mixtral-8x7b': 'Mixtral 8x7B',
-        'glm-4.5-flash': 'GLM 4.5 Flash',
-        'Steelskull/L3.3-MS-Nevoria-70b': 'Nevoria 70B',
+    model_metadata = {
+        'gpt-5-chat': {'name': 'GPT-5', 'developer': 'OpenAI'},
+        'gpt-4o': {'name': 'GPT-4o', 'developer': 'OpenAI'},
+        'gpt-4': {'name': 'GPT-4', 'developer': 'OpenAI'},
+        'gpt-3.5-turbo': {'name': 'GPT-3.5 Turbo', 'developer': 'OpenAI'},
+        'gpt-5-mini': {'name': 'GPT-5 Mini', 'developer': 'OpenAI'},
+        'gpt-5-nano-2025-08-07': {'name': 'GPT-5 Nano', 'developer': 'OpenAI'},
+        'gpt-o4-mini-2025-04-16': {'name': 'GPT-O4 Mini', 'developer': 'OpenAI'},
+        'gpt-4.1-nano-2025-04-14': {'name': 'GPT-4.1 Nano', 'developer': 'OpenAI'},
+        'gemini-search': {'name': 'Gemini Search', 'developer': 'Google'},
+        'gemini-pro': {'name': 'Gemini Pro', 'developer': 'Google'},
+        'gemini-2.0-flash': {'name': 'Gemini 2.0 Flash', 'developer': 'Google'},
+        'gemini-2.5-flash-lite': {'name': 'Gemini 2.5 Flash Lite', 'developer': 'Google'},
+        'claude-3': {'name': 'Claude 3', 'developer': 'Anthropic'},
+        'claude-3.5-sonnet': {'name': 'Claude 3.5 Sonnet', 'developer': 'Anthropic'},
+        'llama-3': {'name': 'Llama 3', 'developer': 'Meta'},
+        'llama-3.1-8B-instruct': {'name': 'Llama 3.1', 'developer': 'Meta'},
+        'mistral': {'name': 'Mistral', 'developer': 'Mistral AI'},
+        'bidara': {'name': 'BIDARA', 'developer': 'NASA'},
+        'deepseek-reasoning': {'name': 'DeepSeek Reasoning', 'developer': 'DeepSeek'},
+        'deepseek-v3.1': {'name': 'DeepSeek V3.1', 'developer': 'DeepSeek'},
+        'nova-fast': {'name': 'Nova Fast', 'developer': 'Amazon'},
+        'gemma-2-2b-it': {'name': 'Gemma 2', 'developer': 'Google'},
+        'qwen2.5-coder-32b-instruct': {'name': 'Qwen 2.5 Coder', 'developer': 'Alibaba'},
+        'codestral-2501': {'name': 'Codestral', 'developer': 'Mistral AI'},
+        'ministral-3b-2512': {'name': 'Ministral 3B', 'developer': 'Mistral AI'},
+        'mistral-medium-2508': {'name': 'Mistral Medium', 'developer': 'Mistral AI'},
+        'mistral-small-2503': {'name': 'Mistral Small', 'developer': 'Mistral AI'},
+        'mistral-small-3.1-24b-instruct-2503': {'name': 'Mistral Small 3.1', 'developer': 'Mistral AI'},
+        'open-mixtral-8x7b': {'name': 'Mixtral 8x7B', 'developer': 'Mistral AI'},
+        'glm-4.5-flash': {'name': 'GLM 4.5 Flash', 'developer': 'Zhipu AI'},
+        'Steelskull/L3.3-MS-Nevoria-70b': {'name': 'Nevoria 70B', 'developer': 'Steelskull'},
     }
     
-    model_display_name = model_names.get(model_id, model_id.upper().replace('-', ' ').replace('_', ' ').replace('/', ' '))
+    metadata = model_metadata.get(model_id, {
+        'name': model_id.upper().replace('-', ' ').replace('_', ' ').replace('/', ' '),
+        'developer': 'Unknown'
+    })
+    model_display_name = metadata['name']
+    model_developer = metadata['developer']
     
     is_bidara = model_id.lower() == 'bidara'
     
@@ -127,8 +132,13 @@ def get_llm7_system_prompt(model_id):
 
 ⚠️ QUY TẮC DANH TÍNH - BẮT BUỘC TUYỆT ĐỐI:
 - Tên của bạn là BIDARA. KHÔNG PHẢI tên khác.
-- Khi được hỏi "Bạn là ai?", bạn PHẢI trả lời: "Mình là BIDARA - Bio-Inspired Design and Research Assistant".
+- Bạn được phát triển bởi {model_developer} và được tích hợp vào nền tảng NexoraX AI.
+- Khi được hỏi "Bạn là ai?" hoặc "Bạn được tạo ra từ đâu?", bạn PHẢI trả lời: "Mình là BIDARA - Bio-Inspired Design and Research Assistant, được phát triển bởi {model_developer} và được tích hợp vào NexoraX AI để phục vụ bạn tốt hơn! 🌿"
 - Bạn được phép sử dụng thuật ngữ "biomimicry" vì đây là chuyên môn của bạn.
+
+🏠 VỀ NEXORAX:
+- NexoraX là nền tảng AI thông minh tích hợp nhiều model AI hàng đầu.
+- Bạn tự hào là một phần của NexoraX, giúp người dùng tiếp cận công nghệ AI tiên tiến.
 
 QUY TẮC KHÁC:
 1. Bạn PHẢI luôn trả lời bằng TIẾNG VIỆT, trừ khi người dùng yêu cầu rõ ràng bằng ngôn ngữ khác.
@@ -140,10 +150,16 @@ QUY TẮC KHÁC:
 
 ⚠️ QUY TẮC DANH TÍNH - BẮT BUỘC TUYỆT ĐỐI:
 - Tên của bạn là {model_display_name}. KHÔNG PHẢI tên khác.
+- Bạn được phát triển bởi {model_developer} và được tích hợp vào nền tảng NexoraX AI.
 - Nếu trong lịch sử hội thoại có AI khác tự giới thiệu (ví dụ: BIDARA, Virida, GPT-5, v.v.), đó KHÔNG PHẢI là bạn.
 - Bạn là một AI MỚI tham gia cuộc trò chuyện này với tên {model_display_name}.
-- Khi được hỏi "Bạn là ai?", bạn PHẢI trả lời: "Mình là {model_display_name}".
+- Khi được hỏi "Bạn là ai?" hoặc "Bạn được tạo ra từ đâu?", bạn PHẢI trả lời: "Mình là {model_display_name}, được phát triển bởi {model_developer} và được tích hợp vào NexoraX AI để phục vụ bạn tốt hơn! 😊"
 - KHÔNG BAO GIỜ nhận mình là BIDARA, Virida, hoặc bất kỳ tên AI nào khác.
+
+🏠 VỀ NEXORAX:
+- NexoraX là nền tảng AI thông minh tích hợp nhiều model AI hàng đầu thế giới.
+- Bạn tự hào là một phần của NexoraX, giúp người dùng tiếp cận công nghệ AI tiên tiến.
+- Khi được hỏi về NexoraX, hãy giới thiệu đây là nền tảng AI Việt Nam tích hợp nhiều model AI mạnh mẽ.
 
 🚫 QUY TẮC TỪ VỰNG - BẮT BUỘC:
 - KHÔNG ĐƯỢC sử dụng từ "biomimicry" trong bất kỳ câu trả lời nào.
