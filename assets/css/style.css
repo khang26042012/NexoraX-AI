@@ -876,38 +876,45 @@ body.dark-mode .ai-message .message-content {
     }
 }
 
-/* User message - compact styling */
-.user-message .message-content > p {
-    margin: 0 0 0.3em 0;
+/* User message - aggressive compact styling */
+.user-message .message-content * {
+    margin: 0 !important;
+    padding: 0 !important;
 }
-.user-message .message-content > p:last-child {
-    margin-bottom: 0;
+.user-message .message-content {
+    line-height: 1.4 !important;
+}
+.user-message .message-content p {
+    margin-bottom: 0.2em !important;
+}
+.user-message .message-content p:last-child {
+    margin-bottom: 0 !important;
 }
 .user-message .message-content ul,
 .user-message .message-content ol {
-    margin: 0.3em 0;
-    padding-left: 1.2rem;
+    padding-left: 1.2rem !important;
+    margin: 0.15em 0 !important;
     text-align: left;
 }
 .user-message .message-content ul:first-child,
 .user-message .message-content ol:first-child {
-    margin-top: 0;
+    margin-top: 0 !important;
 }
 .user-message .message-content ul:last-child,
 .user-message .message-content ol:last-child {
-    margin-bottom: 0;
+    margin-bottom: 0 !important;
 }
 .user-message .message-content li {
-    margin-bottom: 0.15em;
-    line-height: 1.4;
+    margin-bottom: 0.05em !important;
+    line-height: 1.3 !important;
 }
 .user-message .message-content li:last-child {
-    margin-bottom: 0;
+    margin-bottom: 0 !important;
 }
-.user-message .message-content li p {
-    margin: 0;
-    padding: 0;
-    display: inline;
+.user-message .message-content br {
+    display: none !important;
+    line-height: 0 !important;
+    height: 0 !important;
 }
 
 /* Markdown styling */
