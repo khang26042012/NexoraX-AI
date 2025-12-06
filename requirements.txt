@@ -1,8 +1,2 @@
-# NexoraX AI không cần dependencies bên ngoài
-# Tất cả đều sử dụng built-in Python modules
-Pillow
-Pillow
-Pillow
-Pillow
 Pillow
 Pillow
