@@ -1,11 +1,48 @@
 =============================================================================
-TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 05/12/2025
+TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 06/12/2025
 =============================================================================
 
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
-✨ CẬP NHẬT MỚI NHẤT - 05/12/2025 (Buổi 27 - AI Search v2: Gemini Query Optimizer):
+✨ CẬP NHẬT MỚI NHẤT - 06/12/2025 (Buổi 28 - Fix MAX_TOKENS AI Search):
+-----------------------------------------------------------------------------
+
+BJ. ✅ FIX LỖI AI SEARCH BỊ MAX_TOKENS - GEMINI KHÔNG TRẢ VỀ KẾT QUẢ
+   - Vấn đề: AI Search luôn fallback về Serper thuần vì Gemini trả về lỗi MAX_TOKENS
+   - Logs lỗi:
+     * "Query optimizer: No text in response. finishReason: MAX_TOKENS"
+     * "Gemini summary: No text in response. finishReason: MAX_TOKENS"
+   
+   **NGUYÊN NHÂN GỐC (theo Architect Debug):**
+   - _invoke_gemini_query_optimizer(): maxOutputTokens = 512 (quá nhỏ cho JSON)
+   - _invoke_gemini_summary(): maxOutputTokens = 2048 (không đủ cho câu trả lời dài)
+   - Kết quả: Gemini bị cắt sớm và không trả về text
+   
+   **GIẢI PHÁP ĐÃ TRIỂN KHAI:**
+   
+   1. ✅ **Tăng maxOutputTokens cho Query Optimizer:**
+      * 512 → 2048 tokens
+      * Đảm bảo JSON (optimized_query, reasoning, keywords) được trả về đầy đủ
+      * File: server.py dòng 1668
+   
+   2. ✅ **Tăng maxOutputTokens cho Gemini Summary:**
+      * 2048 → 8192 tokens
+      * Đảm bảo đủ không gian cho 3 phần (Tóm tắt, Phân tích, Nguồn)
+      * File: server.py dòng 1544
+   
+   **DANH SÁCH FILE ĐÃ THAY ĐỔI:**
+   - server.py:
+     * Dòng 1668: maxOutputTokens 512 → 2048 (query optimizer)
+     * Dòng 1544: maxOutputTokens 2048 → 8192 (summary)
+   
+   **KẾT QUẢ:**
+   ✅ Server restart thành công
+   ✅ Gemini có đủ không gian để trả về kết quả đầy đủ
+   ✅ AI Search sẽ không bị fallback về Serper thuần nữa
+
+-----------------------------------------------------------------------------
+CẬP NHẬT TRƯỚC ĐÓ - 05/12/2025 (Buổi 27 - AI Search v2: Gemini Query Optimizer):
 -----------------------------------------------------------------------------
 
 BI. ✅ LÀM LẠI TÍNH NĂNG AI SEARCH VỚI GEMINI QUERY OPTIMIZER

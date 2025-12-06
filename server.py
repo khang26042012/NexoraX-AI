@@ -1538,7 +1538,7 @@ Hãy tóm tắt và phân tích kết quả tìm kiếm trên để trả lời 
                     "temperature": 0.7,
                     "topK": 40,
                     "topP": 0.95,
-                    "maxOutputTokens": 2048,
+                    "maxOutputTokens": 8192,
                 },
                 "safetySettings": [
                     {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_ONLY_HIGH"},
@@ -1662,7 +1662,7 @@ Trả về JSON theo format đã chỉ định."""
                     "temperature": 0.3,
                     "topK": 20,
                     "topP": 0.9,
-                    "maxOutputTokens": 512,
+                    "maxOutputTokens": 2048,
                     "responseMimeType": "application/json"
                 },
                 "safetySettings": [
