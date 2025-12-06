@@ -20,7 +20,7 @@
                 <div class="flex items-center space-x-3">
                     <!-- Logo sidebar -->
                     <img src="assets/images/brand-logo.png" alt="NexoraX AI Sidebar Logo" class="brand-logo w-10 h-10 object-contain drop-shadow-lg">
-                    <h1 class="text-xl font-semibold text-blue-600">NexoraX</h1>
+                    <h1 class="text-xl font-semibold rainbow-title">NexoraX</h1>
                 </div>
                 <div id="closeSidebar" class="w-10 h-10 cursor-pointer hover:bg-gray-100 rounded-lg flex items-center justify-center transition-colors">
                     <svg class="w-6 h-6 text-gray-600" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -54,7 +54,7 @@
         </div>
         
         
-        <div class="flex-shrink-0 p-4 border-t border-gray-200 bg-white">
+        <div id="sidebarFooter" class="flex-shrink-0 p-4 border-t border-gray-200" style="background-color: #ffffff;">
             <!-- User Profile (shown when logged in) -->
             <div id="userProfileSection" class="hidden relative">
                 <div class="flex items-center space-x-3 px-3 py-2">
@@ -64,12 +64,12 @@
                     </div>
                     <!-- User Info -->
                     <div class="flex-1 min-w-0">
-                        <p id="userDisplayName" class="text-sm font-medium text-gray-900 truncate">Username</p>
-                        <p class="text-xs text-gray-500">Online</p>
+                        <p id="userDisplayName" class="text-sm font-medium text-gray-900 dark:text-white truncate">Username</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Online</p>
                     </div>
                     <!-- Menu Button (3 dots) -->
-                    <button id="userMenuBtn" class="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="Menu">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <button id="userMenuBtn" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors" title="Menu">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-600 dark:text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="1"/>
                             <circle cx="12" cy="5" r="1"/>
                             <circle cx="12" cy="19" r="1"/>
@@ -78,16 +78,16 @@
                 </div>
                 
                 <!-- Dropdown Menu -->
-                <div id="userDropdownMenu" class="hidden absolute bottom-full left-0 right-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
-                    <button id="settingsBtnFromMenu" class="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors">
+                <div id="userDropdownMenu" class="hidden absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
+                    <button id="settingsBtnFromMenu" class="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/>
                             <circle cx="12" cy="12" r="3"/>
                         </svg>
                         <span class="text-sm">Cài đặt</span>
                     </button>
-                    <div class="border-t border-gray-200"></div>
-                    <button id="logoutBtnFromMenu" class="w-full flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 transition-colors">
+                    <div class="border-t border-gray-200 dark:border-gray-700"></div>
+                    <button id="logoutBtnFromMenu" class="w-full flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                             <polyline points="16 17 21 12 16 7"/>
@@ -98,14 +98,26 @@
                 </div>
             </div>
             
-            <!-- Settings Button (shown when logged out or as alternative) -->
-            <button id="settingsBtn" class="flex items-center space-x-3 px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors w-full">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/>
-                    <circle cx="12" cy="12" r="3"/>
-                </svg>
-                <span class="text-sm">Cài đặt</span>
-            </button>
+            <!-- Login/Register and Settings buttons (shown when logged out) -->
+            <div id="guestSection" class="flex items-center justify-between">
+                <!-- Login/Register Button -->
+                <button id="openAuthBtn" class="flex items-center space-x-2 px-3 py-2 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                        <polyline points="10 17 15 12 10 7"/>
+                        <line x1="15" y1="12" x2="3" y2="12"/>
+                    </svg>
+                    <span class="text-sm font-medium">Đăng nhập</span>
+                </button>
+                
+                <!-- Settings Button (icon only, on the right) -->
+                <button id="settingsBtn" class="p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 rounded-lg transition-colors" title="Cài đặt">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                </button>
+            </div>
         </div>
     </div>
     
@@ -140,7 +152,7 @@
             <div class="w-full max-w-4xl">
                 <div class="text-center mb-8 fade-in">
                     <!-- Title -->
-                    <h1 class="text-5xl font-semibold mb-4 text-blue-600 slide-in-left">
+                    <h1 class="text-5xl font-semibold mb-4 rainbow-title-slow">
                         NexoraX
                     </h1>
                 </div>
@@ -866,7 +878,7 @@
         <div id="aboutContent" class="bg-white rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto scale-95 opacity-0 transition-all duration-300">
             <div class="text-center">
                 <img src="assets/images/brand-logo.png" alt="NexoraX AI" class="brand-logo w-20 h-20 mx-auto mb-4 object-contain drop-shadow-2xl">
-                <h2 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">NexoraX AI</h2>
+                <h2 class="text-3xl font-bold rainbow-title-slow mb-2">NexoraX AI</h2>
                 <p class="text-sm text-gray-500 mb-6">Trí tuệ nhân tạo thế hệ mới - Đồng hành cùng sự sáng tạo</p>
                 
                 <div class="text-sm text-gray-600 space-y-4 text-left">

@@ -272,15 +272,15 @@ export async function handleLogout(onSuccess, onError) {
 export function updateUIForLoggedInUser(username) {
     console.log('User logged in:', username);
     
-    // Show user profile section
+    // Show user profile section, hide guest section
     const userProfileSection = document.getElementById('userProfileSection');
-    const settingsBtn = document.getElementById('settingsBtn');
+    const guestSection = document.getElementById('guestSection');
     const userDisplayName = document.getElementById('userDisplayName');
     const userAvatar = document.getElementById('userAvatar');
     
-    if (userProfileSection && settingsBtn) {
+    if (userProfileSection && guestSection) {
         userProfileSection.classList.remove('hidden');
-        settingsBtn.classList.add('hidden');
+        guestSection.classList.add('hidden');
     }
     
     // Update username display
@@ -301,13 +301,13 @@ export function updateUIForLoggedInUser(username) {
 export function updateUIForLoggedOutUser() {
     console.log('User logged out');
     
-    // Hide user profile section
+    // Hide user profile section, show guest section
     const userProfileSection = document.getElementById('userProfileSection');
-    const settingsBtn = document.getElementById('settingsBtn');
+    const guestSection = document.getElementById('guestSection');
     
-    if (userProfileSection && settingsBtn) {
+    if (userProfileSection && guestSection) {
         userProfileSection.classList.add('hidden');
-        settingsBtn.classList.remove('hidden');
+        guestSection.classList.remove('hidden');
     }
 }
 

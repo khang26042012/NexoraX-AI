@@ -892,7 +892,8 @@ export class NexoraXChat {
                 startOnboardingManually();
             },
             () => {
-                setTimeout(() => this.showAuthModal(), 500);
+                updateUIForLoggedOutUser();
+                startOnboardingManually();
             }
         );
     }
@@ -972,7 +973,6 @@ export class NexoraXChat {
     async handleLogout() {
         await handleLogout(
             () => {
-                setTimeout(() => this.showAuthModal(), 1000);
                 updateUIForLoggedOutUser();
             }
         );

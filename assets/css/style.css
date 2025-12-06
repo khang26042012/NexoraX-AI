@@ -712,6 +712,82 @@ body.dark-mode .ai-loading-spinner {
     }
 }
 
+/* Rainbow title cho NexoraX branding */
+.rainbow-title {
+    background: linear-gradient(
+        90deg,
+        #ff0000,
+        #ff8000,
+        #ffff00,
+        #00ff00,
+        #00ffff,
+        #0080ff,
+        #8000ff
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: rainbowText 2s linear infinite;
+}
+
+/* Rainbow title chậm hơn cho tiêu đề lớn ở Home */
+.rainbow-title-slow {
+    background: linear-gradient(
+        90deg,
+        #ff0000,
+        #ff8000,
+        #ffff00,
+        #00ff00,
+        #00ffff,
+        #0080ff,
+        #8000ff
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: rainbowText 5s linear infinite;
+}
+
+/* Dark mode rainbow title */
+.dark .rainbow-title {
+    background: linear-gradient(
+        90deg,
+        #ff6666,
+        #ffaa66,
+        #ffff66,
+        #66ff66,
+        #66ffff,
+        #66aaff,
+        #aa66ff
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: rainbowText 2s linear infinite;
+}
+
+/* Dark mode rainbow title slow */
+.dark .rainbow-title-slow {
+    background: linear-gradient(
+        90deg,
+        #ff6666,
+        #ffaa66,
+        #ffff66,
+        #66ff66,
+        #66ffff,
+        #66aaff,
+        #aa66ff
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: rainbowText 5s linear infinite;
+}
+
 /* Old cursor removed - using new implementation below */
 
 
@@ -1877,6 +1953,17 @@ html, body {
 .dark .sidebar > div:last-child {
     background-color: #141414 !important;
     border-color: #262626 !important;
+}
+
+/* Sidebar footer - đảm bảo nền đúng */
+#sidebarFooter {
+    background-color: #ffffff !important;
+    border-color: #e5e7eb !important;
+}
+
+.dark #sidebarFooter {
+    background-color: #1e1e1e !important;
+    border-color: #404040 !important;
 }
 
 .dark #settingsBtn {

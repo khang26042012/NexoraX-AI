@@ -5,7 +5,76 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 06/12/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
-✨ CẬP NHẬT MỚI NHẤT - 06/12/2025 (Buổi 28 - Fix MAX_TOKENS AI Search):
+✨ CẬP NHẬT MỚI NHẤT - 06/12/2025 (Buổi 29 - UI Sidebar + Rainbow Title):
+-----------------------------------------------------------------------------
+
+BK. ✅ CẢI TIẾN UI SIDEBAR + RAINBOW TITLE + FIX NÚT CONFIG
+   
+   **VẤN ĐỀ 1: HIỂN THỊ MODAL AUTH KHI VÀO WEB**
+   - Trước: Modal auth tự động hiện khi check session thất bại
+   - Yêu cầu: Không hiển thị modal auth tự động, chỉ hiện khi user click
+   
+   **VẤN ĐỀ 2: TÊN NEXORAX KHÔNG CÓ ANIMATION RAINBOW**
+   - Yêu cầu: Làm tên NexoraX có animation rainbow như chữ "Thinking"
+   
+   **VẤN ĐỀ 3: NÚT TÌM KIẾM/TẠO ẢNH PHẢI NHẤN 2-3 LẦN**
+   - Nguyên nhân: Event listeners chưa xử lý đúng trên mobile
+   
+   **GIẢI PHÁP ĐÃ TRIỂN KHAI:**
+   
+   1. ✅ **Thêm class CSS rainbow-title và rainbow-title-slow:**
+      * rainbow-title: Animation 2s (cho sidebar)
+      * rainbow-title-slow: Animation 5s (cho home và about - chậm hơn, đẹp hơn)
+      * Hỗ trợ dark mode với màu sáng hơn
+   
+   2. ✅ **Áp dụng rainbow animation cho tiêu đề NexoraX:**
+      * Home screen: class rainbow-title-slow
+      * Sidebar: class rainbow-title
+      * About modal: class rainbow-title-slow
+   
+   3. ✅ **Tái cấu trúc sidebar:**
+      * Thêm nút "Đăng nhập" (openAuthBtn) ở bên trái
+      * Thu gọn nút "Cài đặt" thành icon ở bên phải
+      * Tạo guestSection chứa cả 2 nút (hiện khi chưa đăng nhập)
+      * userProfileSection hiện khi đã đăng nhập
+   
+   4. ✅ **Cập nhật auth-manager.js:**
+      * updateUIForLoggedInUser(): Ẩn guestSection, hiện userProfileSection
+      * updateUIForLoggedOutUser(): Hiện guestSection, ẩn userProfileSection
+   
+   5. ✅ **Cập nhật chat-app.js:**
+      * checkUserSession(): Không tự động mở auth modal khi session thất bại
+      * handleLogout(): Không tự động mở auth modal sau logout
+   
+   6. ✅ **Cập nhật event-handlers.js:**
+      * Thêm event listener cho openAuthBtn để mở auth modal
+      * Thêm e.preventDefault() và e.stopPropagation() cho config options
+      * Thêm touchend event cho config options (cải thiện mobile)
+   
+   **DANH SÁCH FILE ĐÃ THAY ĐỔI:**
+   - assets/css/style.css: Thêm .rainbow-title, .rainbow-title-slow và dark mode
+   - index.html: 
+     * Cập nhật tiêu đề NexoraX (home, sidebar, about) với rainbow class
+     * Tái cấu trúc sidebar footer với guestSection
+   - src/js/auth-manager.js: Cập nhật updateUIForLoggedInUser/Out
+   - src/js/chat-app.js: Không tự động mở auth modal
+   - src/js/event-handlers.js: Thêm event listener cho openAuthBtn và cải thiện config options
+   
+   7. ✅ **Fix lỗi sidebar footer có nền đen trong light mode:**
+      * Thêm id="sidebarFooter" cho div footer sidebar
+      * Thêm inline style background-color: #ffffff để đảm bảo nền trắng
+      * Cập nhật CSS selector #sidebarFooter thay vì #sidebar > div:last-child
+      * Dark mode: .dark #sidebarFooter có background-color: #1e1e1e
+   
+   **KẾT QUẢ:**
+   ✅ Tiêu đề NexoraX có animation rainbow đẹp
+   ✅ Không tự động hiện modal auth khi vào web
+   ✅ Nút Đăng nhập và Cài đặt ở cuối sidebar, layout gọn gàng
+   ✅ Nút tìm kiếm/tạo ảnh responsive hơn trên mobile
+   ✅ Sidebar footer có nền trắng trong light mode, đen trong dark mode
+
+-----------------------------------------------------------------------------
+CẬP NHẬT TRƯỚC ĐÓ - 06/12/2025 (Buổi 28 - Fix MAX_TOKENS AI Search):
 -----------------------------------------------------------------------------
 
 BJ. ✅ FIX LỖI AI SEARCH - MAX_TOKENS + THỜI GIAN SAI + PATTERN THIẾU

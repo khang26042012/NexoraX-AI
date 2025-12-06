@@ -219,6 +219,15 @@ export function setupMainEventListeners(app) {
         
         homeConfigDropdown.querySelectorAll('.config-option').forEach(option => {
             option.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const action = e.currentTarget.getAttribute('data-action');
+                app.handleConfigAction(action);
+                homeConfigDropdown.classList.add('hidden');
+            });
+            option.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 const action = e.currentTarget.getAttribute('data-action');
                 app.handleConfigAction(action);
                 homeConfigDropdown.classList.add('hidden');
@@ -235,6 +244,15 @@ export function setupMainEventListeners(app) {
         
         chatConfigDropdown.querySelectorAll('.config-option').forEach(option => {
             option.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const action = e.currentTarget.getAttribute('data-action');
+                app.handleConfigAction(action);
+                chatConfigDropdown.classList.add('hidden');
+            });
+            option.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 const action = e.currentTarget.getAttribute('data-action');
                 app.handleConfigAction(action);
                 chatConfigDropdown.classList.add('hidden');
@@ -368,6 +386,9 @@ export function setupVoiceRecordingListeners(app) {
  * @param {Object} app - Instance của NexoraXChat
  */
 export function setupAuthEventListeners(app) {
+    // Open auth modal from sidebar button
+    document.getElementById('openAuthBtn')?.addEventListener('click', () => app.showAuthModal());
+    
     // Close auth modal
     document.getElementById('closeAuthModal')?.addEventListener('click', () => app.hideAuthModal());
     
