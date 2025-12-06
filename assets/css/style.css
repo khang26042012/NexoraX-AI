@@ -1837,9 +1837,10 @@ html, body {
 }
 
 .dark input[type="text"]:focus, .dark textarea:focus {
-    border-color: #3b82f6 !important;
+    border-color: #404040 !important;
     background-color: #1e1e1e !important;
-    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.4) !important;
+    box-shadow: none !important;
+    outline: none !important;
 }
 
 .dark input[type="text"]::placeholder, .dark textarea::placeholder {
@@ -2197,9 +2198,10 @@ html, body {
 }
 
 .dark .glow-input-container:focus-within {
-    border-color: #42a5f5;
+    border-color: #525252;
     background-color: #424242;
-    box-shadow: 0 0 0 2px rgba(66, 165, 245, 0.15), 0 2px 8px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    outline: none;
 }
 
 .dark .glow-input {
@@ -3686,4 +3688,57 @@ body.dark-mode .image-generation-result img {
 
 .dark .settings-item-badge {
     background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+/* ===========================
+   FIX: Loại bỏ đường viền xanh focus trong dark mode
+   =========================== */
+
+/* Loại bỏ focus outline cho tất cả input/textarea trong dark mode */
+.dark #homeInput,
+.dark #chatInput,
+.dark #homeInput:focus,
+.dark #chatInput:focus,
+.dark #homeInput:focus-visible,
+.dark #chatInput:focus-visible {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Loại bỏ focus ring cho input container trong dark mode */
+.dark .box-content:focus-within,
+.dark fieldset:focus-within {
+    outline: none !important;
+}
+
+/* Xử lý Tailwind shadow classes trong dark mode khi focus */
+.dark [class*="shadow-"]:focus-within {
+    outline: none !important;
+}
+
+/* Input container focus-within styling - Sử dụng màu xám thay vì xanh */
+.dark .box-content,
+.dark fieldset > div.box-content {
+    border-color: #404040 !important;
+}
+
+.dark .box-content:hover,
+.dark fieldset > div.box-content:hover {
+    box-shadow: 0 0.25rem 1.25rem hsla(0,0%,100%,5%), 0 0 0 0.5px hsla(0,0%,100%,20%) !important;
+}
+
+.dark .box-content:focus-within,
+.dark fieldset > div.box-content:focus-within {
+    box-shadow: 0 0.25rem 1.25rem hsla(0,0%,100%,8%), 0 0 0 0.5px hsla(0,0%,100%,25%) !important;
+    border-color: transparent !important;
+}
+
+/* Loại bỏ browser default focus ring */
+.dark *:focus {
+    outline-color: transparent !important;
+}
+
+.dark *:focus-visible {
+    outline: none !important;
 }

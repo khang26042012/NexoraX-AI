@@ -1083,6 +1083,26 @@ export class NexoraXChat {
         return MODEL_NAMES[modelId] || modelId;
     }
     
+    /**
+     * Kiểm tra model có hỗ trợ xử lý ảnh hay không
+     * Chỉ có Gemini (nexorax1) mới hỗ trợ xử lý ảnh qua inline_data
+     * @param {string} modelId - Model ID
+     * @returns {boolean} - true nếu model hỗ trợ ảnh
+     */
+    modelSupportsImages(modelId) {
+        return modelId === 'nexorax1';
+    }
+    
+    /**
+     * Kiểm tra xem có file ảnh trong danh sách files không
+     * @param {Array} files - Danh sách files
+     * @returns {boolean} - true nếu có ít nhất 1 file ảnh
+     */
+    hasImageFiles(files) {
+        if (!files || files.length === 0) return false;
+        return files.some(file => file.type && file.type.startsWith('image/'));
+    }
+    
     handleConfigAction(action) {
         const configButtons = document.querySelectorAll(`.config-option[data-action="${action}"]`);
         
