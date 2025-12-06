@@ -761,13 +761,10 @@ body.dark-mode .ai-loading-spinner {
     min-width: 60px;
     word-wrap: break-word;
     border: 1px solid #d1d5db;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
+    display: block;
+    text-align: left;
     font-size: 17px;
     line-height: 1.5;
-    vertical-align: top;
     width: auto;
 }
 
@@ -879,12 +876,21 @@ body.dark-mode .ai-message .message-content {
     }
 }
 
-/* User message specificity fix - inline content để không tạo block line box */
-.user-message .message-content > * {
-    line-height: inherit;
-    display: inline;
-    margin: 0;
-    padding: 0;
+/* User message - giữ nguyên display của children */
+.user-message .message-content > p {
+    margin: 0 0 0.5em 0;
+}
+.user-message .message-content > p:last-child {
+    margin-bottom: 0;
+}
+.user-message .message-content ul,
+.user-message .message-content ol {
+    margin: 0.5em 0;
+    padding-left: 1.5rem;
+    text-align: left;
+}
+.user-message .message-content li {
+    margin-bottom: 0.25em;
 }
 
 /* Markdown styling */
