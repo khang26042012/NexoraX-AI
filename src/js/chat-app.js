@@ -490,6 +490,9 @@ export class NexoraXChat {
         
         // Clear input và files
         this.chatInput.value = '';
+        // Reset textarea height về ban đầu
+        this.chatInput.style.height = 'auto';
+        this.chatInput.style.height = ''; // Reset về CSS default
         this.selectedFiles.clear();
         this.updateInlineFilePreview();
         
