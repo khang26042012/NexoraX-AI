@@ -876,21 +876,38 @@ body.dark-mode .ai-message .message-content {
     }
 }
 
-/* User message - giữ nguyên display của children */
+/* User message - compact styling */
 .user-message .message-content > p {
-    margin: 0 0 0.5em 0;
+    margin: 0 0 0.3em 0;
 }
 .user-message .message-content > p:last-child {
     margin-bottom: 0;
 }
 .user-message .message-content ul,
 .user-message .message-content ol {
-    margin: 0.5em 0;
-    padding-left: 1.5rem;
+    margin: 0.3em 0;
+    padding-left: 1.2rem;
     text-align: left;
 }
+.user-message .message-content ul:first-child,
+.user-message .message-content ol:first-child {
+    margin-top: 0;
+}
+.user-message .message-content ul:last-child,
+.user-message .message-content ol:last-child {
+    margin-bottom: 0;
+}
 .user-message .message-content li {
-    margin-bottom: 0.25em;
+    margin-bottom: 0.15em;
+    line-height: 1.4;
+}
+.user-message .message-content li:last-child {
+    margin-bottom: 0;
+}
+.user-message .message-content li p {
+    margin: 0;
+    padding: 0;
+    display: inline;
 }
 
 /* Markdown styling */
