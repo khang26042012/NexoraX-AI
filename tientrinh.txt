@@ -8,38 +8,51 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 06/12/2025
 ✨ CẬP NHẬT MỚI NHẤT - 06/12/2025 (Buổi 28 - Fix MAX_TOKENS AI Search):
 -----------------------------------------------------------------------------
 
-BJ. ✅ FIX LỖI AI SEARCH BỊ MAX_TOKENS - GEMINI KHÔNG TRẢ VỀ KẾT QUẢ
-   - Vấn đề: AI Search luôn fallback về Serper thuần vì Gemini trả về lỗi MAX_TOKENS
-   - Logs lỗi:
-     * "Query optimizer: No text in response. finishReason: MAX_TOKENS"
-     * "Gemini summary: No text in response. finishReason: MAX_TOKENS"
+BJ. ✅ FIX LỖI AI SEARCH - MAX_TOKENS + THỜI GIAN SAI + PATTERN THIẾU
    
-   **NGUYÊN NHÂN GỐC (theo Architect Debug):**
-   - _invoke_gemini_query_optimizer(): maxOutputTokens = 512 (quá nhỏ cho JSON)
-   - _invoke_gemini_summary(): maxOutputTokens = 2048 (không đủ cho câu trả lời dài)
-   - Kết quả: Gemini bị cắt sớm và không trả về text
+   **VẤN ĐỀ 1: MAX_TOKENS**
+   - Logs lỗi: "finishReason: MAX_TOKENS" cho cả Query Optimizer và Summary
+   - Nguyên nhân: maxOutputTokens quá nhỏ
+   
+   **VẤN ĐỀ 2: THỜI GIAN SAI**
+   - "Bây giờ là mấy h ở Việt Nam" → trả về "27/10/2023" (SAI)
+   - Nguyên nhân: Serper trả về kết quả web cũ, Gemini dựa vào đó
+   
+   **VẤN ĐỀ 3: KHÔNG SEARCH KHI CẦN**
+   - "Gemini 3 đã ra mắt vào ngày nào" → không search web
+   - Nguyên nhân: shouldSearchWeb() thiếu pattern "ra mắt", "release date"
    
    **GIẢI PHÁP ĐÃ TRIỂN KHAI:**
    
-   1. ✅ **Tăng maxOutputTokens cho Query Optimizer:**
-      * 512 → 2048 tokens
-      * Đảm bảo JSON (optimized_query, reasoning, keywords) được trả về đầy đủ
-      * File: server.py dòng 1668
+   1. ✅ **Tăng maxOutputTokens:**
+      * Query Optimizer: 512 → 2048 tokens
+      * Gemini Summary: 2048 → 8192 tokens
    
-   2. ✅ **Tăng maxOutputTokens cho Gemini Summary:**
-      * 2048 → 8192 tokens
-      * Đảm bảo đủ không gian cho 3 phần (Tóm tắt, Phân tích, Nguồn)
-      * File: server.py dòng 1544
+   2. ✅ **Thêm API thời gian thực (worldtimeapi.org):**
+      * Hàm _is_time_query(): Kiểm tra query có phải về thời gian không
+      * Hàm _get_realtime_time(): Gọi API lấy thời gian thực
+      * STEP 0 trong handle_llm7_gemini_search: Xử lý đặc biệt cho thời gian
+      * Trả về thời gian chính xác theo múi giờ Việt Nam (UTC+7)
+   
+   3. ✅ **Mở rộng shouldSearchWeb() với patterns mới:**
+      * "ra mắt", "phát hành", "ra đời", "công bố", "trình làng"
+      * "khi nào...ra", "vào ngày nào"
+      * "release date", "launch date", "when...release/launch"
+      * "phiên bản", "version"
    
    **DANH SÁCH FILE ĐÃ THAY ĐỔI:**
    - server.py:
-     * Dòng 1668: maxOutputTokens 512 → 2048 (query optimizer)
-     * Dòng 1544: maxOutputTokens 2048 → 8192 (summary)
+     * Thêm hàm _is_time_query() và _get_realtime_time()
+     * Thêm STEP 0 xử lý thời gian trong handle_llm7_gemini_search()
+     * maxOutputTokens: 512→2048 (optimizer), 2048→8192 (summary)
+   - src/js/utils.js:
+     * Thêm patterns mới vào shouldSearchWeb()
    
    **KẾT QUẢ:**
    ✅ Server restart thành công
-   ✅ Gemini có đủ không gian để trả về kết quả đầy đủ
-   ✅ AI Search sẽ không bị fallback về Serper thuần nữa
+   ✅ Câu hỏi về thời gian → API thời gian thực (worldtimeapi)
+   ✅ "Gemini 3 đã ra mắt..." → được search web
+   ✅ Gemini có đủ tokens để trả về kết quả
 
 -----------------------------------------------------------------------------
 CẬP NHẬT TRƯỚC ĐÓ - 05/12/2025 (Buổi 27 - AI Search v2: Gemini Query Optimizer):

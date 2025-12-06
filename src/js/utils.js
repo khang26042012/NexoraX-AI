@@ -282,6 +282,19 @@ export function shouldSearchWeb(message) {
         
         // Công ty, thương hiệu
         /apple|google|microsoft|facebook|meta|amazon|tesla|nvidia|openai|anthropic/i,
+        
+        // ===== THÊM MỚI: Câu hỏi về ra mắt, phát hành, ngày tháng sản phẩm =====
+        // Ra mắt, phát hành (tiếng Việt)
+        /ra\s*mat|phat\s*hanh|ra\s*doi|cong\s*bo|trinh\s*lang/i,
+        // Khi nào, vào ngày nào (tiếng Việt)
+        /khi\s*nao.+(ra|phat|cong|trinh)/i,
+        /vao\s*ngay\s*nao/i,
+        /(ra|phat).+vao\s*(ngay|khi|thang|nam)/i,
+        // Release, launch (tiếng Anh)
+        /release\s*date|launch\s*date|when.+(release|launch|come\s*out|debut)/i,
+        /released|launched|came\s*out|debuted/i,
+        // Phiên bản mới
+        /phien\s*ban|version|v\d+/i,
     ];
     
     // Nếu tin nhắn chứa từ khóa cần search → return true

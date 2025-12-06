@@ -1191,15 +1191,59 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             logger.error(f"Exception args: {e.args}")
             self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
 
+    def _is_time_query(self, message):
+        """Kiểm tra xem query có phải về thời gian/ngày hiện tại không"""
+        normalized = message.lower()
+        time_patterns = [
+            'mấy giờ', 'may gio', 'bây giờ', 'bay gio', 'giờ hiện tại',
+            'ngày mấy', 'ngay may', 'hôm nay là', 'thứ mấy', 'thu may',
+            'what time', 'current time', 'time now', 'what day', 'today'
+        ]
+        return any(p in normalized for p in time_patterns)
+    
+    def _get_realtime_time(self, timezone='Asia/Ho_Chi_Minh'):
+        """Lấy thời gian thực từ API"""
+        try:
+            url = f"https://worldtimeapi.org/api/timezone/{timezone}"
+            req = urllib.request.Request(url, headers={'User-Agent': 'NexoraX/1.0'})
+            with urllib.request.urlopen(req, timeout=5) as response:
+                data = json.loads(response.read().decode('utf-8'))
+                
+            datetime_str = data.get('datetime', '')
+            day_of_week = data.get('day_of_week', 0)
+            
+            days_vi = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy']
+            day_name = days_vi[day_of_week]
+            
+            if datetime_str:
+                dt_part = datetime_str.split('.')[0].replace('T', ' ')
+                date_part = dt_part.split(' ')[0]
+                time_part = dt_part.split(' ')[1] if ' ' in dt_part else ''
+                
+                year, month, day = date_part.split('-')
+                
+                return {
+                    'success': True,
+                    'time': time_part,
+                    'date': f"{day}/{month}/{year}",
+                    'day_name': day_name,
+                    'timezone': timezone,
+                    'formatted': f"Hiện tại là **{time_part}**, {day_name}, ngày {day}/{month}/{year} (múi giờ Việt Nam UTC+7)."
+                }
+        except Exception as e:
+            logger.warning(f"Realtime API error: {e}")
+        return {'success': False}
+
     def handle_llm7_gemini_search(self):
         """Handle Search requests via Gemini Query Optimizer + Serper API + Gemini Summary
         
-        LUỒNG MỚI (Cập nhật: 05/12/2025):
+        LUỒNG MỚI (Cập nhật: 06/12/2025):
         1. User nhập prompt
-        2. Gemini xử lý/tối ưu prompt → optimized query
-        3. Gửi optimized query đến Serper
-        4. Gemini tổng hợp kết quả
-        5. Gửi về user
+        2. Kiểm tra nếu là câu hỏi thời gian → trả về thời gian thực
+        3. Gemini xử lý/tối ưu prompt → optimized query
+        4. Gửi optimized query đến Serper
+        5. Gemini tổng hợp kết quả
+        6. Gửi về user
         
         Fallback: Nếu optimizer lỗi → dùng original query cho Serper
         """
@@ -1224,6 +1268,35 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 return
             
             logger.info(f"AI Search starting for query: {message}")
+            
+            # ========================================
+            # STEP 0: Kiểm tra nếu là câu hỏi thời gian
+            # ========================================
+            if self._is_time_query(message):
+                time_data = self._get_realtime_time()
+                if time_data.get('success'):
+                    reply = time_data['formatted']
+                    
+                    self.send_response(200)
+                    self._send_cors_headers()
+                    self.end_headers()
+                    
+                    response_json = json.dumps({
+                        "reply": reply,
+                        "model": "gemini-search"
+                    }, ensure_ascii=False)
+                    self.wfile.write(response_json.encode('utf-8'))
+                    
+                    save_ai_history(
+                        username=username,
+                        model="gemini-search",
+                        prompt=message,
+                        response=reply,
+                        metadata={'endpoint': 'realtime_api', 'powered_by': 'worldtimeapi'}
+                    )
+                    
+                    logger.info("AI Search v2 completed (powered_by: worldtimeapi, realtime)")
+                    return
             
             # ========================================
             # STEP 1: Gemini xử lý/tối ưu prompt
