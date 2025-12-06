@@ -366,6 +366,13 @@ export class NexoraXChat {
         this.currentChatId = chat.id;
         this.chats[chat.id] = chat;
         
+        // Reset homeInput sau khi lấy message
+        if (this.homeInput) {
+            this.homeInput.value = '';
+            this.homeInput.style.height = 'auto';
+            this.homeInput.style.height = '';
+        }
+        
         this.showChatScreen();
         
         if (this.dualChatMode) {
