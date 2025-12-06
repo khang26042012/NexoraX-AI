@@ -516,6 +516,13 @@ export class NexoraXChat {
     }
     
     async sendSingleMessage(message, attachedFiles, chat) {
+        // Auto-route sang Gemini nếu có ảnh và model không hỗ trợ
+        let useGeminiForImage = false;
+        if (this.hasImageFiles(attachedFiles) && !this.modelSupportsImages(this.selectedModel)) {
+            useGeminiForImage = true;
+            showNotification('Đã chuyển sang Gemini để phân tích ảnh', 'info');
+        }
+        
         // Tạo AI message placeholder
         const aiMessage = {
             id: Date.now() + '_ai',
@@ -523,42 +530,48 @@ export class NexoraXChat {
             content: '',
             timestamp: new Date().toISOString(),
             isTyping: true,
-            model: this.selectedModel
+            model: useGeminiForImage ? 'nexorax1' : this.selectedModel
         };
         
         chat.messages.push(aiMessage);
         this.renderMessage(aiMessage);
         
         try {
-            const modelType = this.getModelType(this.selectedModel);
-            
-            if (modelType === 'gemini') {
+            // Nếu cần route sang Gemini cho xử lý ảnh
+            if (useGeminiForImage) {
                 const conversationHistory = prepareConversationHistoryGemini(chat.messages, 20);
                 await getGeminiResponse(message, aiMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg));
-            } else if (modelType === 'llm7') {
-                const conversationHistory = prepareConversationHistoryLLM7(chat.messages, 15);
-                await getLLM7Response(this.selectedModel, message, aiMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg));
-            } else if (modelType === 'gpt5') {
-                const conversationHistory = prepareConversationHistoryLLM7(chat.messages, 15);
-                await getLLM7GPT5ChatResponse(message, aiMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg));
-            } else if (modelType === 'search') {
-                const conversationHistory = prepareConversationHistoryLLM7(chat.messages, 15);
+            } else {
+                const modelType = this.getModelType(this.selectedModel);
                 
-                // Kiểm tra xem tin nhắn có CẦN tìm kiếm web không
-                // Nếu là chào hỏi/small talk → gọi chat API thường (không search)
-                // Nếu cần thông tin thực tế → gọi search API
-                if (shouldSearchWeb(message)) {
-                    // Tin nhắn cần tìm kiếm web (tin tức, thông tin, giá cả...)
-                    console.log('[Gemini Search] Tin nhắn cần search web:', message);
-                    await getLLM7GeminiSearchResponse(message, aiMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg));
-                } else {
-                    // Tin nhắn không cần search (chào hỏi, small talk...)
-                    // Gọi Gemini 2.5 Flash Lite qua LLM7 chat API
-                    console.log('[Gemini Search] Tin nhắn không cần search, dùng chat thường:', message);
-                    await getLLM7Response('gemini-2.5-flash-lite', message, aiMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg));
+                if (modelType === 'gemini') {
+                    const conversationHistory = prepareConversationHistoryGemini(chat.messages, 20);
+                    await getGeminiResponse(message, aiMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg));
+                } else if (modelType === 'llm7') {
+                    const conversationHistory = prepareConversationHistoryLLM7(chat.messages, 15);
+                    await getLLM7Response(this.selectedModel, message, aiMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg));
+                } else if (modelType === 'gpt5') {
+                    const conversationHistory = prepareConversationHistoryLLM7(chat.messages, 15);
+                    await getLLM7GPT5ChatResponse(message, aiMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg));
+                } else if (modelType === 'search') {
+                    const conversationHistory = prepareConversationHistoryLLM7(chat.messages, 15);
+                    
+                    // Kiểm tra xem tin nhắn có CẦN tìm kiếm web không
+                    // Nếu là chào hỏi/small talk → gọi chat API thường (không search)
+                    // Nếu cần thông tin thực tế → gọi search API
+                    if (shouldSearchWeb(message)) {
+                        // Tin nhắn cần tìm kiếm web (tin tức, thông tin, giá cả...)
+                        console.log('[Gemini Search] Tin nhắn cần search web:', message);
+                        await getLLM7GeminiSearchResponse(message, aiMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg));
+                    } else {
+                        // Tin nhắn không cần search (chào hỏi, small talk...)
+                        // Gọi Gemini 2.5 Flash Lite qua LLM7 chat API
+                        console.log('[Gemini Search] Tin nhắn không cần search, dùng chat thường:', message);
+                        await getLLM7Response('gemini-2.5-flash-lite', message, aiMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg));
+                    }
+                } else if (modelType === 'image') {
+                    await getImageGenerationResponse(message, aiMessage, (msg) => this.updateMessage(msg));
                 }
-            } else if (modelType === 'image') {
-                await getImageGenerationResponse(message, aiMessage, (msg) => this.updateMessage(msg));
             }
         } finally {
             this.saveChats();
@@ -576,14 +589,32 @@ export class NexoraXChat {
             this.dualChatSecondaryModel = savedModels.secondaryModel;
         }
         
-        // Tạo 2 AI message placeholders
+        // Kiểm tra auto-route sang Gemini nếu có ảnh và model không hỗ trợ (TRƯỚC khi render)
+        const hasImages = this.hasImageFiles(attachedFiles);
+        const primaryNeedsRoute = hasImages && !this.modelSupportsImages(this.dualChatPrimaryModel);
+        const secondaryNeedsRoute = hasImages && !this.modelSupportsImages(this.dualChatSecondaryModel);
+        
+        // Xác định model thực tế cho mỗi panel
+        const effectivePrimaryModel = primaryNeedsRoute ? 'nexorax1' : this.dualChatPrimaryModel;
+        const effectiveSecondaryModel = secondaryNeedsRoute ? 'nexorax1' : this.dualChatSecondaryModel;
+        
+        // Hiển thị thông báo nếu cần route (chỉ 1 lần, chỉ rõ model nào)
+        if (primaryNeedsRoute && secondaryNeedsRoute) {
+            showNotification('Cả 2 model đều chuyển sang Gemini để phân tích ảnh', 'info');
+        } else if (primaryNeedsRoute) {
+            showNotification(`${this.getModelDisplayName(this.dualChatPrimaryModel)} chuyển sang Gemini để phân tích ảnh`, 'info');
+        } else if (secondaryNeedsRoute) {
+            showNotification(`${this.getModelDisplayName(this.dualChatSecondaryModel)} chuyển sang Gemini để phân tích ảnh`, 'info');
+        }
+        
+        // Tạo 2 AI message placeholders với model đã được route
         const primaryMessage = {
             id: Date.now() + '_primary',
             role: 'assistant',
             content: '',
             timestamp: new Date().toISOString(),
             isTyping: true,
-            model: this.dualChatPrimaryModel,
+            model: effectivePrimaryModel,
             isPrimary: true
         };
         
@@ -593,7 +624,7 @@ export class NexoraXChat {
             content: '',
             timestamp: new Date().toISOString(),
             isTyping: true,
-            model: this.dualChatSecondaryModel,
+            model: effectiveSecondaryModel,
             isPrimary: false
         };
         
@@ -602,8 +633,8 @@ export class NexoraXChat {
         this.renderMessage(secondaryMessage);
         
         try {
-            const primaryType = this.getModelType(this.dualChatPrimaryModel);
-            const secondaryType = this.getModelType(this.dualChatSecondaryModel);
+            const primaryType = primaryNeedsRoute ? 'gemini' : this.getModelType(this.dualChatPrimaryModel);
+            const secondaryType = secondaryNeedsRoute ? 'gemini' : this.getModelType(this.dualChatSecondaryModel);
             
             // DUAL CHAT: Mỗi model chỉ nhận được history của riêng nó
             // Primary: user messages + primary AI responses (isPrimary=true)
@@ -621,15 +652,15 @@ export class NexoraXChat {
             const conversationHistoryLLM7Secondary = prepareConversationHistoryLLM7(secondaryHistory, 15);
             
             await Promise.allSettled([
-                this.getDualModelResponse(this.dualChatPrimaryModel, primaryType, message, primaryMessage, attachedFiles, conversationHistoryGeminiPrimary, conversationHistoryLLM7Primary).catch(error => {
-                    console.error(`${this.dualChatPrimaryModel} Error in dual mode:`, error);
-                    primaryMessage.content = `Xin lỗi, ${this.getModelDisplayName(this.dualChatPrimaryModel)} gặp lỗi. Vui lòng thử lại.`;
+                this.getDualModelResponse(effectivePrimaryModel, primaryType, message, primaryMessage, attachedFiles, conversationHistoryGeminiPrimary, conversationHistoryLLM7Primary).catch(error => {
+                    console.error(`${effectivePrimaryModel} Error in dual mode:`, error);
+                    primaryMessage.content = `Xin lỗi, ${this.getModelDisplayName(effectivePrimaryModel)} gặp lỗi. Vui lòng thử lại.`;
                     primaryMessage.isTyping = false;
                     this.updateMessage(primaryMessage);
                 }),
-                this.getDualModelResponse(this.dualChatSecondaryModel, secondaryType, message, secondaryMessage, attachedFiles, conversationHistoryGeminiSecondary, conversationHistoryLLM7Secondary).catch(error => {
-                    console.error(`${this.dualChatSecondaryModel} Error in dual mode:`, error);
-                    secondaryMessage.content = `Xin lỗi, ${this.getModelDisplayName(this.dualChatSecondaryModel)} gặp lỗi. Vui lòng thử lại.`;
+                this.getDualModelResponse(effectiveSecondaryModel, secondaryType, message, secondaryMessage, attachedFiles, conversationHistoryGeminiSecondary, conversationHistoryLLM7Secondary).catch(error => {
+                    console.error(`${effectiveSecondaryModel} Error in dual mode:`, error);
+                    secondaryMessage.content = `Xin lỗi, ${this.getModelDisplayName(effectiveSecondaryModel)} gặp lỗi. Vui lòng thử lại.`;
                     secondaryMessage.isTyping = false;
                     this.updateMessage(secondaryMessage);
                 })
@@ -642,6 +673,7 @@ export class NexoraXChat {
     }
     
     async getDualModelResponse(modelId, modelType, message, aiMessage, files, conversationHistoryGemini, conversationHistoryLLM7) {
+        // Logic auto-route sang Gemini đã được xử lý trong sendDualChatMessage
         if (modelType === 'gemini') {
             return await getGeminiResponse(message, aiMessage, files, conversationHistoryGemini, (msg) => this.updateMessage(msg));
         } else if (modelType === 'search') {
