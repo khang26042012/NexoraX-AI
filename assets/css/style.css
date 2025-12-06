@@ -1966,13 +1966,113 @@ html, body {
     border-color: #404040 !important;
 }
 
+/* ========== SETTINGS BUTTON - CLEAR & VISIBLE ========== */
+.settings-btn-clear {
+    color: #374151;
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1));
+}
+
+.settings-btn-clear svg {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.settings-btn-clear:hover {
+    color: #1f2937;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.15));
+}
+
+.dark .settings-btn-clear {
+    color: #d1d5db;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.dark .settings-btn-clear:hover {
+    color: #f9fafb;
+    filter: drop-shadow(0 2px 4px rgba(168, 85, 247, 0.3));
+}
+
+#settingsBtn {
+    color: #374151 !important;
+}
+
 .dark #settingsBtn {
-    color: #a3a3a3 !important;
+    color: #d1d5db !important;
 }
 
 .dark #settingsBtn:hover {
-    color: #f5f5f5 !important;
-    background-color: #1e1e1e !important;
+    color: #f9fafb !important;
+    background-color: #374151 !important;
+}
+
+/* ========== AUTH CTA TEXT - ANIMATED GRADIENT ========== */
+@keyframes authTextSweep {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.auth-cta-text {
+    background: linear-gradient(90deg, #0f172a, #3b82f6, #8b5cf6, #0f172a);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    animation: authTextSweep 3s ease-in-out infinite;
+    font-weight: 600;
+}
+
+.auth-cta-icon {
+    color: #0f172a;
+    stroke: #0f172a;
+}
+
+.dark .auth-cta-text {
+    background: linear-gradient(90deg, #f8fafc, #60a5fa, #a78bfa, #f8fafc);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    animation: authTextSweep 3s ease-in-out infinite;
+}
+
+.dark .auth-cta-icon {
+    color: #f8fafc;
+    stroke: #f8fafc;
+}
+
+#openAuthBtn:hover .auth-cta-text {
+    animation-duration: 1.5s;
+}
+
+@supports not (background-clip: text) {
+    .auth-cta-text {
+        background: none;
+        color: #0f172a;
+    }
+    
+    .dark .auth-cta-text {
+        background: none;
+        color: #f8fafc;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .auth-cta-text {
+        animation: none;
+        background: none;
+        color: #0f172a;
+        -webkit-text-fill-color: #0f172a;
+    }
+    
+    .dark .auth-cta-text {
+        animation: none;
+        background: none;
+        color: #f8fafc;
+        -webkit-text-fill-color: #f8fafc;
+    }
 }
 
 /* Nút sidebar toggle mobile và desktop */

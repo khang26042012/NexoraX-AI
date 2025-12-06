@@ -5,7 +5,68 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 06/12/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
-✨ CẬP NHẬT MỚI NHẤT - 06/12/2025 (Buổi 29 - UI Sidebar + Rainbow Title):
+✨ CẬP NHẬT MỚI NHẤT - 06/12/2025 (Buổi 30 - Fix Logo Settings + Auth Text Effect):
+-----------------------------------------------------------------------------
+
+BL. ✅ FIX LOGO CÀI ĐẶT MỜ + THÊM HIỆU ỨNG CHỮ "ĐĂNG NHẬP"
+   
+   **VẤN ĐỀ 1: LOGO CÀI ĐẶT QUÁ MỜ**
+   - Vị trí: Nút settings (settingsBtn) ở sidebar footer
+   - Trước: SVG stroke icon mỏng, khó nhìn
+   
+   **VẤN ĐỀ 2: CHỮ "ĐĂNG NHẬP" CẦN HIỆU ỨNG**
+   - Yêu cầu: Light mode = màu đen + hiệu ứng, Dark mode = ngược lại
+   
+   **GIẢI PHÁP ĐÃ TRIỂN KHAI:**
+   
+   1. ✅ **Thay icon Settings bằng Filled Solid Icon:**
+      * Thay SVG stroke bằng filled icon (Heroicons solid gear)
+      * Icon lớn hơn: w-6 h-6 (24px)
+      * Thêm class settings-btn-clear
+      * Drop-shadow để tạo chiều sâu và rõ nét
+   
+   2. ✅ **CSS cho Settings Button:**
+      * Light mode: màu #374151, drop-shadow nhẹ
+      * Dark mode: màu #d1d5db, drop-shadow tím nhẹ
+      * Hover: màu đậm hơn + shadow mạnh hơn
+   
+   3. ✅ **Thêm hiệu ứng Gradient Animation cho chữ "Đăng nhập":**
+      * Thêm class auth-cta-text cho span "Đăng nhập"
+      * Thêm class auth-cta-icon cho icon login
+      * Animation authTextSweep: gradient chạy từ trái sang phải
+   
+   4. ✅ **CSS cho Auth CTA Text:**
+      * Light mode: Gradient đen → xanh → tím → đen
+      * Dark mode: Gradient trắng → xanh sáng → tím sáng → trắng
+      * Animation 3s, tăng tốc khi hover (1.5s)
+      * Hỗ trợ prefers-reduced-motion cho accessibility
+   
+   **DANH SÁCH FILE ĐÃ THAY ĐỔI:**
+   - index.html:
+     * Cập nhật settingsBtn với filled SVG icon + class settings-btn-clear
+     * Cập nhật openAuthBtn với class auth-cta-text và auth-cta-icon
+   - assets/css/style.css:
+     * Thêm CSS .settings-btn-clear (light/dark mode)
+     * Thêm @keyframes authTextSweep
+     * Thêm CSS .auth-cta-text và .auth-cta-icon (light/dark mode)
+     * Thêm @media prefers-reduced-motion
+   
+   5. ✅ **Fix tương thích Firefox (theo Architect Review):**
+      * Sử dụng color: transparent thay vì chỉ -webkit-text-fill-color
+      * Thêm @supports not (background-clip: text) fallback
+      * Đảm bảo contrast tốt trong cả light và dark mode
+   
+   **KẾT QUẢ:**
+   ✅ Icon settings rõ ràng hơn với filled icon
+   ✅ Chữ "Đăng nhập" có hiệu ứng gradient animation
+   ✅ Light mode: chữ đen với gradient xanh-tím
+   ✅ Dark mode: chữ trắng với gradient xanh-tím sáng
+   ✅ Accessibility: hỗ trợ reduced-motion
+   ✅ Tương thích Firefox và các trình duyệt không hỗ trợ background-clip
+   ✅ ARCHITECT REVIEW: PASS
+
+-----------------------------------------------------------------------------
+CẬP NHẬT TRƯỚC ĐÓ - 06/12/2025 (Buổi 29 - UI Sidebar + Rainbow Title):
 -----------------------------------------------------------------------------
 
 BK. ✅ CẢI TIẾN UI SIDEBAR + RAINBOW TITLE + FIX NÚT CONFIG
