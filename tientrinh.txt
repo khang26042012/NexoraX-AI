@@ -5,7 +5,50 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 07/12/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
-✨ CẬP NHẬT MỚI NHẤT - 07/12/2025 (Buổi 31 - Đổi Model AI Tạo Ảnh sang Nano Banana):
+✨ CẬP NHẬT MỚI NHẤT - 07/12/2025 (Buổi 32 - Đổi Model AI Tạo Ảnh sang Pollinations AI):
+-----------------------------------------------------------------------------
+
+BO. ✅ ĐỔI MODEL AI TẠO ẢNH TỪ NANO BANANA SANG POLLINATIONS AI (FLUX)
+   
+   **LÝ DO THAY ĐỔI:**
+   - Gemini API key đã hết quota (lỗi 429 - RESOURCE_EXHAUSTED)
+   - Cần model tạo ảnh free không giới hạn
+   - Pollinations AI là lựa chọn tốt nhất: 100% miễn phí, không cần API key, không giới hạn
+   
+   **GIẢI PHÁP ĐÃ TRIỂN KHAI:**
+   
+   1. ✅ **Cập nhật handle_pollinations_generate() trong server.py:**
+      * Đổi từ Gemini API sang Pollinations AI
+      * Endpoint: https://image.pollinations.ai/prompt/{encoded_prompt}?model=flux&width=1024&height=1024&enhance=true&nologo=true
+      * Không cần API key - đơn giản hơn Gemini
+      * Response trả về image_url trực tiếp
+      * Timeout: 120 giây
+      
+   2. ✅ **Cập nhật frontend (ai-api.js):**
+      * Đổi text hiển thị: "Đang tạo ảnh với Pollinations AI (Flux)..."
+      * Ưu tiên image_url trước, image_data làm fallback
+      
+   3. ✅ **Ưu điểm Pollinations AI:**
+      * Model Flux - chất lượng cao
+      * 100% miễn phí, không giới hạn
+      * Không cần API key
+      * Tích hợp đơn giản
+   
+   **DANH SÁCH FILE ĐÃ THAY ĐỔI:**
+   - server.py: Cập nhật handle_pollinations_generate() (dòng 2143-2215)
+     * Đổi từ Gemini API sang Pollinations AI
+     * API endpoint và payload hoàn toàn mới
+   - src/js/ai-api.js: Cập nhật getImageGenerationResponse() (dòng 413-415)
+     * Đổi text hiển thị và ưu tiên image_url
+   
+   **KẾT QUẢ:**
+   ✅ Server restart thành công
+   ✅ Sử dụng Pollinations AI (Flux) để tạo ảnh
+   ✅ Không cần API key - hoạt động ngay lập tức
+   ✅ Không giới hạn số lượng ảnh tạo
+
+-----------------------------------------------------------------------------
+CẬP NHẬT TRƯỚC ĐÓ - 07/12/2025 (Buổi 31 - Đổi Model AI Tạo Ảnh sang Nano Banana):
 -----------------------------------------------------------------------------
 
 BN. ✅ ĐỔI MODEL AI TẠO ẢNH TỪ POLLINATIONS AI SANG NANO BANANA (GEMINI 2.5 FLASH IMAGE)
