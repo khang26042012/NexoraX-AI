@@ -410,8 +410,8 @@ export async function getImageGenerationResponse(message, aiMessage, updateCallb
             console.warn('Enhance prompt error, using original prompt:', enhanceError);
         }
         
-        // Step 2: Generate image with Nano Banana (Imagen 3)
-        aiMessage.content = `✅ Prompt đã xử lý: "${enhancedPrompt}"\n\n🍌 Đang tạo ảnh với Nano Banana (Imagen 3)...`;
+        // Step 2: Generate image with Pollinations AI (Flux)
+        aiMessage.content = `✅ Prompt đã xử lý: "${enhancedPrompt}"\n\n🎨 Đang tạo ảnh với Pollinations AI (Flux)...`;
         updateCallback(aiMessage);
         
         const genUrl = API_ENDPOINTS.IMAGE_GEN;
@@ -433,10 +433,10 @@ export async function getImageGenerationResponse(message, aiMessage, updateCallb
         }
         
         const genData = await genResponse.json();
-        console.log('Image generated with Nano Banana:', genData);
+        console.log('Image generated with Pollinations AI:', genData);
         
-        // Get image source (support both image_data for Imagen 3 and image_url for fallback)
-        const imageSrc = genData.image_data || genData.image_url;
+        // Get image source (support both image_url for Pollinations and image_data for fallback)
+        const imageSrc = genData.image_url || genData.image_data;
         
         // Step 3: Display image
         const imageId = 'img-' + Date.now();
