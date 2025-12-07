@@ -2138,8 +2138,16 @@ Hãy xử lý prompt sau:"""
             self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
 
     def handle_pollinations_generate(self):
-        """Generate image using Pollinations AI - completely free, no API key needed"""
+        """Generate image using Nano Banana (Gemini 2.5 Flash Image) - Google's fast image generation model"""
         try:
+            # Get Gemini API key
+            gemini_key = get_api_key("gemini")
+            if not gemini_key:
+                self._send_json_error(401, 
+                    "Gemini API key chưa được cấu hình. Vui lòng thêm GEMINI_API_KEY vào environment variables.",
+                    "API_KEY_MISSING")
+                return
+            
             # Read request body
             content_length = int(self.headers['Content-Length'])
             post_data = self.rfile.read(content_length)
@@ -2147,69 +2155,110 @@ Hãy xử lý prompt sau:"""
             
             # Extract parameters
             prompt = request_data.get('prompt', '')
-            width = request_data.get('width', 1920)
-            height = request_data.get('height', 1080)
             
             if not prompt:
                 self._send_json_error(400, "Prompt không được để trống", "MISSING_PROMPT")
                 return
             
-            # Build Pollinations AI URL
-            # Using flux model for high quality
-            pollinations_url = f"https://image.pollinations.ai/prompt/{urllib.parse.quote(prompt)}"
-            params = {
-                'width': width,
-                'height': height,
-                'nologo': 'true',
-                'enhance': 'true',
-                'model': 'flux'
+            # Validate prompt length (prevent oversized payloads)
+            if len(prompt) > 5000:
+                self._send_json_error(400, "Prompt quá dài. Vui lòng giới hạn trong 5000 ký tự.", "PROMPT_TOO_LONG")
+                return
+            
+            # Build Nano Banana API URL (Gemini 2.5 Flash Image)
+            model_id = 'gemini-2.5-flash-image'
+            nano_banana_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={gemini_key}"
+            
+            # Prepare request payload - using generateContent API
+            nano_banana_payload = {
+                "contents": [{
+                    "parts": [{
+                        "text": prompt
+                    }]
+                }],
+                "generationConfig": {
+                    "responseModalities": ["TEXT", "IMAGE"]
+                }
             }
             
-            full_url = f"{pollinations_url}?{urllib.parse.urlencode(params)}"
+            logger.info(f"🍌 Đang gọi Nano Banana (Gemini 2.5 Flash Image) để vẽ: {prompt[:50]}...")
             
-            logger.info(f"Generating image with Pollinations AI: {prompt[:50]}...")
-            
-            # Fetch image from Pollinations API
-            pollinations_request = urllib.request.Request(
-                full_url,
+            # Call Nano Banana API
+            nano_banana_request = urllib.request.Request(
+                nano_banana_url,
+                data=json.dumps(nano_banana_payload).encode('utf-8'),
                 headers={
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                    'Content-Type': 'application/json'
                 }
             )
-            with urllib.request.urlopen(pollinations_request, timeout=60) as response:
-                image_data = response.read()
             
-            # Return image URL and status
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self._send_cors_headers()
-            self.end_headers()
+            with urllib.request.urlopen(nano_banana_request, timeout=90) as response:
+                nano_banana_response = response.read().decode('utf-8')
+                nano_banana_data = json.loads(nano_banana_response)
             
-            response_json = json.dumps({
-                "success": True,
-                "image_url": full_url,
-                "prompt": prompt,
-                "dimensions": f"{width}x{height}",
-                "model": "flux"
-            }, ensure_ascii=False)
-            self.wfile.write(response_json.encode('utf-8'))
+            # Extract image from response - Gemini generateContent format
+            if nano_banana_data.get('candidates') and len(nano_banana_data['candidates']) > 0:
+                candidate = nano_banana_data['candidates'][0]
+                if candidate.get('content') and candidate['content'].get('parts'):
+                    parts = candidate['content']['parts']
+                    
+                    base64_image = None
+                    mime_type = 'image/png'
+                    text_response = ''
+                    
+                    for part in parts:
+                        if part.get('inlineData'):
+                            base64_image = part['inlineData'].get('data', '')
+                            mime_type = part['inlineData'].get('mimeType', 'image/png')
+                        elif part.get('text'):
+                            text_response = part['text']
+                    
+                    if base64_image:
+                        # Create data URL for frontend display
+                        image_data_url = f"data:{mime_type};base64,{base64_image}"
+                        
+                        # Return response
+                        self.send_response(200)
+                        self.send_header('Content-Type', 'application/json')
+                        self._send_cors_headers()
+                        self.end_headers()
+                        
+                        response_json = json.dumps({
+                            "success": True,
+                            "image_data": image_data_url,
+                            "prompt": prompt,
+                            "text_response": text_response,
+                            "model": "nano-banana"
+                        }, ensure_ascii=False)
+                        self.wfile.write(response_json.encode('utf-8'))
+                        
+                        logger.info(f"✅ Ảnh đã tạo thành công với Nano Banana (Gemini 2.5 Flash Image)")
+                        return
+                    else:
+                        # No image in response, maybe just text
+                        logger.warning(f"Nano Banana không trả về ảnh, chỉ có text: {text_response[:100] if text_response else 'N/A'}")
+                        self._send_json_error(500, f"Không tạo được ảnh. {text_response if text_response else 'Có thể do prompt vi phạm chính sách an toàn'}", "NO_IMAGE_DATA")
+                        return
             
-            logger.info(f"Image generated successfully: {width}x{height}")
+            # No valid response
+            logger.warning(f"Nano Banana response không hợp lệ: {json.dumps(nano_banana_data, indent=2)[:500]}")
+            self._send_json_error(500, "Không tạo được ảnh (Có thể do prompt vi phạm chính sách an toàn)", "INVALID_RESPONSE")
             
         except urllib.error.HTTPError as e:
             try:
                 error_body = e.read().decode('utf-8')
-                self._send_json_error(e.code, f"Pollinations AI lỗi: {error_body}", "UPSTREAM_ERROR")
+                logger.error(f"Nano Banana HTTP error: {e.code} - {error_body}")
+                self._send_json_error(e.code, f"Nano Banana API lỗi: {error_body}", "UPSTREAM_ERROR")
             except:
-                self._send_json_error(e.code, f"Pollinations AI lỗi: {e.reason}", "UPSTREAM_ERROR")
+                self._send_json_error(e.code, f"Nano Banana API lỗi: {e.reason}", "UPSTREAM_ERROR")
         except urllib.error.URLError as e:
-            logger.error(f"Pollinations connection error: {e}")
-            self._send_json_error(502, "Không thể kết nối đến Pollinations AI", "CONNECTION_ERROR")
+            logger.error(f"Nano Banana connection error: {e}")
+            self._send_json_error(502, "Không thể kết nối đến Nano Banana API", "CONNECTION_ERROR")
         except json.JSONDecodeError as e:
-            logger.error(f"Invalid JSON in Pollinations request: {e}")
+            logger.error(f"Invalid JSON in Nano Banana request: {e}")
             self._send_json_error(400, "Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra định dạng JSON.", "INVALID_JSON")
         except Exception as e:
-            logger.error(f"Pollinations generate error: {e}")
+            logger.error(f"Nano Banana generate error: {e}")
             logger.error(f"Exception type: {type(e)}")
             logger.error(f"Exception args: {e.args}")
             self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")

@@ -1,11 +1,57 @@
 =============================================================================
-TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 06/12/2025
+TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 07/12/2025
 =============================================================================
 
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
-✨ CẬP NHẬT MỚI NHẤT - 06/12/2025 (Buổi 30 - System Prompt + NexoraX Info):
+✨ CẬP NHẬT MỚI NHẤT - 07/12/2025 (Buổi 31 - Đổi Model AI Tạo Ảnh sang Nano Banana):
+-----------------------------------------------------------------------------
+
+BN. ✅ ĐỔI MODEL AI TẠO ẢNH TỪ POLLINATIONS AI SANG NANO BANANA (GEMINI 2.5 FLASH IMAGE)
+   
+   **YÊU CẦU:**
+   - Đổi model AI tạo ảnh hiện tại (Pollinations AI) sang Nano Banana
+   - Sử dụng Gemini API key đã có trong config
+   
+   **GIẢI PHÁP ĐÃ TRIỂN KHAI:**
+   
+   1. ✅ **Cập nhật handle_pollinations_generate() trong server.py:**
+      * Model mới: gemini-2.5-flash-preview-image-generation (Nano Banana)
+      * Endpoint: https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent
+      * Sử dụng generateContent API thay vì predict API
+      * Response trả về base64 image thông qua inlineData
+      * Timeout tăng lên 90 giây để đảm bảo đủ thời gian tạo ảnh
+      
+   2. ✅ **Cập nhật frontend (ai-api.js):**
+      * Đổi text hiển thị: "Đang tạo ảnh với Nano Banana (Imagen 3)..."
+      * Hỗ trợ cả image_data (base64) và image_url (fallback)
+      * Download file đổi extension từ .jpg sang .png
+      
+   3. ✅ **Cấu trúc request payload mới:**
+      * contents: [{parts: [{text: prompt}]}]
+      * generationConfig: {responseModalities: ["TEXT", "IMAGE"]}
+      
+   4. ✅ **Xử lý response:**
+      * Trích xuất từ candidates[0].content.parts[]
+      * Tìm inlineData.data (base64 image) và text response
+      * Tạo data URL: data:{mimeType};base64,{base64_image}
+   
+   **DANH SÁCH FILE ĐÃ THAY ĐỔI:**
+   - server.py: Cập nhật handle_pollinations_generate() (dòng 2143-2267)
+     * Đổi từ Pollinations AI sang Nano Banana (Gemini 2.5 Flash Image)
+     * API endpoint và payload hoàn toàn mới
+   - src/js/ai-api.js: Cập nhật getImageGenerationResponse() (dòng 416-473)
+     * Đổi text hiển thị và hỗ trợ image_data response
+   
+   **KẾT QUẢ:**
+   ✅ Server restart thành công
+   ✅ Sử dụng Nano Banana (Gemini 2.5 Flash Image) để tạo ảnh
+   ✅ API key Gemini đã có sẵn, không cần thêm key mới
+   ✅ Logging với emoji 🍌 để dễ theo dõi
+
+-----------------------------------------------------------------------------
+CẬP NHẬT TRƯỚC ĐÓ - 06/12/2025 (Buổi 30 - System Prompt + NexoraX Info):
 -----------------------------------------------------------------------------
 
 BM. ✅ SYSTEM PROMPT CHUẨN NEXORAX + THÔNG TIN VỀ NEXORAX

@@ -410,8 +410,8 @@ export async function getImageGenerationResponse(message, aiMessage, updateCallb
             console.warn('Enhance prompt error, using original prompt:', enhanceError);
         }
         
-        // Step 2: Generate image
-        aiMessage.content = `✅ Prompt đã xử lý: "${enhancedPrompt}"\n\n🎨 Đang tạo ảnh với Pollinations AI...`;
+        // Step 2: Generate image with Nano Banana (Imagen 3)
+        aiMessage.content = `✅ Prompt đã xử lý: "${enhancedPrompt}"\n\n🍌 Đang tạo ảnh với Nano Banana (Imagen 3)...`;
         updateCallback(aiMessage);
         
         const genUrl = API_ENDPOINTS.IMAGE_GEN;
@@ -422,8 +422,7 @@ export async function getImageGenerationResponse(message, aiMessage, updateCallb
             },
             body: JSON.stringify({
                 prompt: enhancedPrompt,
-                width: 1920,
-                height: 1080
+                aspect_ratio: '1:1'
             }),
             signal: AbortSignal.timeout(API_TIMEOUTS.IMAGE_GEN)
         });
@@ -434,21 +433,24 @@ export async function getImageGenerationResponse(message, aiMessage, updateCallb
         }
         
         const genData = await genResponse.json();
-        console.log('Image generated:', genData);
+        console.log('Image generated with Nano Banana:', genData);
+        
+        // Get image source (support both image_data for Imagen 3 and image_url for fallback)
+        const imageSrc = genData.image_data || genData.image_url;
         
         // Step 3: Display image
         const imageId = 'img-' + Date.now();
         const imageHtml = `
             <div class="image-generation-result">
                 <div class="relative group">
-                    <img src="${genData.image_url}" 
+                    <img src="${imageSrc}" 
                          alt="Generated image" 
                          id="${imageId}"
                          class="w-full rounded-lg shadow-lg cursor-pointer transition-all"
                          loading="lazy">
                     <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 rounded-lg transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                        <a href="${genData.image_url}" 
-                           download="nexorax-generated-image.jpg"
+                        <a href="${imageSrc}" 
+                           download="nexorax-generated-image.png"
                            class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all transform hover:scale-105 shadow-xl">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
