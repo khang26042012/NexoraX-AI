@@ -1,11 +1,83 @@
 =============================================================================
-TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 07/12/2025
+TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 08/12/2025
 =============================================================================
 
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
-✨ CẬP NHẬT MỚI NHẤT - 07/12/2025 (Buổi 32 - Đổi Model AI Tạo Ảnh sang Pollinations AI):
+✨ CẬP NHẬT MỚI NHẤT - 08/12/2025 (Buổi 33 - Thêm Nút Dừng Stop Button):
+-----------------------------------------------------------------------------
+
+BP. ✅ THÊM NÚT DỪNG (STOP BUTTON) KHI AI ĐANG TRẢ LỜI
+   
+   **YÊU CẦU:**
+   - Thêm nút dừng để dừng AI khi đang suy nghĩ/trả lời
+   - Khi dừng: hiển thị "bạn đã dừng tin nhắn này"
+   - Nút gửi và nút dừng là CÙNG MỘT NÚT (icon arrow → icon square khi đang xử lý)
+   - Áp dụng cho cả dual chat mode
+   
+   **GIẢI PHÁP ĐÃ TRIỂN KHAI:**
+   
+   1. ✅ **Thêm AbortController và state management trong chat-app.js:**
+      * Thêm thuộc tính `abortController` để quản lý việc hủy request
+      * Thêm thuộc tính `isProcessing` để theo dõi trạng thái đang xử lý
+      * Thêm `dualAbortControllers` cho dual chat mode (object với 2 controllers)
+      * Method `stopGeneration()`: Hủy tất cả request đang chạy, hiển thị "bạn đã dừng tin nhắn này"
+      * Method `updateSendButtonState()`: Toggle giữa icon send/stop dựa trên isProcessing
+      
+   2. ✅ **Cập nhật ai-api.js để hỗ trợ AbortSignal:**
+      * Thêm parameter `signal` cho tất cả API functions: getLLM7Response, getLLM7GeminiSearchResponse, getImageGenerationResponse
+      * Truyền signal vào fetch options: `{ signal: signal }`
+      * Xử lý AbortError: Khi bị abort, throw error để caller xử lý
+      
+   3. ✅ **Cập nhật UI nút gửi/dừng trong index.html:**
+      * Thêm 2 SVG icons cho homeSendBtn: send-icon (arrow) và stop-icon (square)
+      * Thêm 2 SVG icons cho sendBtn: send-icon-main và stop-icon-main
+      * Icon send hiển thị mặc định, icon stop ẩn
+      * Khi isProcessing = true: ẩn send, hiện stop
+      
+   4. ✅ **Thêm CSS cho nút send/stop trong style.css:**
+      * Class `.send-icon`, `.stop-icon`: display block/none mặc định
+      * Class `.is-processing .send-icon`: display none
+      * Class `.is-processing .stop-icon`: display block
+      * Animation pulse cho stop icon khi đang xử lý
+      
+   5. ✅ **Cập nhật event-handlers.js cho logic chuyển đổi:**
+      * Kiểm tra `isProcessing` khi click nút send
+      * Nếu đang xử lý → gọi `stopGeneration()` thay vì gửi tin nhắn
+      * Nếu không → gửi tin nhắn bình thường
+      * Áp dụng cho cả homeSendBtn và sendBtn
+      
+   6. ✅ **Xử lý dual chat mode:**
+      * Khi gọi dual mode: tạo 2 AbortController riêng biệt
+      * stopGeneration() abort cả 2 controller
+      * Cả 2 response đều hiển thị "bạn đã dừng tin nhắn này"
+   
+   **DANH SÁCH FILE ĐÃ THAY ĐỔI:**
+   - src/js/chat-app.js: 
+     * Thêm abortController, isProcessing, dualAbortControllers
+     * Thêm method stopGeneration(), updateSendButtonState()
+     * Cập nhật sendMessage() để sử dụng AbortController
+   - src/js/ai-api.js:
+     * Thêm parameter signal cho getLLM7Response, getLLM7GeminiSearchResponse, getImageGenerationResponse
+     * Truyền signal vào fetch options
+   - index.html:
+     * Thêm SVG icons send-icon, stop-icon cho homeSendBtn
+     * Thêm SVG icons send-icon-main, stop-icon-main cho sendBtn
+   - src/js/event-handlers.js:
+     * Thêm logic kiểm tra isProcessing và gọi stopGeneration()
+   - assets/css/style.css:
+     * Thêm CSS cho .send-icon, .stop-icon
+     * Thêm CSS cho .is-processing state
+   
+   **KẾT QUẢ:**
+   ✅ Nút send chuyển thành nút stop (icon vuông) khi AI đang xử lý
+   ✅ Click stop → dừng AI và hiển thị "bạn đã dừng tin nhắn này"
+   ✅ Hoạt động với cả single chat và dual chat mode
+   ✅ UI smooth với animation pulse cho icon stop
+
+-----------------------------------------------------------------------------
+CẬP NHẬT TRƯỚC ĐÓ - 07/12/2025 (Buổi 32 - Đổi Model AI Tạo Ảnh sang Pollinations AI):
 -----------------------------------------------------------------------------
 
 BO. ✅ ĐỔI MODEL AI TẠO ẢNH TỪ NANO BANANA SANG POLLINATIONS AI (FLUX)
