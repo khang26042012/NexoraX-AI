@@ -417,11 +417,16 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <!-- Right side: Send button -->
+                                    <!-- Right side: Send/Stop button -->
                                     <button id="homeSendBtn" class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-700 transition-colors shadow-lg">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-icon lucide-arrow-up text-white">
+                                        <!-- Send icon (mũi tên lên) - hiển thị khi không xử lý -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="send-icon text-white">
                                             <path d="m5 12 7-7 7 7"/>
                                             <path d="M12 19V5"/>
+                                        </svg>
+                                        <!-- Stop icon (hình vuông) - hiển thị khi đang xử lý -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" class="stop-icon text-white">
+                                            <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/>
                                         </svg>
                                     </button>
                                 </div>
@@ -733,11 +738,16 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <!-- Right side: Send button -->
+                                    <!-- Right side: Send/Stop button -->
                                     <button id="sendBtn" class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-700 transition-colors shadow-lg">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-icon lucide-arrow-up text-white">
+                                        <!-- Send icon (mũi tên lên) - hiển thị khi không xử lý -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="send-icon text-white">
                                             <path d="m5 12 7-7 7 7"/>
                                             <path d="M12 19V5"/>
+                                        </svg>
+                                        <!-- Stop icon (hình vuông) - hiển thị khi đang xử lý -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" class="stop-icon text-white">
+                                            <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/>
                                         </svg>
                                     </button>
                                 </div>

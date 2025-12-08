@@ -124,6 +124,11 @@ export class NexoraXChat {
         this.dualChatPrimaryModel = dualModels.primaryModel;
         this.dualChatSecondaryModel = dualModels.secondaryModel;
         
+        // Stop Button - AbortController cho việc dừng request
+        this.abortController = null;
+        this.isProcessing = false;
+        this.dualAbortControllers = { primary: null, secondary: null };
+        
         // Initialize
         this.initializeElements();
         this.setupEventListeners();
@@ -516,6 +521,14 @@ export class NexoraXChat {
     }
     
     async sendSingleMessage(message, attachedFiles, chat) {
+        // Tạo AbortController mới cho request này
+        this.abortController = new AbortController();
+        const signal = this.abortController.signal;
+        
+        // Đặt trạng thái đang xử lý
+        this.isProcessing = true;
+        this.updateSendButtonState();
+        
         // Auto-route sang Gemini nếu có ảnh và model không hỗ trợ
         let useGeminiForImage = false;
         if (this.hasImageFiles(attachedFiles) && !this.modelSupportsImages(this.selectedModel)) {
@@ -540,19 +553,19 @@ export class NexoraXChat {
             // Nếu cần route sang Gemini cho xử lý ảnh
             if (useGeminiForImage) {
                 const conversationHistory = prepareConversationHistoryGemini(chat.messages, 20);
-                await getGeminiResponse(message, aiMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg));
+                await getGeminiResponse(message, aiMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg), signal);
             } else {
                 const modelType = this.getModelType(this.selectedModel);
                 
                 if (modelType === 'gemini') {
                     const conversationHistory = prepareConversationHistoryGemini(chat.messages, 20);
-                    await getGeminiResponse(message, aiMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg));
+                    await getGeminiResponse(message, aiMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg), signal);
                 } else if (modelType === 'llm7') {
                     const conversationHistory = prepareConversationHistoryLLM7(chat.messages, 15);
-                    await getLLM7Response(this.selectedModel, message, aiMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg));
+                    await getLLM7Response(this.selectedModel, message, aiMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg), signal);
                 } else if (modelType === 'gpt5') {
                     const conversationHistory = prepareConversationHistoryLLM7(chat.messages, 15);
-                    await getLLM7GPT5ChatResponse(message, aiMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg));
+                    await getLLM7GPT5ChatResponse(message, aiMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg), signal);
                 } else if (modelType === 'search') {
                     const conversationHistory = prepareConversationHistoryLLM7(chat.messages, 15);
                     
@@ -562,23 +575,46 @@ export class NexoraXChat {
                     if (shouldSearchWeb(message)) {
                         // Tin nhắn cần tìm kiếm web (tin tức, thông tin, giá cả...)
                         console.log('[Gemini Search] Tin nhắn cần search web:', message);
-                        await getLLM7GeminiSearchResponse(message, aiMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg));
+                        await getLLM7GeminiSearchResponse(message, aiMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg), signal);
                     } else {
                         // Tin nhắn không cần search (chào hỏi, small talk...)
                         // Gọi Gemini 2.5 Flash Lite qua LLM7 chat API
                         console.log('[Gemini Search] Tin nhắn không cần search, dùng chat thường:', message);
-                        await getLLM7Response('gemini-2.5-flash-lite', message, aiMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg));
+                        await getLLM7Response('gemini-2.5-flash-lite', message, aiMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg), signal);
                     }
                 } else if (modelType === 'image') {
-                    await getImageGenerationResponse(message, aiMessage, (msg) => this.updateMessage(msg));
+                    await getImageGenerationResponse(message, aiMessage, (msg) => this.updateMessage(msg), signal);
                 }
             }
+        } catch (error) {
+            // Xử lý khi user dừng request
+            if (error.name === 'AbortError') {
+                console.log('[Stop] Request đã bị dừng bởi người dùng');
+                aiMessage.content = '⏹️ Bạn đã dừng tin nhắn này';
+                aiMessage.isTyping = false;
+                this.updateMessage(aiMessage);
+            } else {
+                // Lỗi khác - throw lại để xử lý ở chỗ khác
+                throw error;
+            }
         } finally {
+            // Reset trạng thái và lưu chat
+            this.isProcessing = false;
+            this.abortController = null;
+            this.updateSendButtonState();
             this.saveChats();
         }
     }
     
     async sendDualChatMessage(message, attachedFiles, chat) {
+        // Tạo AbortControllers mới cho dual chat
+        this.dualAbortControllers.primary = new AbortController();
+        this.dualAbortControllers.secondary = new AbortController();
+        
+        // Đặt trạng thái đang xử lý
+        this.isProcessing = true;
+        this.updateSendButtonState();
+        
         // QUAN TRỌNG: Reload models từ localStorage để đảm bảo dùng đúng model đã chọn
         const savedModels = loadDualChatModels();
         // Chỉ cập nhật nếu có giá trị hợp lệ, nếu không giữ nguyên giá trị hiện tại
@@ -652,38 +688,57 @@ export class NexoraXChat {
             const conversationHistoryLLM7Secondary = prepareConversationHistoryLLM7(secondaryHistory, 15);
             
             await Promise.allSettled([
-                this.getDualModelResponse(effectivePrimaryModel, primaryType, message, primaryMessage, attachedFiles, conversationHistoryGeminiPrimary, conversationHistoryLLM7Primary).catch(error => {
-                    console.error(`${effectivePrimaryModel} Error in dual mode:`, error);
-                    primaryMessage.content = `Xin lỗi, ${this.getModelDisplayName(effectivePrimaryModel)} gặp lỗi. Vui lòng thử lại.`;
-                    primaryMessage.isTyping = false;
-                    this.updateMessage(primaryMessage);
+                this.getDualModelResponse(effectivePrimaryModel, primaryType, message, primaryMessage, attachedFiles, conversationHistoryGeminiPrimary, conversationHistoryLLM7Primary, this.dualAbortControllers.primary.signal).catch(error => {
+                    if (error.name === 'AbortError') {
+                        console.log('[Stop] Primary request đã bị dừng');
+                        primaryMessage.content = '⏹️ Bạn đã dừng tin nhắn này';
+                        primaryMessage.isTyping = false;
+                        this.updateMessage(primaryMessage);
+                    } else {
+                        console.error(`${effectivePrimaryModel} Error in dual mode:`, error);
+                        primaryMessage.content = `Xin lỗi, ${this.getModelDisplayName(effectivePrimaryModel)} gặp lỗi. Vui lòng thử lại.`;
+                        primaryMessage.isTyping = false;
+                        this.updateMessage(primaryMessage);
+                    }
                 }),
-                this.getDualModelResponse(effectiveSecondaryModel, secondaryType, message, secondaryMessage, attachedFiles, conversationHistoryGeminiSecondary, conversationHistoryLLM7Secondary).catch(error => {
-                    console.error(`${effectiveSecondaryModel} Error in dual mode:`, error);
-                    secondaryMessage.content = `Xin lỗi, ${this.getModelDisplayName(effectiveSecondaryModel)} gặp lỗi. Vui lòng thử lại.`;
-                    secondaryMessage.isTyping = false;
-                    this.updateMessage(secondaryMessage);
+                this.getDualModelResponse(effectiveSecondaryModel, secondaryType, message, secondaryMessage, attachedFiles, conversationHistoryGeminiSecondary, conversationHistoryLLM7Secondary, this.dualAbortControllers.secondary.signal).catch(error => {
+                    if (error.name === 'AbortError') {
+                        console.log('[Stop] Secondary request đã bị dừng');
+                        secondaryMessage.content = '⏹️ Bạn đã dừng tin nhắn này';
+                        secondaryMessage.isTyping = false;
+                        this.updateMessage(secondaryMessage);
+                    } else {
+                        console.error(`${effectiveSecondaryModel} Error in dual mode:`, error);
+                        secondaryMessage.content = `Xin lỗi, ${this.getModelDisplayName(effectiveSecondaryModel)} gặp lỗi. Vui lòng thử lại.`;
+                        secondaryMessage.isTyping = false;
+                        this.updateMessage(secondaryMessage);
+                    }
                 })
             ]);
         } finally {
+            // Reset trạng thái và lưu chat
+            this.isProcessing = false;
+            this.dualAbortControllers.primary = null;
+            this.dualAbortControllers.secondary = null;
+            this.updateSendButtonState();
             this.saveChats();
             // Update dual chat lock state sau khi gửi tin nhắn
             updateDualChatLockState(chat, this.dualChatMode);
         }
     }
     
-    async getDualModelResponse(modelId, modelType, message, aiMessage, files, conversationHistoryGemini, conversationHistoryLLM7) {
+    async getDualModelResponse(modelId, modelType, message, aiMessage, files, conversationHistoryGemini, conversationHistoryLLM7, signal = null) {
         // Logic auto-route sang Gemini đã được xử lý trong sendDualChatMessage
         if (modelType === 'gemini') {
-            return await getGeminiResponse(message, aiMessage, files, conversationHistoryGemini, (msg) => this.updateMessage(msg));
+            return await getGeminiResponse(message, aiMessage, files, conversationHistoryGemini, (msg) => this.updateMessage(msg), signal);
         } else if (modelType === 'search') {
-            return await getLLM7GeminiSearchResponse(message, aiMessage, files, conversationHistoryLLM7, (msg) => this.updateMessage(msg));
+            return await getLLM7GeminiSearchResponse(message, aiMessage, files, conversationHistoryLLM7, (msg) => this.updateMessage(msg), signal);
         } else if (modelType === 'llm7') {
-            return await getLLM7Response(modelId, message, aiMessage, files, conversationHistoryLLM7, (msg) => this.updateMessage(msg));
+            return await getLLM7Response(modelId, message, aiMessage, files, conversationHistoryLLM7, (msg) => this.updateMessage(msg), signal);
         } else if (modelType === 'gpt5') {
-            return await getLLM7GPT5ChatResponse(message, aiMessage, files, conversationHistoryLLM7, (msg) => this.updateMessage(msg));
+            return await getLLM7GPT5ChatResponse(message, aiMessage, files, conversationHistoryLLM7, (msg) => this.updateMessage(msg), signal);
         } else if (modelType === 'image') {
-            return await getImageGenerationResponse(message, aiMessage, (msg) => this.updateMessage(msg));
+            return await getImageGenerationResponse(message, aiMessage, (msg) => this.updateMessage(msg), signal);
         }
     }
     
@@ -1274,6 +1329,59 @@ export class NexoraXChat {
         delete element.dataset.cancelled;
         
         if (onComplete) onComplete();
+    }
+    
+    // ===================================
+    // STOP GENERATION - Dừng request AI
+    // ===================================
+    
+    /**
+     * Dừng tất cả các request AI đang chạy
+     * Cập nhật UI và hiển thị tin nhắn "đã dừng"
+     */
+    stopGeneration() {
+        console.log('[Stop] Đang dừng tất cả requests...');
+        
+        // Abort single chat request
+        if (this.abortController) {
+            this.abortController.abort();
+            this.abortController = null;
+        }
+        
+        // Abort dual chat requests
+        if (this.dualAbortControllers.primary) {
+            this.dualAbortControllers.primary.abort();
+            this.dualAbortControllers.primary = null;
+        }
+        if (this.dualAbortControllers.secondary) {
+            this.dualAbortControllers.secondary.abort();
+            this.dualAbortControllers.secondary = null;
+        }
+        
+        // Reset trạng thái xử lý
+        this.isProcessing = false;
+        this.updateSendButtonState();
+        
+        console.log('[Stop] Đã dừng tất cả requests thành công');
+    }
+    
+    /**
+     * Cập nhật trạng thái hiển thị của nút Send/Stop
+     * Toggle giữa icon mũi tên (send) và icon vuông (stop)
+     */
+    updateSendButtonState() {
+        const homeSendBtn = document.getElementById('homeSendBtn');
+        const sendBtn = document.getElementById('sendBtn');
+        
+        if (this.isProcessing) {
+            // Đang xử lý - hiển thị nút stop
+            homeSendBtn?.classList.add('is-processing');
+            sendBtn?.classList.add('is-processing');
+        } else {
+            // Không xử lý - hiển thị nút send
+            homeSendBtn?.classList.remove('is-processing');
+            sendBtn?.classList.remove('is-processing');
+        }
     }
     
     // ===================================

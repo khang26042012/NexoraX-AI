@@ -61,8 +61,9 @@ export function prepareConversationHistoryLLM7(messages, limit = 15) {
  * @param {Array} files - Files đính kèm (nếu có)
  * @param {Array} conversationHistory - Lịch sử conversation
  * @param {Function} updateCallback - Callback để update message
+ * @param {AbortSignal} signal - Signal để abort request (tùy chọn)
  */
-export async function getGeminiResponse(message, aiMessage, files, conversationHistory, updateCallback) {
+export async function getGeminiResponse(message, aiMessage, files, conversationHistory, updateCallback, signal = null) {
     try {
         const url = API_ENDPOINTS.GEMINI;
         
@@ -133,7 +134,7 @@ export async function getGeminiResponse(message, aiMessage, files, conversationH
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(requestBody),
-            signal: AbortSignal.timeout(API_TIMEOUTS.GEMINI)
+            signal: signal || AbortSignal.timeout(API_TIMEOUTS.GEMINI)
         });
         
         if (!response.ok) {
@@ -165,6 +166,11 @@ export async function getGeminiResponse(message, aiMessage, files, conversationH
     } catch (error) {
         console.error('Gemini API Error:', error);
         
+        // Kiểm tra nếu là AbortError (người dùng dừng request)
+        if (error.name === 'AbortError') {
+            throw error; // Ném lại để xử lý ở tầng trên
+        }
+        
         let errorMessage = 'Xin lỗi, đã có lỗi xảy ra khi gọi Gemini API.';
         if (error.message) {
             errorMessage += ` Chi tiết: ${error.message}`;
@@ -188,8 +194,9 @@ export async function getGeminiResponse(message, aiMessage, files, conversationH
  * @param {Array} files - Files đính kèm (nếu có)
  * @param {Array} conversationHistory - Lịch sử conversation
  * @param {Function} updateCallback - Callback để update message
+ * @param {AbortSignal} signal - Signal để abort request (tùy chọn)
  */
-export async function getLLM7GPT5ChatResponse(message, aiMessage, files, conversationHistory, updateCallback) {
+export async function getLLM7GPT5ChatResponse(message, aiMessage, files, conversationHistory, updateCallback, signal = null) {
     try {
         const url = API_ENDPOINTS.LLM7_GPT5_CHAT;
         
@@ -205,7 +212,7 @@ export async function getLLM7GPT5ChatResponse(message, aiMessage, files, convers
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(requestBody),
-            signal: AbortSignal.timeout(API_TIMEOUTS.LLM7)
+            signal: signal || AbortSignal.timeout(API_TIMEOUTS.LLM7)
         });
         
         if (!response.ok) {
@@ -224,6 +231,11 @@ export async function getLLM7GPT5ChatResponse(message, aiMessage, files, convers
         
     } catch (error) {
         console.error('LLM7 GPT-5 Error:', error);
+        
+        // Kiểm tra nếu là AbortError (người dùng dừng request)
+        if (error.name === 'AbortError') {
+            throw error; // Ném lại để xử lý ở tầng trên
+        }
         
         let errorMessage = 'Xin lỗi, đã có lỗi xảy ra khi gọi GPT-5.';
         if (error.message) {
@@ -244,8 +256,9 @@ export async function getLLM7GPT5ChatResponse(message, aiMessage, files, convers
  * @param {Array} files - Files đính kèm (nếu có)
  * @param {Array} conversationHistory - Lịch sử conversation
  * @param {Function} updateCallback - Callback để update message
+ * @param {AbortSignal} signal - Signal để abort request (tùy chọn)
  */
-export async function getLLM7GeminiSearchResponse(message, aiMessage, files, conversationHistory, updateCallback) {
+export async function getLLM7GeminiSearchResponse(message, aiMessage, files, conversationHistory, updateCallback, signal = null) {
     try {
         const url = API_ENDPOINTS.LLM7_GEMINI_SEARCH;
         
@@ -261,7 +274,7 @@ export async function getLLM7GeminiSearchResponse(message, aiMessage, files, con
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(requestBody),
-            signal: AbortSignal.timeout(API_TIMEOUTS.LLM7)
+            signal: signal || AbortSignal.timeout(API_TIMEOUTS.LLM7)
         });
         
         if (!response.ok) {
@@ -281,6 +294,11 @@ export async function getLLM7GeminiSearchResponse(message, aiMessage, files, con
         
     } catch (error) {
         console.error('LLM7 Gemini Search Error:', error);
+        
+        // Kiểm tra nếu là AbortError (người dùng dừng request)
+        if (error.name === 'AbortError') {
+            throw error; // Ném lại để xử lý ở tầng trên
+        }
         
         let errorMessage = 'Xin lỗi, đã có lỗi xảy ra khi gọi Gemini Search.';
         if (error.message) {
@@ -302,8 +320,9 @@ export async function getLLM7GeminiSearchResponse(message, aiMessage, files, con
  * @param {Array} files - Files đính kèm (nếu có)
  * @param {Array} conversationHistory - Lịch sử conversation
  * @param {Function} updateCallback - Callback để update message
+ * @param {AbortSignal} signal - Signal để abort request (tùy chọn)
  */
-export async function getLLM7Response(modelId, message, aiMessage, files, conversationHistory, updateCallback) {
+export async function getLLM7Response(modelId, message, aiMessage, files, conversationHistory, updateCallback, signal = null) {
     try {
         const url = API_ENDPOINTS.LLM7_CHAT;
         
@@ -320,7 +339,7 @@ export async function getLLM7Response(modelId, message, aiMessage, files, conver
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(requestBody),
-            signal: AbortSignal.timeout(API_TIMEOUTS.LLM7)
+            signal: signal || AbortSignal.timeout(API_TIMEOUTS.LLM7)
         });
         
         if (!response.ok) {
@@ -357,6 +376,11 @@ export async function getLLM7Response(modelId, message, aiMessage, files, conver
     } catch (error) {
         console.error(`LLM7 ${modelId} Error:`, error);
         
+        // Kiểm tra nếu là AbortError (người dùng dừng request)
+        if (error.name === 'AbortError') {
+            throw error; // Ném lại để xử lý ở tầng trên
+        }
+        
         let errorMessage = `Xin lỗi, đã có lỗi xảy ra khi gọi ${modelId}.`;
         if (error.message) {
             errorMessage += ` Chi tiết: ${error.message}`;
@@ -375,8 +399,12 @@ export async function getLLM7Response(modelId, message, aiMessage, files, conver
 
 /**
  * Gọi Image Generation API
+ * @param {string} message - User message (prompt)
+ * @param {Object} aiMessage - AI message object để update
+ * @param {Function} updateCallback - Callback để update message
+ * @param {AbortSignal} signal - Signal để abort request (tùy chọn)
  */
-export async function getImageGenerationResponse(message, aiMessage, updateCallback) {
+export async function getImageGenerationResponse(message, aiMessage, updateCallback, signal = null) {
     try {
         // Step 1: Enhance prompt với AI
         let enhancedPrompt = message;
@@ -392,7 +420,7 @@ export async function getImageGenerationResponse(message, aiMessage, updateCallb
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ prompt: message }),
-                signal: AbortSignal.timeout(API_TIMEOUTS.ENHANCE_PROMPT)
+                signal: signal || AbortSignal.timeout(API_TIMEOUTS.ENHANCE_PROMPT)
             });
             
             if (enhanceResponse.ok) {
@@ -424,7 +452,7 @@ export async function getImageGenerationResponse(message, aiMessage, updateCallb
                 prompt: enhancedPrompt,
                 aspect_ratio: '1:1'
             }),
-            signal: AbortSignal.timeout(API_TIMEOUTS.IMAGE_GEN)
+            signal: signal || AbortSignal.timeout(API_TIMEOUTS.IMAGE_GEN)
         });
         
         if (!genResponse.ok) {
@@ -471,6 +499,11 @@ export async function getImageGenerationResponse(message, aiMessage, updateCallb
         
     } catch (error) {
         console.error('Image Generation Error:', error);
+        
+        // Kiểm tra nếu là AbortError (người dùng dừng request)
+        if (error.name === 'AbortError') {
+            throw error; // Ném lại để xử lý ở tầng trên
+        }
         
         let errorMessage = 'Xin lỗi, đã có lỗi xảy ra khi tạo ảnh. ';
         if (error.message) {

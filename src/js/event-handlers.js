@@ -56,6 +56,12 @@ export function setupMainEventListeners(app) {
     const homeSendBtn = document.getElementById('homeSendBtn');
     if (homeSendBtn) {
         const handleHomeSend = () => {
+            // Kiểm tra nếu đang xử lý -> dừng request
+            if (app.isProcessing) {
+                app.stopGeneration();
+                return;
+            }
+            // Nếu không đang xử lý -> gửi tin nhắn
             if (app.homeInput && app.homeInput.value.trim()) {
                 app.startNewChat(app.homeInput.value.trim());
             }
@@ -95,6 +101,12 @@ export function setupMainEventListeners(app) {
     const sendBtn = document.getElementById('sendBtn');
     if (sendBtn) {
         const handleSend = () => {
+            // Kiểm tra nếu đang xử lý -> dừng request
+            if (app.isProcessing) {
+                app.stopGeneration();
+                return;
+            }
+            // Nếu không đang xử lý -> gửi tin nhắn
             if (app.chatInput && (app.chatInput.value.trim() || app.selectedFiles.size > 0)) {
                 app.sendMessage(app.chatInput.value.trim());
             }

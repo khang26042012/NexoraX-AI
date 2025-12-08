@@ -3742,3 +3742,46 @@ body.dark-mode .image-generation-result img {
 .dark *:focus-visible {
     outline: none !important;
 }
+
+/* ===========================
+   STOP BUTTON - Toggle Send/Stop Icons
+   =========================== */
+
+/* Send icon - hiển thị mặc định */
+.send-icon {
+    display: block;
+}
+
+/* Stop icon - ẩn mặc định */
+.stop-icon {
+    display: none;
+}
+
+/* Khi đang xử lý (is-processing) - đảo ngược hiển thị */
+.is-processing .send-icon {
+    display: none;
+}
+
+.is-processing .stop-icon {
+    display: block;
+}
+
+/* Hover effect khi đang xử lý - nền đỏ */
+.is-processing {
+    background-color: #ef4444 !important;
+}
+
+.is-processing:hover {
+    background-color: #dc2626 !important;
+}
+
+/* Transition mượt mà cho button */
+#homeSendBtn,
+#sendBtn {
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+#homeSendBtn:active,
+#sendBtn:active {
+    transform: scale(0.95);
+}
