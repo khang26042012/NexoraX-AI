@@ -510,6 +510,36 @@ export function setupAuthEventListeners(app) {
 }
 
 // ===================================
+// MESSAGE ACTIONS EVENT LISTENER
+// ===================================
+
+/**
+ * Setup event delegation cho message action buttons (like, dislike, copy, regenerate)
+ * Sử dụng event delegation để xử lý buttons được thêm dynamically
+ * @param {Object} app - Instance của NexoraXChat
+ */
+export function setupMessageActionsListener(app) {
+    const messagesContainer = document.getElementById('messagesContainer');
+    if (!messagesContainer) return;
+    
+    // Event delegation - listen ở container level
+    messagesContainer.addEventListener('click', (e) => {
+        const actionBtn = e.target.closest('.action-btn');
+        if (!actionBtn) return;
+        
+        const action = actionBtn.dataset.action;
+        const actionsContainer = actionBtn.closest('.message-actions');
+        const messageId = actionsContainer?.dataset.messageId;
+        
+        if (action && messageId) {
+            e.preventDefault();
+            e.stopPropagation();
+            app.handleMessageAction(action, messageId, actionBtn);
+        }
+    });
+}
+
+// ===================================
 // TEXTAREA AUTO-EXPAND
 // ===================================
 

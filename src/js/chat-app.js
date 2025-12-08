@@ -84,7 +84,8 @@ import {
     setupFileUploadListeners,
     setupVoiceRecordingListeners,
     setupAuthEventListeners,
-    setupTextareaAutoExpand
+    setupTextareaAutoExpand,
+    setupMessageActionsListener
 } from './event-handlers.js';
 import { 
     STORAGE_KEYS, 
@@ -183,6 +184,7 @@ export class NexoraXChat {
         setupVoiceRecordingListeners(this);
         setupAuthEventListeners(this);
         setupTextareaAutoExpand();
+        setupMessageActionsListener(this);
     }
     
     // ===================================
@@ -543,7 +545,9 @@ export class NexoraXChat {
             content: '',
             timestamp: new Date().toISOString(),
             isTyping: true,
-            model: useGeminiForImage ? 'nexorax1' : this.selectedModel
+            model: useGeminiForImage ? 'nexorax1' : this.selectedModel,
+            sourceUserPrompt: message,
+            sourceUserFiles: attachedFiles.length > 0 ? attachedFiles : null
         };
         
         chat.messages.push(aiMessage);
@@ -651,7 +655,9 @@ export class NexoraXChat {
             timestamp: new Date().toISOString(),
             isTyping: true,
             model: effectivePrimaryModel,
-            isPrimary: true
+            isPrimary: true,
+            sourceUserPrompt: message,
+            sourceUserFiles: attachedFiles.length > 0 ? attachedFiles : null
         };
         
         const secondaryMessage = {
@@ -661,7 +667,9 @@ export class NexoraXChat {
             timestamp: new Date().toISOString(),
             isTyping: true,
             model: effectiveSecondaryModel,
-            isPrimary: false
+            isPrimary: false,
+            sourceUserPrompt: message,
+            sourceUserFiles: attachedFiles.length > 0 ? attachedFiles : null
         };
         
         chat.messages.push(primaryMessage, secondaryMessage);
@@ -1381,6 +1389,227 @@ export class NexoraXChat {
             // Không xử lý - hiển thị nút send
             homeSendBtn?.classList.remove('is-processing');
             sendBtn?.classList.remove('is-processing');
+        }
+    }
+    
+    // ===================================
+    // MESSAGE ACTIONS - Like, Dislike, Copy, Regenerate
+    // ===================================
+    
+    /**
+     * Xử lý action khi click vào nút trong message-actions
+     * @param {string} action - Loại action: like, dislike, copy, regenerate
+     * @param {string} messageId - ID của message
+     * @param {HTMLElement} button - Button element được click
+     */
+    handleMessageAction(action, messageId, button) {
+        switch (action) {
+            case 'like':
+                this.handleLike(messageId, button);
+                break;
+            case 'dislike':
+                this.handleDislike(messageId, button);
+                break;
+            case 'copy':
+                this.handleCopy(messageId, button);
+                break;
+            case 'regenerate':
+                this.handleRegenerate(messageId, button);
+                break;
+        }
+    }
+    
+    /**
+     * Xử lý Like message
+     */
+    handleLike(messageId, button) {
+        const chat = this.chats[this.currentChatId];
+        if (!chat) return;
+        
+        const message = chat.messages.find(m => m.id === messageId);
+        if (!message) return;
+        
+        // Toggle like state
+        const wasLiked = message.liked;
+        message.liked = !wasLiked;
+        message.disliked = false;
+        
+        // Update UI
+        button.classList.toggle('active', message.liked);
+        
+        // Reset dislike button nếu có
+        const actionsContainer = button.closest('.message-actions');
+        const dislikeBtn = actionsContainer?.querySelector('.dislike-btn');
+        if (dislikeBtn) dislikeBtn.classList.remove('active');
+        
+        this.saveChats();
+    }
+    
+    /**
+     * Xử lý Dislike message
+     */
+    handleDislike(messageId, button) {
+        const chat = this.chats[this.currentChatId];
+        if (!chat) return;
+        
+        const message = chat.messages.find(m => m.id === messageId);
+        if (!message) return;
+        
+        // Toggle dislike state
+        const wasDisliked = message.disliked;
+        message.disliked = !wasDisliked;
+        message.liked = false;
+        
+        // Update UI
+        button.classList.toggle('active', message.disliked);
+        
+        // Reset like button nếu có
+        const actionsContainer = button.closest('.message-actions');
+        const likeBtn = actionsContainer?.querySelector('.like-btn');
+        if (likeBtn) likeBtn.classList.remove('active');
+        
+        this.saveChats();
+    }
+    
+    /**
+     * Xử lý Copy message content
+     */
+    async handleCopy(messageId, button) {
+        const chat = this.chats[this.currentChatId];
+        if (!chat) return;
+        
+        const message = chat.messages.find(m => m.id === messageId);
+        if (!message) return;
+        
+        try {
+            // Lấy text content (bỏ HTML tags nếu là HTML message)
+            let textToCopy = message.content;
+            if (message.isHtml) {
+                // Tạo temp element để extract text
+                const temp = document.createElement('div');
+                temp.innerHTML = message.content;
+                textToCopy = temp.textContent || temp.innerText || message.content;
+            }
+            
+            await navigator.clipboard.writeText(textToCopy);
+            
+            // Update UI - show copied state
+            button.classList.add('copied');
+            
+            // Reset after 2 seconds
+            setTimeout(() => {
+                button.classList.remove('copied');
+            }, 2000);
+        } catch (error) {
+            console.error('Copy failed:', error);
+        }
+    }
+    
+    /**
+     * Xử lý Regenerate message - Tạo lại response AI
+     */
+    async handleRegenerate(messageId, button) {
+        const chat = this.chats[this.currentChatId];
+        if (!chat) return;
+        
+        // Tìm message cần regenerate
+        const messageIndex = chat.messages.findIndex(m => m.id === messageId);
+        if (messageIndex === -1) return;
+        
+        const oldMessage = chat.messages[messageIndex];
+        
+        // Lấy prompt gốc từ message hoặc tìm user message trước đó
+        let userPrompt = oldMessage.sourceUserPrompt;
+        let userFiles = oldMessage.sourceUserFiles;
+        
+        if (!userPrompt) {
+            // Tìm user message gần nhất trước AI message này
+            for (let i = messageIndex - 1; i >= 0; i--) {
+                if (chat.messages[i].role === 'user') {
+                    userPrompt = chat.messages[i].content;
+                    userFiles = chat.messages[i].files;
+                    break;
+                }
+            }
+        }
+        
+        if (!userPrompt) {
+            return;
+        }
+        
+        // Kiểm tra nếu đang xử lý
+        if (this.isProcessing) {
+            return;
+        }
+        
+        // Show loading state trên button
+        button.classList.add('loading');
+        
+        // Tạo AbortController mới
+        this.abortController = new AbortController();
+        const signal = this.abortController.signal;
+        
+        this.isProcessing = true;
+        this.updateSendButtonState();
+        
+        // Reset liked/disliked flags khi regenerate
+        oldMessage.liked = false;
+        oldMessage.disliked = false;
+        
+        // Cập nhật message cũ thành loading state
+        oldMessage.content = '';
+        oldMessage.isTyping = true;
+        oldMessage.isFinalized = false;
+        this.updateMessage(oldMessage);
+        
+        try {
+            const modelType = this.getModelType(oldMessage.model);
+            const attachedFiles = userFiles || [];
+            
+            // Lọc bỏ message đang regenerate khỏi conversation history
+            // để AI không bị ảnh hưởng bởi response cũ
+            const filteredMessages = chat.messages.filter(m => m.id !== messageId);
+            
+            // Thêm random variation hint để đảm bảo response khác
+            const variationHint = Math.random().toString(36).substring(2, 6);
+            const regeneratePrompt = userPrompt;
+            
+            if (modelType === 'gemini') {
+                const conversationHistory = prepareConversationHistoryGemini(filteredMessages, 20);
+                await getGeminiResponse(regeneratePrompt, oldMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg), signal);
+            } else if (modelType === 'llm7') {
+                const conversationHistory = prepareConversationHistoryLLM7(filteredMessages, 15);
+                await getLLM7Response(oldMessage.model, regeneratePrompt, oldMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg), signal);
+            } else if (modelType === 'gpt5') {
+                const conversationHistory = prepareConversationHistoryLLM7(filteredMessages, 15);
+                await getLLM7GPT5ChatResponse(regeneratePrompt, oldMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg), signal);
+            } else if (modelType === 'search') {
+                const conversationHistory = prepareConversationHistoryLLM7(filteredMessages, 15);
+                if (shouldSearchWeb(userPrompt)) {
+                    await getLLM7GeminiSearchResponse(regeneratePrompt, oldMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg), signal);
+                } else {
+                    await getLLM7Response('gemini-2.5-flash-lite', regeneratePrompt, oldMessage, attachedFiles, conversationHistory, (msg) => this.updateMessage(msg), signal);
+                }
+            } else if (modelType === 'image') {
+                await getImageGenerationResponse(userPrompt, oldMessage, (msg) => this.updateMessage(msg), signal);
+            }
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                oldMessage.content = '⏹️ Bạn đã dừng tin nhắn này';
+                oldMessage.isTyping = false;
+                this.updateMessage(oldMessage);
+            } else {
+                console.error('Regenerate error:', error);
+                oldMessage.content = 'Xin lỗi, không thể tạo lại tin nhắn. Vui lòng thử lại.';
+                oldMessage.isTyping = false;
+                this.updateMessage(oldMessage);
+            }
+        } finally {
+            button.classList.remove('loading');
+            this.isProcessing = false;
+            this.abortController = null;
+            this.updateSendButtonState();
+            this.saveChats();
         }
     }
     

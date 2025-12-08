@@ -3785,3 +3785,154 @@ body.dark-mode .image-generation-result img {
 #sendBtn:active {
     transform: scale(0.95);
 }
+
+/* ===========================
+   MESSAGE ACTIONS - Like, Dislike, Regenerate, Copy
+   =========================== */
+
+.message-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 8px;
+    padding-top: 8px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+/* Hiện action bar khi hover vào message */
+.ai-message:hover .message-actions {
+    opacity: 1;
+}
+
+/* Luôn hiện action bar trên mobile */
+@media (max-width: 768px) {
+    .message-actions {
+        opacity: 1;
+    }
+}
+
+/* Action button base style */
+.action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.action-btn:active {
+    transform: scale(0.9);
+}
+
+/* Like button */
+.action-btn.like-btn:hover {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.action-btn.like-btn.active {
+    background: #bbf7d0;
+    color: #15803d;
+}
+
+.action-btn.like-btn.active svg {
+    fill: #15803d;
+}
+
+/* Dislike button */
+.action-btn.dislike-btn:hover {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.action-btn.dislike-btn.active {
+    background: #fecaca;
+    color: #b91c1c;
+}
+
+.action-btn.dislike-btn.active svg {
+    fill: #b91c1c;
+}
+
+/* Regenerate button */
+.action-btn.regenerate-btn:hover {
+    background: #e0e7ff;
+    color: #4f46e5;
+}
+
+.action-btn.regenerate-btn.loading {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Copy button */
+.action-btn.copy-btn:hover {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.action-btn.copy-btn.copied {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+/* Dark mode styles */
+.dark .action-btn {
+    color: #9ca3af;
+}
+
+.dark .action-btn:hover {
+    background: #374151;
+    color: #e5e7eb;
+}
+
+.dark .action-btn.like-btn:hover {
+    background: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+}
+
+.dark .action-btn.like-btn.active {
+    background: rgba(34, 197, 94, 0.3);
+    color: #22c55e;
+}
+
+.dark .action-btn.dislike-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+}
+
+.dark .action-btn.dislike-btn.active {
+    background: rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+}
+
+.dark .action-btn.regenerate-btn:hover {
+    background: rgba(99, 102, 241, 0.2);
+    color: #a5b4fc;
+}
+
+.dark .action-btn.copy-btn:hover {
+    background: rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+}
+
+.dark .action-btn.copy-btn.copied {
+    background: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+}

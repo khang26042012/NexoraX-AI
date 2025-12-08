@@ -5,7 +5,88 @@ TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 08/12/2025
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
-✨ CẬP NHẬT MỚI NHẤT - 08/12/2025 (Buổi 33 - Thêm Nút Dừng Stop Button):
+✨ CẬP NHẬT MỚI NHẤT - 08/12/2025 (Buổi 34 - Message Actions: Like, Dislike, Regenerate, Copy):
+-----------------------------------------------------------------------------
+
+BQ. ✅ THÊM TÍNH NĂNG MESSAGE ACTIONS CHO TIN NHẮN AI
+   
+   **YÊU CẦU:**
+   - Thêm 4 nút dưới MỌI tin nhắn của AI (không hiện trên tin nhắn user)
+   - 👍 Like (thích) - đánh giá tốt
+   - 👎 Tệ (dislike) - đánh giá xấu
+   - 🔄 Tạo lại (regenerate) - tạo response MỚI, xóa response cũ
+   - 📋 Sao chép (copy) - copy nội dung vào clipboard
+   - Chức năng tạo lại: AI tạo response KHÁC với trước đó nhưng vẫn đúng yêu cầu user
+   - Áp dụng cho: text, image generation, search results, dual chat mode
+   
+   **GIẢI PHÁP ĐÃ TRIỂN KHAI:**
+   
+   1. ✅ **Cập nhật message-renderer.js để render action bar:**
+      * Thêm HTML cho action bar với 4 nút (like, dislike, regenerate, copy)
+      * Action bar chỉ hiện cho AI messages (role === 'assistant')
+      * Không hiện khi đang typing (isTyping === true)
+      * Thêm function addActionBarToMessage() để thêm action bar sau khi typing xong
+      * Hỗ trợ cả renderMessage() và updateMessage()
+      
+   2. ✅ **Lưu sourceUserPrompt trong AI messages (chat-app.js):**
+      * Thêm thuộc tính `sourceUserPrompt` cho mỗi AI message
+      * Thêm thuộc tính `sourceUserFiles` để lưu files đính kèm
+      * Áp dụng cho cả single chat và dual chat mode
+      * Dùng để regenerate: biết prompt gốc của user
+      
+   3. ✅ **Thêm CSS styling cho action buttons (style.css):**
+      * .message-actions: flex container, opacity 0 mặc định
+      * .ai-message:hover .message-actions: hiện action bar khi hover
+      * Mobile: action bar luôn hiện (opacity: 1)
+      * .action-btn: base styling cho buttons (32x32px, rounded)
+      * Các state: hover, active, loading (cho regenerate)
+      * Dark mode support đầy đủ
+      * Animation spin cho loading state
+      
+   4. ✅ **Implement handlers trong chat-app.js:**
+      * handleMessageAction(): dispatch action đến method tương ứng
+      * handleLike(): toggle like state, reset dislike nếu có
+      * handleDislike(): toggle dislike state, reset like nếu có
+      * handleCopy(): copy nội dung vào clipboard, hiện notification
+      * handleRegenerate(): 
+        - Lấy sourceUserPrompt từ message hoặc tìm user message trước đó
+        - Thêm instruction "tạo response KHÁC"
+        - Gọi API với cùng model gốc
+        - Update message in-place (không xóa, không thêm mới)
+        - Hỗ trợ tất cả model types: gemini, llm7, gpt5, search, image
+      
+   5. ✅ **Event delegation trong event-handlers.js:**
+      * Thêm setupMessageActionsListener() 
+      * Listen click event ở messagesContainer level
+      * Xử lý dynamic buttons được thêm sau khi page load
+   
+   **DANH SÁCH FILE ĐÃ THAY ĐỔI:**
+   - src/js/message-renderer.js:
+     * Thêm action bar HTML trong renderMessage()
+     * Thêm function addActionBarToMessage()
+     * Cập nhật updateMessage() để thêm action bar sau typing
+   - src/js/chat-app.js:
+     * Thêm sourceUserPrompt, sourceUserFiles vào AI messages
+     * Thêm handleMessageAction(), handleLike(), handleDislike()
+     * Thêm handleCopy(), handleRegenerate()
+     * Import và gọi setupMessageActionsListener()
+   - src/js/event-handlers.js:
+     * Thêm export function setupMessageActionsListener()
+   - assets/css/style.css:
+     * Thêm CSS cho .message-actions, .action-btn
+     * Thêm states: hover, active, loading, copied
+     * Thêm dark mode styles
+   
+   **KẾT QUẢ:**
+   ✅ Action bar hiện dưới mọi tin nhắn AI (ẩn khi chưa hover trên desktop)
+   ✅ Mobile: action bar luôn hiện
+   ✅ Like/Dislike: toggle states, lưu vào chat history
+   ✅ Copy: sao chép nội dung thành công, notification xác nhận
+   ✅ Regenerate: tạo response mới khác với cũ, giữ đúng yêu cầu user
+   ✅ Hoạt động với text, images, search, dual chat
+
+-----------------------------------------------------------------------------
+CẬP NHẬT TRƯỚC ĐÓ - 08/12/2025 (Buổi 33 - Thêm Nút Dừng Stop Button):
 -----------------------------------------------------------------------------
 
 BP. ✅ THÊM NÚT DỪNG (STOP BUTTON) KHI AI ĐANG TRẢ LỜI
