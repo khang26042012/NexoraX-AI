@@ -40,7 +40,8 @@ export async function checkUserSession(onSuccess, onFail) {
         const data = await response.json();
         
         if (data.valid && data.username) {
-            if (onSuccess) onSuccess(data.username);
+            const displayName = data.display_name || data.username;
+            if (onSuccess) onSuccess(displayName);
         } else {
             if (onFail) onFail();
         }

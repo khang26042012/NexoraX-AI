@@ -388,14 +388,15 @@ def generate_session_id():
     """Generate random session ID"""
     return secrets.token_urlsafe(32)
 
-def create_session(username, remember_me=False):
+def create_session(username, remember_me=False, display_name=None):
     """Create new session and return session_id"""
     session_id = generate_session_id()
     expiry_hours = (30 * 24) if remember_me else SESSION_EXPIRY_HOURS
     sessions[session_id] = {
         'username': username,
         'expires_at': time.time() + (expiry_hours * 3600),
-        'remember_me': remember_me
+        'remember_me': remember_me,
+        'display_name': display_name or username
     }
     save_sessions()  # Persist to file
     logger.info(f"Session created for user: {username} (Remember me: {remember_me})")
@@ -2600,7 +2601,7 @@ Hãy xử lý prompt sau:"""
                 if users.get(username) != oauth_password:
                     logger.warning(f"Username {username} already exists with different credentials")
             
-            session_id = create_session(username, remember_me=True)
+            session_id = create_session(username, remember_me=True, display_name=github_name)
             
             max_age = 30 * 24 * 3600
             cookie_value = f"session_id={session_id}; Path=/; HttpOnly; SameSite=Lax; Max-Age={max_age}"
@@ -2685,9 +2686,11 @@ Hãy xử lý prompt sau:"""
                     
                     self.end_headers()
                     
+                    display_name = session_data.get('display_name', username) if session_data else username
                     response_json = json.dumps({
                         "valid": True,
                         "username": username,
+                        "display_name": display_name,
                         "rotated": rotated
                     }, ensure_ascii=False)
                     self.wfile.write(response_json.encode('utf-8'))
