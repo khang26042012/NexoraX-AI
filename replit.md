@@ -3,7 +3,17 @@
 ## Overview
 NexoraX AI is a modern Vietnamese AI chat application designed for the Replit environment. It leverages Google Gemini, search-enhanced AI, and LLM7.io for GPT-5 Mini and Gemini Search models. The project emphasizes a modular ES6 architecture and is configured for seamless deployment, offering a feature-rich, responsive user experience with advanced Markdown rendering and conversation memory.
 
-## Recent Changes (04/12/2025 - Buổi 24)
+## Recent Changes (11/12/2025 - Buổi 25)
+- **GitHub OAuth Integration**: Thêm tính năng đăng nhập bằng GitHub:
+  - Endpoint `/auth/github` để khởi tạo OAuth flow với CSRF protection (state parameter)
+  - Endpoint `/auth/github/callback` để xử lý callback từ GitHub
+  - Endpoint `/api/auth/github/status` để kiểm tra cấu hình
+  - User GitHub được lưu với format `gh_<github_login>` và password `oauth:github:<github_id>`
+  - Tự động lấy email từ GitHub API nếu không có trong profile
+  - Nút "Đăng nhập bằng GitHub" trên giao diện login
+  - Cấu hình qua GITHUB_CLIENT_ID và GITHUB_CLIENT_SECRET (environment variables)
+
+## Previous Changes (04/12/2025 - Buổi 24)
 - **Serper + Gemini 2.5 Flash Search Integration**: Kết hợp Serper API với Gemini 2.5 Flash để tóm gọn và phân tích kết quả tìm kiếm:
   - Serper API lấy kết quả tìm kiếm từ Google
   - Gemini 2.5 Flash tóm tắt và phân tích kết quả (format: Tóm tắt, Phân tích, Nguồn tham khảo)
