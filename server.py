@@ -3427,7 +3427,9 @@ Vui lòng trả lời:"""
         elif path.endswith('.js'):
             self.send_response(200)
             self.send_header('Content-type', 'application/javascript')
-            self.send_header('Cache-Control', 'no-cache')
+            self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
+            self.send_header('Pragma', 'no-cache')
+            self.send_header('Expires', '0')
             self.end_headers()
             
             try:
