@@ -39,8 +39,8 @@ LLM7_API_KEY = "menH+rBDvPrzZlDoOifNDRl6tJc+geL29Osalpwg2jCIpMSVUlNy7JT5S+0Az1BT
 # GitHub OAuth App credentials
 # Tạo OAuth App tại: https://github.com/settings/developers
 # Environment variables GITHUB_CLIENT_ID và GITHUB_CLIENT_SECRET sẽ override
-GITHUB_CLIENT_ID = ""
-GITHUB_CLIENT_SECRET = ""
+GITHUB_CLIENT_ID = "Ov23lisSeTb2Gv9EeT47"
+GITHUB_CLIENT_SECRET = "3bd136df6eb0254cc3e57e2218c37b20881a96cb"
 
 # ===========================================
 # CONFIG OVERRIDE (HOT-RELOAD)

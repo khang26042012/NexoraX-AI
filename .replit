@@ -38,3 +38,9 @@ externalPort = 80
 [deployment]
 deploymentTarget = "autoscale"
 run = ["python3", "server.py"]
+
+[userenv]
+
+[userenv.shared]
+GITHUB_CLIENT_ID = "Ov23lisSeTb2Gv9EeT47"
+GITHUB_CLIENT_SECRET = "3bd136df6eb0254cc3e57e2218c37b20881a96cb"
