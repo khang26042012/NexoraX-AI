@@ -2607,11 +2607,11 @@ Hãy xử lý prompt sau:"""
             if os.getenv('REPLIT_DOMAIN') or os.getenv('REPLIT_DEV_DOMAIN') or os.getenv('RENDER'):
                 cookie_value += "; Secure"
             
-            logger.info(f"GitHub OAuth login successful: {username}")
+            logger.info(f"GitHub OAuth login successful: {username} (display: {github_name})")
             
             self.send_response(302)
             self.send_header('Set-Cookie', cookie_value)
-            self.send_header('Location', f'/?github_login=success&username={urllib.parse.quote(username)}')
+            self.send_header('Location', f'/?github_login=success&username={urllib.parse.quote(username)}&display_name={urllib.parse.quote(github_name)}')
             self.end_headers()
             
         except urllib.error.HTTPError as e:

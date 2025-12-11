@@ -1080,12 +1080,13 @@ export class NexoraXChat {
         const urlParams = new URLSearchParams(window.location.search);
         const githubLogin = urlParams.get('github_login');
         const username = urlParams.get('username');
+        const displayName = urlParams.get('display_name');
         const error = urlParams.get('error');
         
         if (githubLogin === 'success' && username) {
-            updateUIForLoggedInUser(username);
+            const nameToDisplay = displayName || username;
+            updateUIForLoggedInUser(nameToDisplay);
             setupUserMenuDropdown(() => this.handleLogout());
-            showNotification(`Đăng nhập thành công qua GitHub! Chào ${username} 👋`, 'success');
             
             window.history.replaceState({}, document.title, window.location.pathname);
         } else if (error) {
