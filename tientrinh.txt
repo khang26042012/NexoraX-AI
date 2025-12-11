@@ -1,11 +1,72 @@
 =============================================================================
-TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 08/12/2025
+TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 11/12/2025
 =============================================================================
 
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
-✨ CẬP NHẬT MỚI NHẤT - 08/12/2025 (Buổi 34 - Message Actions: Like, Dislike, Regenerate, Copy):
+✨ CẬP NHẬT MỚI NHẤT - 11/12/2025 (Buổi 35 - Auth UI Improvements):
+-----------------------------------------------------------------------------
+
+BR. ✅ CẢI TIẾN GIAO DIỆN ĐĂNG NHẬP + TỰ ĐỘNG TẠO TÀI KHOẢN
+   
+   **YÊU CẦU:**
+   - Fix lỗi GitHub OAuth không hiển thị đúng tên từ GitHub
+   - Xóa chức năng đăng ký, chỉ giữ lại đăng nhập
+   - Thêm tính năng tự động tạo tài khoản khi đăng nhập
+   - Thêm tiêu đề NexoraX với rainbow animation vào modal auth
+   
+   **GIẢI PHÁP ĐÃ TRIỂN KHAI:**
+   
+   1. ✅ **Fix GitHub OAuth - hiển thị đúng tên từ GitHub:**
+      * Thêm method handleGitHubOAuthRedirect() trong chat-app.js
+      * Xử lý URL params: github_login=success&username=...
+      * Cập nhật UI với updateUIForLoggedInUser(username)
+      * Xóa params khỏi URL sau khi xử lý (history.replaceState)
+      * Hiển thị thông báo đăng nhập thành công qua GitHub
+      
+   2. ✅ **Xóa chức năng đăng ký:**
+      * Xóa tab "Đăng ký" trong index.html
+      * Xóa toàn bộ form đăng ký (signupForm)
+      * Giữ lại chỉ form đăng nhập (loginForm)
+      * Form login hiển thị mặc định (không còn class hidden)
+      
+   3. ✅ **Tự động tạo tài khoản khi đăng nhập:**
+      * Sửa handle_auth_login() trong server.py
+      * Kiểm tra: nếu user chưa tồn tại → tự động tạo tài khoản mới
+      * Thêm is_new_account flag trong response JSON
+      * Frontend hiển thị thông báo đặc biệt khi tạo tài khoản mới
+      * Thêm gợi ý UI: "Nếu bạn chưa có tài khoản, hệ thống sẽ tự động tạo cho bạn!"
+      
+   4. ✅ **Thêm tiêu đề NexoraX với rainbow animation:**
+      * Thêm <h2 class="rainbow-title-slow">NexoraX</h2> vào modal header
+      * Thêm text hướng dẫn "Đăng nhập để tiếp tục"
+      * Sử dụng class rainbow-title-slow đã có sẵn (animation 5s)
+   
+   **DANH SÁCH FILE ĐÃ THAY ĐỔI:**
+   - src/js/chat-app.js:
+     * Thêm this.handleGitHubOAuthRedirect() trong constructor
+     * Thêm method handleGitHubOAuthRedirect()
+   - src/js/auth-manager.js:
+     * Cập nhật handleLogin() để hiển thị thông báo khác khi tạo tài khoản mới
+   - index.html:
+     * Thêm NexoraX title với rainbow-title-slow trong modal header
+     * Thêm text gợi ý tự động tạo tài khoản
+     * Xóa tab đăng ký và form đăng ký
+     * loginForm hiển thị mặc định
+   - server.py:
+     * Sửa handle_auth_login() để tự động tạo tài khoản nếu user chưa tồn tại
+     * Thêm is_new_account trong response JSON
+   
+   **KẾT QUẢ:**
+   ✅ GitHub OAuth hiển thị đúng tên người dùng từ GitHub
+   ✅ Modal auth chỉ có form đăng nhập (không còn đăng ký)
+   ✅ Tự động tạo tài khoản khi đăng nhập với username/password mới
+   ✅ Tiêu đề NexoraX với rainbow animation trong modal auth
+   ✅ Gợi ý UI rõ ràng về tính năng tự động tạo tài khoản
+
+-----------------------------------------------------------------------------
+CẬP NHẬT TRƯỚC ĐÓ - 08/12/2025 (Buổi 34 - Message Actions: Like, Dislike, Regenerate, Copy):
 -----------------------------------------------------------------------------
 
 BQ. ✅ THÊM TÍNH NĂNG MESSAGE ACTIONS CHO TIN NHẮN AI

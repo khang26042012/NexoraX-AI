@@ -101,7 +101,11 @@ export async function handleLogin(username, password, rememberMe = false, onSucc
         setButtonLoading(loginBtn, false, 'loginBtnText', 'loginBtnSpinner');
         
         if (response.ok) {
-            showNotification(`Đăng nhập thành công! Chào ${username} 👋`, 'success');
+            if (data.is_new_account) {
+                showNotification(`Đã tạo tài khoản mới và đăng nhập! Chào mừng ${username} 🎉`, 'success');
+            } else {
+                showNotification(`Đăng nhập thành công! Chào ${username} 👋`, 'success');
+            }
             if (onSuccess) onSuccess(username);
         } else {
             // Show error based on response

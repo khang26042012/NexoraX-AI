@@ -2285,7 +2285,7 @@ Hãy xử lý prompt sau:"""
             self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
 
     def handle_auth_login(self):
-        """Handle user login"""
+        """Handle user login - tự động tạo tài khoản nếu chưa tồn tại"""
         try:
             content_length = int(self.headers['Content-Length'])
             post_data = self.rfile.read(content_length)
@@ -2298,17 +2298,31 @@ Hãy xử lý prompt sau:"""
                 self._send_json_error(400, "Username và password không được để trống", "MISSING_CREDENTIALS")
                 return
             
-            valid_username, _ = validate_username(username)
-            valid_password, _ = validate_password(password)
+            valid_username, username_err = validate_username(username)
+            valid_password, password_err = validate_password(password)
             
-            if not valid_username or not valid_password:
-                self._send_json_error(401, "Username hoặc password không đúng", "INVALID_CREDENTIALS")
+            if not valid_username:
+                self._send_json_error(400, username_err, "INVALID_USERNAME")
+                return
+            
+            if not valid_password:
+                self._send_json_error(400, password_err, "INVALID_PASSWORD")
                 return
             
             is_limited, limit_message, wait_time = check_rate_limit(username)
             if is_limited:
                 self._send_json_error(429, limit_message, "RATE_LIMITED")
                 return
+            
+            is_new_account = False
+            
+            if not check_user_exists(username):
+                if save_user(username, password):
+                    is_new_account = True
+                    logger.info(f"Auto-created new account for: {username}")
+                else:
+                    self._send_json_error(500, "Lỗi khi tạo tài khoản", "CREATE_ERROR")
+                    return
             
             if authenticate_user(username, password):
                 clear_rate_limit(username)
@@ -2330,16 +2344,20 @@ Hãy xử lý prompt sau:"""
                 response_json = json.dumps({
                     "success": True,
                     "username": username,
-                    "remember_me": remember_me
+                    "remember_me": remember_me,
+                    "is_new_account": is_new_account
                 }, ensure_ascii=False)
                 self.wfile.write(response_json.encode('utf-8'))
                 
-                logger.info(f"User logged in successfully: {username}")
+                if is_new_account:
+                    logger.info(f"New user registered and logged in: {username}")
+                else:
+                    logger.info(f"User logged in successfully: {username}")
             else:
                 attempts = record_failed_attempt(username)
                 remaining = MAX_LOGIN_ATTEMPTS - attempts
                 if remaining > 0:
-                    error_msg = f"Username hoặc password không đúng. Còn {remaining} lần thử"
+                    error_msg = f"Mật khẩu không đúng. Còn {remaining} lần thử"
                 else:
                     error_msg = "Quá nhiều lần thử. Tài khoản đã bị khóa tạm thời"
                 self._send_json_error(401, error_msg, "INVALID_CREDENTIALS")

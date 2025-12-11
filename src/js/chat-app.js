@@ -144,6 +144,9 @@ export class NexoraXChat {
         // Authentication - check session
         this.checkUserSession();
         
+        // Check GitHub OAuth redirect params
+        this.handleGitHubOAuthRedirect();
+        
         // TỰ ĐỘNG TẮT dual chat nếu đang ở home (không có active chat)
         // Fix: Khi reload trang ở home, dual chat nên tự động tắt
         if (this.dualChatMode && !this.currentChatId) {
@@ -1071,6 +1074,32 @@ export class NexoraXChat {
                 updateUIForLoggedOutUser();
             }
         );
+    }
+    
+    handleGitHubOAuthRedirect() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const githubLogin = urlParams.get('github_login');
+        const username = urlParams.get('username');
+        const error = urlParams.get('error');
+        
+        if (githubLogin === 'success' && username) {
+            updateUIForLoggedInUser(username);
+            setupUserMenuDropdown(() => this.handleLogout());
+            showNotification(`Đăng nhập thành công qua GitHub! Chào ${username} 👋`, 'success');
+            
+            window.history.replaceState({}, document.title, window.location.pathname);
+        } else if (error) {
+            const errorMessages = {
+                'github_not_configured': 'GitHub OAuth chưa được cấu hình',
+                'github_token_failed': 'Lỗi lấy token từ GitHub',
+                'github_network_error': 'Lỗi kết nối đến GitHub',
+                'github_oauth_failed': 'Đăng nhập GitHub thất bại'
+            };
+            const message = errorMessages[error] || 'Đăng nhập thất bại';
+            showNotification(message, 'error');
+            
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
     }
     
     // ===================================
