@@ -34,6 +34,15 @@ SERPER_API_KEY = "5b17b86a5ff09e83a338cef0d5eb9edb99defa5e"
 LLM7_API_KEY = "menH+rBDvPrzZlDoOifNDRl6tJc+geL29Osalpwg2jCIpMSVUlNy7JT5S+0Az1BTEOT591IjxjrhN5eKSdobWhkFkkY8mVsWS4w4ozGMvqmjA/vhIzTM3dqSKy1U9aqvFQre"
 
 # ===========================================
+# GITHUB OAUTH CONFIGURATION
+# ===========================================
+# GitHub OAuth App credentials
+# Tạo OAuth App tại: https://github.com/settings/developers
+# Environment variables GITHUB_CLIENT_ID và GITHUB_CLIENT_SECRET sẽ override
+GITHUB_CLIENT_ID = ""
+GITHUB_CLIENT_SECRET = ""
+
+# ===========================================
 # CONFIG OVERRIDE (HOT-RELOAD)
 # ===========================================
 
@@ -128,6 +137,17 @@ def get_api_key(service):
         return os.getenv('LLM7_API_KEY', LLM7_API_KEY)
     else:
         return None
+
+def get_github_oauth_credentials():
+    """Lấy GitHub OAuth credentials từ environment variables hoặc config"""
+    client_id = os.getenv('GITHUB_CLIENT_ID', GITHUB_CLIENT_ID)
+    client_secret = os.getenv('GITHUB_CLIENT_SECRET', GITHUB_CLIENT_SECRET)
+    return client_id, client_secret
+
+def is_github_oauth_configured():
+    """Kiểm tra xem GitHub OAuth đã được cấu hình chưa"""
+    client_id, client_secret = get_github_oauth_credentials()
+    return bool(client_id and client_secret)
 
 def load_config_override():
     """Load config overrides from file"""

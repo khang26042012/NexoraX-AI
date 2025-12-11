@@ -23,7 +23,7 @@ import random
 # Import configuration
 try:
     import config
-    from config import get_api_key, check_config, get_allowed_origins, REQUEST_TIMEOUT, load_config_override, save_config_override
+    from config import get_api_key, check_config, get_allowed_origins, REQUEST_TIMEOUT, load_config_override, save_config_override, get_github_oauth_credentials, is_github_oauth_configured
 except ImportError:
     # Fallback nếu không có config.py
     def get_api_key(service):
@@ -40,6 +40,13 @@ except ImportError:
         return ['http://localhost:5000']
     
     REQUEST_TIMEOUT = 30
+    
+    def get_github_oauth_credentials():
+        return os.getenv('GITHUB_CLIENT_ID', ''), os.getenv('GITHUB_CLIENT_SECRET', '')
+    
+    def is_github_oauth_configured():
+        client_id, client_secret = get_github_oauth_credentials()
+        return bool(client_id and client_secret)
 
 # Configure logging with rotating file handler
 from logging.handlers import RotatingFileHandler
@@ -77,6 +84,10 @@ RATE_LIMIT_WINDOW = 300  # 5 minutes in seconds
 MAX_RETRIES = 3
 BASE_BACKOFF = 1.0  # seconds
 MAX_BACKOFF = 10.0  # seconds
+
+# GitHub OAuth state storage (anti-CSRF)
+github_oauth_states = {}
+GITHUB_STATE_EXPIRY = 600  # 10 minutes
 
 
 def get_llm7_system_prompt(model_id):
@@ -2389,6 +2400,218 @@ Hãy xử lý prompt sau:"""
             logger.error(f"Logout error: {e}")
             self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
 
+    def handle_github_oauth_status(self):
+        """Kiểm tra xem GitHub OAuth đã được cấu hình chưa"""
+        try:
+            configured = is_github_oauth_configured()
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self._send_cors_headers()
+            self.end_headers()
+            
+            response = json.dumps({
+                "configured": configured
+            })
+            self.wfile.write(response.encode('utf-8'))
+        except Exception as e:
+            logger.error(f"GitHub OAuth status check error: {e}")
+            self._send_json_error(500, "Lỗi kiểm tra cấu hình GitHub OAuth", "SYSTEM_ERROR")
+
+    def handle_github_oauth_start(self):
+        """Khởi tạo GitHub OAuth flow - redirect user đến GitHub"""
+        try:
+            client_id, client_secret = get_github_oauth_credentials()
+            
+            if not client_id or not client_secret:
+                self.send_response(302)
+                self.send_header('Location', '/?error=github_not_configured')
+                self.end_headers()
+                return
+            
+            state = secrets.token_urlsafe(32)
+            github_oauth_states[state] = {
+                'created_at': time.time(),
+                'expires_at': time.time() + GITHUB_STATE_EXPIRY
+            }
+            
+            current_time = time.time()
+            expired_states = [s for s, data in github_oauth_states.items() 
+                           if current_time >= data.get('expires_at', 0)]
+            for s in expired_states:
+                del github_oauth_states[s]
+            
+            replit_domain = os.getenv('REPLIT_DEV_DOMAIN', '') or os.getenv('REPLIT_DOMAIN', '')
+            if replit_domain:
+                callback_url = f"https://{replit_domain}/auth/github/callback"
+            else:
+                callback_url = "http://localhost:5000/auth/github/callback"
+            
+            github_auth_url = (
+                f"https://github.com/login/oauth/authorize"
+                f"?client_id={client_id}"
+                f"&redirect_uri={urllib.parse.quote(callback_url)}"
+                f"&scope=user:email"
+                f"&state={state}"
+            )
+            
+            logger.info(f"Starting GitHub OAuth flow, redirecting to GitHub")
+            
+            self.send_response(302)
+            self.send_header('Location', github_auth_url)
+            self.end_headers()
+            
+        except Exception as e:
+            logger.error(f"GitHub OAuth start error: {e}")
+            self.send_response(302)
+            self.send_header('Location', '/?error=github_oauth_failed')
+            self.end_headers()
+
+    def handle_github_oauth_callback(self):
+        """Xử lý callback từ GitHub sau khi user authorize"""
+        try:
+            from urllib.parse import parse_qs, urlparse
+            parsed = urlparse(self.path)
+            query_params = parse_qs(parsed.query)
+            
+            code = query_params.get('code', [None])[0]
+            state = query_params.get('state', [None])[0]
+            error = query_params.get('error', [None])[0]
+            
+            if error:
+                logger.warning(f"GitHub OAuth error: {error}")
+                self.send_response(302)
+                self.send_header('Location', f'/?error=github_denied&message={error}')
+                self.end_headers()
+                return
+            
+            if not code or not state:
+                logger.warning("GitHub OAuth callback missing code or state")
+                self.send_response(302)
+                self.send_header('Location', '/?error=github_invalid_callback')
+                self.end_headers()
+                return
+            
+            if state not in github_oauth_states:
+                logger.warning("GitHub OAuth callback invalid or expired state")
+                self.send_response(302)
+                self.send_header('Location', '/?error=github_invalid_state')
+                self.end_headers()
+                return
+            
+            state_data = github_oauth_states.pop(state)
+            if time.time() >= state_data.get('expires_at', 0):
+                logger.warning("GitHub OAuth callback expired state")
+                self.send_response(302)
+                self.send_header('Location', '/?error=github_expired_state')
+                self.end_headers()
+                return
+            
+            client_id, client_secret = get_github_oauth_credentials()
+            
+            token_url = "https://github.com/login/oauth/access_token"
+            token_data = urllib.parse.urlencode({
+                'client_id': client_id,
+                'client_secret': client_secret,
+                'code': code
+            }).encode('utf-8')
+            
+            token_request = urllib.request.Request(
+                token_url,
+                data=token_data,
+                headers={
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            )
+            
+            with urllib.request.urlopen(token_request, timeout=30) as response:
+                token_response = json.loads(response.read().decode('utf-8'))
+            
+            access_token = token_response.get('access_token')
+            if not access_token:
+                error_desc = token_response.get('error_description', 'Unknown error')
+                logger.error(f"GitHub OAuth token error: {error_desc}")
+                self.send_response(302)
+                self.send_header('Location', f'/?error=github_token_failed&message={urllib.parse.quote(error_desc)}')
+                self.end_headers()
+                return
+            
+            user_request = urllib.request.Request(
+                "https://api.github.com/user",
+                headers={
+                    'Authorization': f'Bearer {access_token}',
+                    'Accept': 'application/vnd.github+json',
+                    'User-Agent': 'NexoraX-AI'
+                }
+            )
+            
+            with urllib.request.urlopen(user_request, timeout=30) as response:
+                github_user = json.loads(response.read().decode('utf-8'))
+            
+            github_id = github_user.get('id')
+            github_login = github_user.get('login')
+            github_email = github_user.get('email')
+            github_name = github_user.get('name') or github_login
+            
+            if not github_email:
+                try:
+                    email_request = urllib.request.Request(
+                        "https://api.github.com/user/emails",
+                        headers={
+                            'Authorization': f'Bearer {access_token}',
+                            'Accept': 'application/vnd.github+json',
+                            'User-Agent': 'NexoraX-AI'
+                        }
+                    )
+                    with urllib.request.urlopen(email_request, timeout=30) as response:
+                        emails = json.loads(response.read().decode('utf-8'))
+                        for email_obj in emails:
+                            if email_obj.get('primary') and email_obj.get('verified'):
+                                github_email = email_obj.get('email')
+                                break
+                except Exception as e:
+                    logger.debug(f"Could not fetch GitHub emails: {e}")
+            
+            username = f"gh_{github_login}"
+            oauth_password = f"oauth:github:{github_id}"
+            
+            if username not in users:
+                save_user(username, oauth_password)
+                logger.info(f"Created new GitHub user: {username}")
+            else:
+                if users.get(username) != oauth_password:
+                    logger.warning(f"Username {username} already exists with different credentials")
+            
+            session_id = create_session(username, remember_me=True)
+            
+            max_age = 30 * 24 * 3600
+            cookie_value = f"session_id={session_id}; Path=/; HttpOnly; SameSite=Lax; Max-Age={max_age}"
+            if os.getenv('REPLIT_DOMAIN') or os.getenv('REPLIT_DEV_DOMAIN') or os.getenv('RENDER'):
+                cookie_value += "; Secure"
+            
+            logger.info(f"GitHub OAuth login successful: {username}")
+            
+            self.send_response(302)
+            self.send_header('Set-Cookie', cookie_value)
+            self.send_header('Location', f'/?github_login=success&username={urllib.parse.quote(username)}')
+            self.end_headers()
+            
+        except urllib.error.HTTPError as e:
+            logger.error(f"GitHub API HTTP error: {e.code} - {e.reason}")
+            self.send_response(302)
+            self.send_header('Location', f'/?error=github_api_error&code={e.code}')
+            self.end_headers()
+        except urllib.error.URLError as e:
+            logger.error(f"GitHub API URL error: {e.reason}")
+            self.send_response(302)
+            self.send_header('Location', '/?error=github_network_error')
+            self.end_headers()
+        except Exception as e:
+            logger.error(f"GitHub OAuth callback error: {e}")
+            self.send_response(302)
+            self.send_header('Location', '/?error=github_oauth_failed')
+            self.end_headers()
+
     def handle_auth_check_session(self):
         """Handle check session status"""
         try:
@@ -3116,6 +3339,17 @@ Vui lòng trả lời:"""
         """Handle GET requests with proper MIME types and caching"""
         # Log all requests
         logger.info(f"GET {self.path} from {self.client_address[0]}")
+        
+        # Handle GitHub OAuth endpoints
+        if self.path == '/auth/github' or self.path.startswith('/auth/github?'):
+            self.handle_github_oauth_start()
+            return
+        elif self.path.startswith('/auth/github/callback'):
+            self.handle_github_oauth_callback()
+            return
+        elif self.path == '/api/auth/github/status':
+            self.handle_github_oauth_status()
+            return
         
         # Handle check-session endpoint
         if self.path.startswith('/api/auth/check-session'):
