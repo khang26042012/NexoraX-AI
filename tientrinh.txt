@@ -1,11 +1,64 @@
 =============================================================================
-TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 11/12/2025
+TIẾN TRÌNH FIX LỖI NEXORAX AI - CẬP NHẬT 16/12/2025
 =============================================================================
 
 📋 TÓM TẮT CÁC VẤN ĐỀ ĐÃ FIX:
 -----------------------------------------------------------------------------
 
-✨ CẬP NHẬT MỚI NHẤT - 11/12/2025 (Buổi 35 - Auth UI Improvements):
+✨ CẬP NHẬT MỚI NHẤT - 16/12/2025 (Buổi 36 - Xóa Auto-Route Gemini cho Ảnh):
+-----------------------------------------------------------------------------
+
+BS. ✅ XÓA TÍNH NĂNG TỰ ĐỘNG CHUYỂN SANG GEMINI KHI CÓ ẢNH
+   
+   **BỐI CẢNH:**
+   - Trước đây LLM7 API không hỗ trợ nhận diện ảnh
+   - Đã thêm tính năng auto-route: khi user gửi ảnh → tự động chuyển sang Gemini
+   - Bây giờ LLM7 đã fix lỗi và hỗ trợ image recognition
+   - Tài liệu: https://docs.llm7.io/guides/image-recognition
+   
+   **YÊU CẦU:**
+   - Xóa hoàn toàn tính năng tự động chuyển sang Gemini khi có ảnh
+   - Để tất cả models sử dụng LLM7 API xử lý ảnh trực tiếp
+   
+   **GIẢI PHÁP ĐÃ TRIỂN KHAI:**
+   
+   1. ✅ **Xóa logic auto-route trong sendSingleMessage():**
+      * Xóa biến useGeminiForImage
+      * Xóa notification "Đã chuyển sang Gemini để phân tích ảnh"
+      * Xóa điều kiện if (useGeminiForImage)
+      * Sử dụng trực tiếp model user đã chọn
+      
+   2. ✅ **Xóa logic auto-route trong sendDualChatMessage():**
+      * Xóa các biến: hasImages, primaryNeedsRoute, secondaryNeedsRoute
+      * Xóa các biến: effectivePrimaryModel, effectiveSecondaryModel
+      * Xóa các notifications route model
+      * Sử dụng trực tiếp dualChatPrimaryModel và dualChatSecondaryModel
+      
+   3. ✅ **Cập nhật modelSupportsImages():**
+      * Trước: return modelId === 'nexorax1' (chỉ Gemini hỗ trợ)
+      * Sau: return true (tất cả models đều hỗ trợ ảnh)
+      * Comment: LLM7 API đã hỗ trợ image recognition cho tất cả models
+      
+   4. ✅ **Backend đã hỗ trợ sẵn (server.py dòng 1936-1954):**
+      * Code xử lý files cho LLM7 đã có
+      * Chuyển đổi sang format image_url với base64 data
+      * Không cần thay đổi backend
+   
+   **DANH SÁCH FILE ĐÃ THAY ĐỔI:**
+   - src/js/chat-app.js:
+     * Xóa logic auto-route trong sendSingleMessage() (dòng 537-563)
+     * Xóa logic auto-route trong sendDualChatMessage() (dòng 622-714)
+     * Cập nhật modelSupportsImages() trả về true (dòng 1189-1193)
+     * Xóa comment cũ trong getDualModelResponse()
+   
+   **KẾT QUẢ:**
+   ✅ Không còn tự động chuyển sang Gemini khi gửi ảnh
+   ✅ Tất cả models sử dụng LLM7 API xử lý ảnh trực tiếp
+   ✅ Single chat và Dual chat đều hoạt động đúng
+   ✅ Không còn notifications về chuyển model
+
+-----------------------------------------------------------------------------
+CẬP NHẬT TRƯỚC ĐÓ - 11/12/2025 (Buổi 35 - Auth UI Improvements):
 -----------------------------------------------------------------------------
 
 BR. ✅ CẢI TIẾN GIAO DIỆN ĐĂNG NHẬP + TỰ ĐỘNG TẠO TÀI KHOẢN
