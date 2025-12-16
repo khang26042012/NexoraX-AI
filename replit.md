@@ -3,7 +3,14 @@
 ## Overview
 NexoraX AI is a modern Vietnamese AI chat application designed for the Replit environment. It leverages Google Gemini, search-enhanced AI, and LLM7.io for GPT-5 Mini and Gemini Search models. The project emphasizes a modular ES6 architecture and is configured for seamless deployment, offering a feature-rich, responsive user experience with advanced Markdown rendering and conversation memory.
 
-## Recent Changes (11/12/2025 - Buổi 25)
+## Recent Changes (16/12/2025 - Buổi 36)
+- **Xóa Auto-Route Gemini cho Ảnh**: LLM7 đã hỗ trợ image recognition, xóa logic tự động chuyển sang Gemini:
+  - Xóa logic auto-route trong sendSingleMessage() và sendDualChatMessage()
+  - Cập nhật modelSupportsImages() trả về true cho tất cả models
+  - Tất cả models giờ sử dụng LLM7 API để xử lý ảnh trực tiếp
+  - Tài liệu tham khảo: https://docs.llm7.io/guides/image-recognition
+
+## Previous Changes (11/12/2025 - Buổi 25)
 - **GitHub OAuth Integration**: Thêm tính năng đăng nhập bằng GitHub:
   - Endpoint `/auth/github` để khởi tạo OAuth flow với CSRF protection (state parameter)
   - Endpoint `/auth/github/callback` để xử lý callback từ GitHub
