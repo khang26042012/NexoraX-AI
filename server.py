@@ -1168,9 +1168,43 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                         # LIMIT CONTEXT WHEN IMAGES ARE PRESENT
                         # If we have images, we should limit the number of previous messages to save tokens
                         # This drastically reduces "Total content length exceeds limit" errors
+                        
+                        # Fix: Some images are still too large even with limited history.
+                        # We will resize the images if they are in base64 format.
+                        import base64
+                        import io
+                        from PIL import Image
+                        
+                        for file in files:
+                            base64_val = file.get('base64', '')
+                            if base64_val:
+                                try:
+                                    # Extract base64 data
+                                    if ',' in base64_val:
+                                        header, encoded = base64_val.split(',', 1)
+                                    else:
+                                        header, encoded = "data:image/png;base64", base64_val
+                                    
+                                    # Decode and open image
+                                    img_data = base64.b64decode(encoded)
+                                    img = Image.open(io.BytesIO(img_data))
+                                    
+                                    # Resize if too large (max 1024px)
+                                    max_size = 1024
+                                    if max(img.size) > max_size:
+                                        img.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
+                                        
+                                        # Save back to base64
+                                        buffered = io.BytesIO()
+                                        img.save(buffered, format="JPEG", quality=85, optimize=True)
+                                        new_base64 = base64.b64encode(buffered.getvalue()).decode()
+                                        file['base64'] = f"data:image/jpeg;base64,{new_base64}"
+                                        logger.info(f"Resized image from {len(encoded)} to {len(new_base64)} chars")
+                                except Exception as e:
+                                    logger.error(f"Error resizing image: {e}")
+
                         if len(messages) > 1:
                             # Keep system prompt (index 0) and the current user message (the one with images)
-                            # We search for the current user message index (i)
                             messages = [messages[0], messages[i]]
                         break
             
@@ -1979,9 +2013,43 @@ Trả về JSON theo format đã chỉ định."""
                         # LIMIT CONTEXT WHEN IMAGES ARE PRESENT
                         # If we have images, we should limit the number of previous messages to save tokens
                         # This drastically reduces "Total content length exceeds limit" errors
+                        
+                        # Fix: Some images are still too large even with limited history.
+                        # We will resize the images if they are in base64 format.
+                        import base64
+                        import io
+                        from PIL import Image
+                        
+                        for file in files:
+                            base64_val = file.get('base64', '')
+                            if base64_val:
+                                try:
+                                    # Extract base64 data
+                                    if ',' in base64_val:
+                                        header, encoded = base64_val.split(',', 1)
+                                    else:
+                                        header, encoded = "data:image/png;base64", base64_val
+                                    
+                                    # Decode and open image
+                                    img_data = base64.b64decode(encoded)
+                                    img = Image.open(io.BytesIO(img_data))
+                                    
+                                    # Resize if too large (max 1024px)
+                                    max_size = 1024
+                                    if max(img.size) > max_size:
+                                        img.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
+                                        
+                                        # Save back to base64
+                                        buffered = io.BytesIO()
+                                        img.save(buffered, format="JPEG", quality=85, optimize=True)
+                                        new_base64 = base64.b64encode(buffered.getvalue()).decode()
+                                        file['base64'] = f"data:image/jpeg;base64,{new_base64}"
+                                        logger.info(f"Resized image from {len(encoded)} to {len(new_base64)} chars")
+                                except Exception as e:
+                                    logger.error(f"Error resizing image: {e}")
+
                         if len(messages) > 1:
                             # Keep system prompt (index 0) and the current user message (the one with images)
-                            # We search for the current user message index (i)
                             messages = [messages[0], messages[i]]
                         break
             
