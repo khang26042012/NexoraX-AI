@@ -1189,6 +1189,10 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                                     img_data = base64.b64decode(encoded)
                                     img = Image.open(io.BytesIO(img_data))
                                     
+                                    # Convert to RGB if necessary (JPEG doesn't support RGBA)
+                                    if img.mode in ("RGBA", "P"):
+                                        img = img.convert("RGB")
+                                    
                                     # Resize if too large (max 408px as requested by user)
                                     max_size = 408
                                     if max(img.size) > max_size:
@@ -2033,6 +2037,10 @@ Trả về JSON theo format đã chỉ định."""
                                     # Decode and open image
                                     img_data = base64.b64decode(encoded)
                                     img = Image.open(io.BytesIO(img_data))
+                                    
+                                    # Convert to RGB if necessary (JPEG doesn't support RGBA)
+                                    if img.mode in ("RGBA", "P"):
+                                        img = img.convert("RGB")
                                     
                                     # Resize if too large (max 408px as requested by user)
                                     max_size = 408
