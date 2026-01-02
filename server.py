@@ -1198,12 +1198,12 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                                     if max(img.size) > max_size:
                                         img.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
                                         
-                                        # Save back to base64
+                                        # Save back to base64 with lower quality to be sure
                                         buffered = io.BytesIO()
-                                        img.save(buffered, format="JPEG", quality=85, optimize=True)
+                                        img.save(buffered, format="JPEG", quality=45, optimize=True)
                                         new_base64 = base64.b64encode(buffered.getvalue()).decode()
                                         file['base64'] = f"data:image/jpeg;base64,{new_base64}"
-                                        logger.info(f"Resized image from {len(encoded)} to {len(new_base64)} chars (max_size: 408px)")
+                                        logger.info(f"Resized image from {len(encoded)} to {len(new_base64)} chars (max_size: 408px, quality: 45)")
                                 except Exception as e:
                                     logger.error(f"Error resizing image: {e}")
 
@@ -2047,12 +2047,12 @@ Trả về JSON theo format đã chỉ định."""
                                     if max(img.size) > max_size:
                                         img.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
                                         
-                                        # Save back to base64
+                                        # Save back to base64 with lower quality to be sure
                                         buffered = io.BytesIO()
-                                        img.save(buffered, format="JPEG", quality=85, optimize=True)
+                                        img.save(buffered, format="JPEG", quality=45, optimize=True)
                                         new_base64 = base64.b64encode(buffered.getvalue()).decode()
                                         file['base64'] = f"data:image/jpeg;base64,{new_base64}"
-                                        logger.info(f"Resized image from {len(encoded)} to {len(new_base64)} chars (max_size: 408px)")
+                                        logger.info(f"Resized image from {len(encoded)} to {len(new_base64)} chars (max_size: 408px, quality: 45)")
                                 except Exception as e:
                                     logger.error(f"Error resizing image: {e}")
 
