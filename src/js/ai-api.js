@@ -39,9 +39,10 @@ export function prepareConversationHistoryGemini(messages, limit = 20) {
  * @param {number} limit - Giới hạn số lượng messages
  * @returns {Array} History ở định dạng LLM7
  */
-export function prepareConversationHistoryLLM7(messages, limit = 15) {
+export function prepareConversationHistoryLLM7(messages, limit = 10) {
     // Lọc bỏ typing messages và messages rỗng
     const historyMessages = messages.filter(msg => !msg.isTyping && msg.content && msg.content.trim() !== '');
+    // Giảm limit từ 15 xuống 10 để tránh lỗi vượt quá giới hạn token (Total content length)
     const recentMessages = historyMessages.slice(-limit);
     
     return recentMessages.map(msg => ({

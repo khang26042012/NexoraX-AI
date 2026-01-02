@@ -31,7 +31,7 @@ SERPER_API_KEY = "5b17b86a5ff09e83a338cef0d5eb9edb99defa5e"
 # LLM7.io API Key
 # API miễn phí cho nhiều mô hình AI: https://llm7.io/
 # Environment variable LLM7_API_KEY will override this if set
-LLM7_API_KEY = "menH+rBDvPrzZlDoOifNDRl6tJc+geL29Osalpwg2jCIpMSVUlNy7JT5S+0Az1BTEOT591IjxjrhN5eKSdobWhkFkkY8mVsWS4w4ozGMvqmjA/vhIzTM3dqSKy1U9aqvFQre"
+LLM7_API_KEY = "L9saOFJ95VAwf2FotZ8cCZrQIRB9NGMSuxnYxXxaagH6VURSKLfz5Y6wIXvoMf3pMob2RG1YNXs5G405ZGtUbNYswRz7pDeWy++tcdrrhAmokG+2Rsr41Xp6pyUQ8SGkjdMf"
 
 # ===========================================
 # GITHUB OAUTH CONFIGURATION
