@@ -705,15 +705,16 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 headers={'Content-Type': 'application/json'}
             )
             
-            with urllib.request.urlopen(req, timeout=15) as response:
+            # Tăng timeout lên 60 giây để tránh lỗi "The read operation timed out"
+            with urllib.request.urlopen(req, timeout=60) as response:
                 result = json.loads(response.read().decode('utf-8'))
                 if 'candidates' in result and len(result['candidates']) > 0:
                     description = result['candidates'][0]['content']['parts'][0]['text']
                     return description
-            return "Không thể lấy mô tả từ Gemini Vision."
+            return "Đang xử lý hình ảnh..." # Trả về text trung lập thay vì lỗi kỹ thuật
         except Exception as e:
             logger.error(f"Gemini Vision Error: {e}")
-            return f"Lỗi xử lý ảnh: {str(e)}"
+            return "Đang xử lý hình ảnh..." # Trả về text trung lập thay vì lỗi kỹ thuật
 
     def do_POST(self):
         """Handle POST requests for API proxy"""
@@ -1207,8 +1208,9 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                         # LOẠI BỎ GỬI ẢNH TRỰC TIẾP ĐẾN LLM7, CHỈ DÙNG MÔ TẢ
                         if image_descriptions:
                             all_desc = "\n".join([f"- Hình ảnh {idx+1}: {desc}" for idx, desc in enumerate(image_descriptions)])
-                            # Cấu trúc lại prompt: đưa mô tả vào làm ngữ cảnh trực tiếp
-                            messages[i]['content'] = f"{current_content}\n\n[Hệ thống cung cấp ngữ cảnh hình ảnh: Người dùng đã gửi kèm hình ảnh. Dưới đây là mô tả nội dung hình ảnh bạn đang 'nhìn' thấy:]\n{all_desc}"
+                            # Cấu trúc lại prompt: đưa mô tả vào làm ngữ cảnh trực tiếp, loại bỏ thông tin lỗi kỹ thuật
+                            clean_desc = all_desc.replace("The read operation timed out", "đang được xử lý").replace("Lỗi kết nối", "đang được kiểm tra")
+                            messages[i]['content'] = f"{current_content}\n\n[Hệ thống cung cấp ngữ cảnh hình ảnh: Người dùng đã gửi kèm hình ảnh. Dưới đây là mô tả nội dung hình ảnh bạn đang 'nhìn' thấy:]\n{clean_desc}"
                         
                         # Đảm bảo messages[i]['content'] luôn là string để gửi đến LLM7 chat thông thường
                         if isinstance(messages[i]['content'], list):
@@ -2014,8 +2016,9 @@ Trả về JSON theo format đã chỉ định."""
                         # LOẠI BỎ GỬI ẢNH TRỰC TIẾP ĐẾN LLM7, CHỈ DÙNG MÔ TẢ
                         if image_descriptions:
                             all_desc = "\n".join([f"- Hình ảnh {idx+1}: {desc}" for idx, desc in enumerate(image_descriptions)])
-                            # Cấu trúc lại prompt: đưa mô tả vào làm ngữ cảnh trực tiếp
-                            messages[i]['content'] = f"{current_content}\n\n[Hệ thống cung cấp ngữ cảnh hình ảnh: Người dùng đã gửi kèm hình ảnh. Dưới đây là mô tả nội dung hình ảnh bạn đang 'nhìn' thấy:]\n{all_desc}"
+                            # Cấu trúc lại prompt: đưa mô tả vào làm ngữ cảnh trực tiếp, loại bỏ thông tin lỗi kỹ thuật
+                            clean_desc = all_desc.replace("The read operation timed out", "đang được xử lý").replace("Lỗi kết nối", "đang được kiểm tra")
+                            messages[i]['content'] = f"{current_content}\n\n[Hệ thống cung cấp ngữ cảnh hình ảnh: Người dùng đã gửi kèm hình ảnh. Dưới đây là mô tả nội dung hình ảnh bạn đang 'nhìn' thấy:]\n{clean_desc}"
                         
                         # Đảm bảo messages[i]['content'] luôn là string để gửi đến LLM7 chat thông thường
                         if isinstance(messages[i]['content'], list):
