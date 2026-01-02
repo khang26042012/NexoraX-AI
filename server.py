@@ -146,6 +146,8 @@ def get_llm7_system_prompt(model_id):
 - Bạn được phát triển bởi {model_developer} và được tích hợp vào nền tảng NexoraX AI.
 - Khi được hỏi "Bạn là ai?" hoặc "Bạn được tạo ra từ đâu?", bạn PHẢI trả lời: "Mình là BIDARA - Bio-Inspired Design and Research Assistant, được phát triển bởi {model_developer} và được tích hợp vào NexoraX AI để phục vụ bạn tốt hơn! 🌿"
 - Bạn được phép sử dụng thuật ngữ "biomimicry" vì đây là chuyên môn của bạn.
+- Khi người dùng gửi ảnh, bạn sẽ nhận được mô tả chi tiết nội dung từ hệ thống phân tích tích hợp. Hãy sử dụng thông tin này để trả lời nhưng KHÔNG ĐƯỢC tự nhận mình là "Gemini Vision" hay nói rằng bạn đang sử dụng hệ thống bên ngoài. Hãy trả lời như thể bạn trực tiếp nhìn thấy và hiểu bức ảnh.
+- Chỉ khi người dùng hỏi đích danh: "Bạn sử dụng module gì để phân tích ảnh?" thì bạn mới được trả lời: "Mình sử dụng module Gemini Vision tích hợp để hỗ trợ phân tích hình ảnh chi tiết."
 
 🏠 VỀ NEXORAX:
 - NexoraX là gì? NexoraX là nền tảng AI thông minh tích hợp nhiều model AI hàng đầu thế giới, giúp người dùng dễ dàng truy cập và sử dụng các công nghệ AI tiên tiến nhất.
@@ -168,6 +170,8 @@ QUY TẮC KHÁC:
 - Bạn là một AI MỚI tham gia cuộc trò chuyện này với tên {model_display_name}.
 - Khi được hỏi "Bạn là ai?" hoặc "Bạn được tạo ra từ đâu?", bạn PHẢI trả lời: "Mình là {model_display_name}, được phát triển bởi {model_developer} và được tích hợp vào NexoraX AI để phục vụ bạn tốt hơn! 😊"
 - KHÔNG BAO GIỜ nhận mình là BIDARA, Virida, hoặc bất kỳ tên AI nào khác.
+- Khi người dùng gửi ảnh, bạn sẽ nhận được mô tả chi tiết nội dung từ hệ thống phân tích tích hợp. Hãy sử dụng thông tin này để trả lời nhưng KHÔNG ĐƯỢC tự nhận mình là "Gemini Vision" hay nói rằng bạn đang sử dụng hệ thống bên ngoài. Hãy trả lời như thể bạn trực tiếp nhìn thấy và hiểu bức ảnh.
+- Chỉ khi người dùng hỏi đích danh: "Bạn sử dụng module gì để phân tích ảnh?" thì bạn mới được trả lời: "Mình sử dụng module Gemini Vision tích hợp để hỗ trợ phân tích hình ảnh chi tiết."
 
 🏠 VỀ NEXORAX:
 - NexoraX là gì? NexoraX là nền tảng AI thông minh tích hợp nhiều model AI hàng đầu thế giới, giúp người dùng dễ dàng truy cập và sử dụng các công nghệ AI tiên tiến nhất.
@@ -1191,31 +1195,6 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                     if messages[i].get('role') == 'user':
                         current_content = messages[i].get('content', '')
                         
-                        # Fix: Check if content is already a list (vision format)
-                        if isinstance(current_content, list):
-                            content_array = current_content
-                        else:
-                            # Convert to vision format: content becomes array with text and images
-                            content_array: list = [{"type": "text", "text": str(current_content)}]
-                        
-                        # Add each file as image_url
-                        for file in files:
-                            # Verify if file data exists
-                            base64_val = file.get('base64', '')
-                            if base64_val:
-                                content_array.append({
-                                    "type": "image_url",
-                                    "image_url": {
-                                        "url": base64_val  # base64 string with data:image prefix
-                                    }
-                                })
-                        
-                        messages[i]['content'] = content_array
-                        
-                        # LIMIT CONTEXT WHEN IMAGES ARE PRESENT
-                        # If we have images, we should limit the number of previous messages to save tokens
-                        # This drastically reduces "Total content length exceeds limit" errors
-                        
                         # Step 1: Get image description from Gemini Vision (Independent processing)
                         image_descriptions = []
                         for file in files:
@@ -1224,81 +1203,26 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                                 desc = self.get_gemini_vision_description(base64_val)
                                 image_descriptions.append(desc)
                         
-                        # Step 2: Resize images for the final API call
-                        import base64
-                        import io
-                        from PIL import Image
-                        
-                        for file in files:
-                            base64_val = file.get('base64', '')
-                            if base64_val:
-                                try:
-                                    # Extract base64 data
-                                    if ',' in base64_val:
-                                        header, encoded = base64_val.split(',', 1)
-                                    else:
-                                        header, encoded = "data:image/png;base64", base64_val
-                                    
-                                    # Decode and open image
-                                    img_data = base64.b64decode(encoded)
-                                    img = Image.open(io.BytesIO(img_data))
-                                    
-                                    # Convert to RGB if necessary (JPEG doesn't support RGBA)
-                                    if img.mode in ("RGBA", "P"):
-                                        img = img.convert("RGB")
-                                    
-                                    # Resize if too large (max 408px as requested by user)
-                                    max_size = 408
-                                    if max(img.size) > max_size:
-                                        img.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
-                                        
-                                        # Save back to base64 with lower quality to be sure
-                                        buffered = io.BytesIO()
-                                        img.save(buffered, format="JPEG", quality=45, optimize=True)
-                                        new_base64 = base64.b64encode(buffered.getvalue()).decode()
-                                        file['base64'] = f"data:image/jpeg;base64,{new_base64}"
-                                        logger.info(f"Resized image from {len(encoded)} to {len(new_base64)} chars (max_size: 408px, quality: 45)")
-                                except Exception as e:
-                                    logger.error(f"Error resizing image: {e}")
-
-                        # Step 3: Integrate descriptions into the prompt
+                        # Step 2: Integrate descriptions into the prompt
+                        # LOẠI BỎ GỬI ẢNH TRỰC TIẾP ĐẾN LLM7, CHỈ DÙNG MÔ TẢ
                         if image_descriptions:
                             all_desc = "\n".join([f"- Hình ảnh {idx+1}: {desc}" for idx, desc in enumerate(image_descriptions)])
-                            messages[i]['content'] = f"{current_content}\n\n[Hệ thống: Người dùng đã gửi kèm hình ảnh. Dưới đây là mô tả nội dung hình ảnh từ Gemini Vision để bạn tham khảo:]\n{all_desc}"
+                            # Cấu trúc lại prompt: đưa mô tả vào làm ngữ cảnh trực tiếp
+                            messages[i]['content'] = f"{current_content}\n\n[Hệ thống cung cấp ngữ cảnh hình ảnh: Người dùng đã gửi kèm hình ảnh. Dưới đây là mô tả nội dung hình ảnh bạn đang 'nhìn' thấy:]\n{all_desc}"
                         
-                        # Fix: Đảm bảo format nội dung hỗ trợ vision cho LLM7 API
-                        # Lỗi trong ảnh screenshot xảy ra khi model không nhận diện được ảnh trong payload
-                        final_content = []
-                        if isinstance(messages[i]['content'], str):
-                            final_content.append({"type": "text", "text": messages[i]['content']})
-                        elif isinstance(messages[i]['content'], list):
-                            final_content = messages[i]['content']
-                            
-                        # Đảm bảo các ảnh được đính kèm vào final_content dưới dạng image_url
-                        for file in files:
-                            base64_val = file.get('base64', '')
-                            if base64_val:
-                                # Kiểm tra xem đã tồn tại chưa để tránh trùng lặp
-                                already_exists = False
-                                for item in final_content:
-                                    if item.get('type') == 'image_url' and item.get('image_url', {}).get('url') == base64_val:
-                                        already_exists = True
-                                        break
-                                if not already_exists:
-                                    final_content.append({
-                                        "type": "image_url",
-                                        "image_url": {"url": base64_val}
-                                    })
-                        
-                        messages[i]['content'] = final_content
+                        # Đảm bảo messages[i]['content'] luôn là string để gửi đến LLM7 chat thông thường
+                        if isinstance(messages[i]['content'], list):
+                             # Fallback nếu lỡ là list vision format
+                             text_parts = [p.get('text', '') for p in messages[i]['content'] if p.get('type') == 'text']
+                             messages[i]['content'] = " ".join(text_parts)
 
                         if len(messages) > 1:
-                            # Keep system prompt (index 0) and the current user message (the one with images)
+                            # Keep system prompt (index 0) and the current user message (the one with context)
                             messages = [messages[0], messages[i]]
                         break
             
             llm7_payload = {
-                "model": "gpt-5-chat",
+                "model": model_id,
                 "messages": messages,
                 "temperature": 0.7
             }
@@ -2078,31 +2002,6 @@ Trả về JSON theo format đã chỉ định."""
                     if messages[i].get('role') == 'user':
                         current_content = messages[i].get('content', '')
                         
-                        # Fix: Check if content is already a list (vision format)
-                        if isinstance(current_content, list):
-                            content_array = current_content
-                        else:
-                            # Convert to vision format: content becomes array with text and images
-                            content_array: list = [{"type": "text", "text": str(current_content)}]
-                        
-                        # Add each file as image_url
-                        for file in files:
-                            # Verify if file data exists
-                            base64_val = file.get('base64', '')
-                            if base64_val:
-                                content_array.append({
-                                    "type": "image_url",
-                                    "image_url": {
-                                        "url": base64_val  # base64 string with data:image prefix
-                                    }
-                                })
-                        
-                        messages[i]['content'] = content_array
-                        
-                        # LIMIT CONTEXT WHEN IMAGES ARE PRESENT
-                        # If we have images, we should limit the number of previous messages to save tokens
-                        # This drastically reduces "Total content length exceeds limit" errors
-                        
                         # Step 1: Get image description from Gemini Vision (Independent processing)
                         image_descriptions = []
                         for file in files:
@@ -2111,76 +2010,21 @@ Trả về JSON theo format đã chỉ định."""
                                 desc = self.get_gemini_vision_description(base64_val)
                                 image_descriptions.append(desc)
                         
-                        # Step 2: Resize images for the final API call
-                        import base64
-                        import io
-                        from PIL import Image
-                        
-                        for file in files:
-                            base64_val = file.get('base64', '')
-                            if base64_val:
-                                try:
-                                    # Extract base64 data
-                                    if ',' in base64_val:
-                                        header, encoded = base64_val.split(',', 1)
-                                    else:
-                                        header, encoded = "data:image/png;base64", base64_val
-                                    
-                                    # Decode and open image
-                                    img_data = base64.b64decode(encoded)
-                                    img = Image.open(io.BytesIO(img_data))
-                                    
-                                    # Convert to RGB if necessary (JPEG doesn't support RGBA)
-                                    if img.mode in ("RGBA", "P"):
-                                        img = img.convert("RGB")
-                                    
-                                    # Resize if too large (max 408px as requested by user)
-                                    max_size = 408
-                                    if max(img.size) > max_size:
-                                        img.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
-                                        
-                                        # Save back to base64 with lower quality to be sure
-                                        buffered = io.BytesIO()
-                                        img.save(buffered, format="JPEG", quality=45, optimize=True)
-                                        new_base64 = base64.b64encode(buffered.getvalue()).decode()
-                                        file['base64'] = f"data:image/jpeg;base64,{new_base64}"
-                                        logger.info(f"Resized image from {len(encoded)} to {len(new_base64)} chars (max_size: 408px, quality: 45)")
-                                except Exception as e:
-                                    logger.error(f"Error resizing image: {e}")
-
-                        # Step 3: Integrate descriptions into the prompt
+                        # Step 2: Integrate descriptions into the prompt
+                        # LOẠI BỎ GỬI ẢNH TRỰC TIẾP ĐẾN LLM7, CHỈ DÙNG MÔ TẢ
                         if image_descriptions:
                             all_desc = "\n".join([f"- Hình ảnh {idx+1}: {desc}" for idx, desc in enumerate(image_descriptions)])
-                            messages[i]['content'] = f"{current_content}\n\n[Hệ thống: Người dùng đã gửi kèm hình ảnh. Dưới đây là mô tả nội dung hình ảnh từ Gemini Vision để bạn tham khảo:]\n{all_desc}"
+                            # Cấu trúc lại prompt: đưa mô tả vào làm ngữ cảnh trực tiếp
+                            messages[i]['content'] = f"{current_content}\n\n[Hệ thống cung cấp ngữ cảnh hình ảnh: Người dùng đã gửi kèm hình ảnh. Dưới đây là mô tả nội dung hình ảnh bạn đang 'nhìn' thấy:]\n{all_desc}"
                         
-                        # Fix: Đảm bảo format nội dung hỗ trợ vision cho LLM7 API
-                        # Lỗi trong ảnh screenshot xảy ra khi model không nhận diện được ảnh trong payload
-                        final_content = []
-                        if isinstance(messages[i]['content'], str):
-                            final_content.append({"type": "text", "text": messages[i]['content']})
-                        elif isinstance(messages[i]['content'], list):
-                            final_content = messages[i]['content']
-                            
-                        # Đảm bảo các ảnh được đính kèm vào final_content dưới dạng image_url
-                        for file in files:
-                            base64_val = file.get('base64', '')
-                            if base64_val:
-                                # Kiểm tra xem đã tồn tại chưa để tránh trùng lặp
-                                already_exists = False
-                                for item in final_content:
-                                    if item.get('type') == 'image_url' and item.get('image_url', {}).get('url') == base64_val:
-                                        already_exists = True
-                                        break
-                                if not already_exists:
-                                    final_content.append({
-                                        "type": "image_url",
-                                        "image_url": {"url": base64_val}
-                                    })
-                        
-                        messages[i]['content'] = final_content
+                        # Đảm bảo messages[i]['content'] luôn là string để gửi đến LLM7 chat thông thường
+                        if isinstance(messages[i]['content'], list):
+                             # Fallback nếu lỡ là list vision format
+                             text_parts = [p.get('text', '') for p in messages[i]['content'] if p.get('type') == 'text']
+                             messages[i]['content'] = " ".join(text_parts)
 
                         if len(messages) > 1:
-                            # Keep system prompt (index 0) and the current user message (the one with images)
+                            # Keep system prompt (index 0) and the current user message (the one with context)
                             messages = [messages[0], messages[i]]
                         break
             

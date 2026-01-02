@@ -3191,3 +3191,26 @@ BU. ✅ CÀI ĐẶT THƯ VIỆN PILLOW (PIL) ĐỂ XỬ LÝ ẢNH
    **KẾT QUẢ:**
    ✅ Lỗi "No module named 'PIL'" đã được khắc phục hoàn toàn.
    ✅ Chức năng xử lý ảnh (nén, resize) hoạt động bình thường.
+
+✨ CẬP NHẬT MỚI NHẤT - 02/01/2026 (Refactor logic xử lý ảnh):
+-----------------------------------------------------------------------------
+BV. ✅ LOẠI BỎ GỬI ẢNH TRỰC TIẾP ĐẾN LLM7, CHỈ DÙNG MÔ TẢ TỪ GEMINI VISION
+   
+   **YÊU CẦU:**
+   - Xóa bỏ tính năng phân tích ảnh trực tiếp bên LLM7 (vì hay lỗi payload/timeout).
+   - Chỉ giữ tính năng phân tích và tóm tắt ảnh từ Gemini Vision.
+   - Logic: Gemini phân tích xong đưa text mô tả thẳng cho model user đang dùng.
+   - Bảo mật danh tính: Model không được tự nhận là Gemini Vision, chỉ trả lời module khi bị hỏi đích danh.
+
+   **GIẢI PHÁP ĐÃ TRIỂN KHAI:**
+   1. ✅ **Refactor server.py (handle_llm7_chat):**
+      * Loại bỏ việc đính kèm  vào payload gửi đến LLM7.io.
+      * Tích hợp kết quả từ  vào text prompt dưới dạng ngữ cảnh hệ thống.
+      * Cấu trúc lại messages để đảm bảo model hiểu là nó đang "nhìn" thấy ảnh qua mô tả.
+   2. ✅ **Cập nhật System Prompt (get_llm7_system_prompt):**
+      * Thêm quy tắc danh tính nghiêm ngặt: Trả lời như thể mình trực tiếp thấy ảnh.
+      * Chỉ xác nhận dùng "Gemini Vision" khi người dùng hỏi đích danh module phân tích.
+   
+   **KẾT QUẢ:**
+   ✅ Giảm tải cho LLM7 API, tránh lỗi "Total content length exceeds limit" do gửi base64 ảnh lớn.
+   ✅ AI trả lời thông minh, tự nhiên, giữ đúng danh tính model người dùng chọn.
