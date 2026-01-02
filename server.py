@@ -2093,7 +2093,12 @@ Trả về JSON theo format đã chỉ định."""
             logger.error(f"LLM7 chat error: {e}")
             logger.error(f"Exception type: {type(e)}")
             logger.error(f"Exception args: {e.args}")
-            self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
+            # Lấy model_id từ request_data nếu có thể
+            try:
+                model_id_error = request_data.get('model', 'AI')
+            except:
+                model_id_error = 'AI'
+            self._send_json_error(503, f"Xin lỗi, đã có lỗi xảy ra khi gọi {model_id_error}. Chi tiết: Lỗi hệ thống: {str(e)} Vui lòng thử lại hoặc chọn model khác.", "SYSTEM_ERROR")
 
     def handle_enhance_prompt(self):
         """Enhance prompt using Gemini AI to expand Vietnamese abbreviations and improve quality"""
