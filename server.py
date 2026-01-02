@@ -1167,10 +1167,11 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                         
                         # LIMIT CONTEXT WHEN IMAGES ARE PRESENT
                         # If we have images, we should limit the number of previous messages to save tokens
-                        if len(messages) > 3:
-                            # Keep system prompt (index 0) and last 2 interactions
-                            # This drastically reduces "Total content length exceeds limit" errors
-                            messages = [messages[0]] + messages[-3:]
+                        # This drastically reduces "Total content length exceeds limit" errors
+                        if len(messages) > 1:
+                            # Keep system prompt (index 0) and the current user message (the one with images)
+                            # We search for the current user message index (i)
+                            messages = [messages[0], messages[i]]
                         break
             
             llm7_payload = {
@@ -1977,10 +1978,11 @@ Trả về JSON theo format đã chỉ định."""
                         
                         # LIMIT CONTEXT WHEN IMAGES ARE PRESENT
                         # If we have images, we should limit the number of previous messages to save tokens
-                        if len(messages) > 3:
-                            # Keep system prompt (index 0) and last 2 interactions
-                            # This drastically reduces "Total content length exceeds limit" errors
-                            messages = [messages[0]] + messages[-3:]
+                        # This drastically reduces "Total content length exceeds limit" errors
+                        if len(messages) > 1:
+                            # Keep system prompt (index 0) and the current user message (the one with images)
+                            # We search for the current user message index (i)
+                            messages = [messages[0], messages[i]]
                         break
             
             llm7_payload = {
