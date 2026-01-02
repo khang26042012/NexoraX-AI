@@ -1143,19 +1143,34 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 for i in range(len(messages) - 1, -1, -1):
                     if messages[i].get('role') == 'user':
                         current_content = messages[i].get('content', '')
-                        # Convert to vision format: content becomes array with text and images
-                        content_array: list = [{"type": "text", "text": current_content}]
+                        
+                        # Fix: Check if content is already a list (vision format)
+                        if isinstance(current_content, list):
+                            content_array = current_content
+                        else:
+                            # Convert to vision format: content becomes array with text and images
+                            content_array: list = [{"type": "text", "text": str(current_content)}]
                         
                         # Add each file as image_url
                         for file in files:
-                            content_array.append({
-                                "type": "image_url",
-                                "image_url": {
-                                    "url": file.get('base64', '')  # base64 string with data:image prefix
-                                }
-                            })
+                            # Verify if file data exists
+                            base64_val = file.get('base64', '')
+                            if base64_val:
+                                content_array.append({
+                                    "type": "image_url",
+                                    "image_url": {
+                                        "url": base64_val  # base64 string with data:image prefix
+                                    }
+                                })
                         
                         messages[i]['content'] = content_array
+                        
+                        # LIMIT CONTEXT WHEN IMAGES ARE PRESENT
+                        # If we have images, we should limit the number of previous messages to save tokens
+                        if len(messages) > 3:
+                            # Keep system prompt (index 0) and last 2 interactions
+                            # This drastically reduces "Total content length exceeds limit" errors
+                            messages = [messages[0]] + messages[-3:]
                         break
             
             llm7_payload = {
@@ -1938,19 +1953,34 @@ Trả về JSON theo format đã chỉ định."""
                 for i in range(len(messages) - 1, -1, -1):
                     if messages[i].get('role') == 'user':
                         current_content = messages[i].get('content', '')
-                        # Convert to vision format: content becomes array with text and images
-                        content_array: list = [{"type": "text", "text": current_content}]
+                        
+                        # Fix: Check if content is already a list (vision format)
+                        if isinstance(current_content, list):
+                            content_array = current_content
+                        else:
+                            # Convert to vision format: content becomes array with text and images
+                            content_array: list = [{"type": "text", "text": str(current_content)}]
                         
                         # Add each file as image_url
                         for file in files:
-                            content_array.append({
-                                "type": "image_url",
-                                "image_url": {
-                                    "url": file.get('base64', '')  # base64 string with data:image prefix
-                                }
-                            })
+                            # Verify if file data exists
+                            base64_val = file.get('base64', '')
+                            if base64_val:
+                                content_array.append({
+                                    "type": "image_url",
+                                    "image_url": {
+                                        "url": base64_val  # base64 string with data:image prefix
+                                    }
+                                })
                         
                         messages[i]['content'] = content_array
+                        
+                        # LIMIT CONTEXT WHEN IMAGES ARE PRESENT
+                        # If we have images, we should limit the number of previous messages to save tokens
+                        if len(messages) > 3:
+                            # Keep system prompt (index 0) and last 2 interactions
+                            # This drastically reduces "Total content length exceeds limit" errors
+                            messages = [messages[0]] + messages[-3:]
                         break
             
             llm7_payload = {
