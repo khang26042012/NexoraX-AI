@@ -3156,3 +3156,21 @@ Ready for user testing và feedback.
 
 =============================================================================
 
+
+✨ CẬP NHẬT MỚI NHẤT - 02/01/2026 (Fix lỗi xử lý ảnh trên Production):
+-----------------------------------------------------------------------------
+BT. ✅ FIX LỖI AI KHÔNG XEM ĐƯỢC ẢNH SAU KHI DEPLOY
+   
+   **BỐI CẢNH:**
+   - Sau khi deploy lên Render, AI trả lời "Xin lỗi vì sự bất tiện này! Hiện tại mình không thể xem hoặc xử lý hình ảnh do lỗi kỹ thuật."
+   - Lỗi do format payload gửi lên LLM7 API bị ghi đè bởi text description từ Gemini Vision, làm mất đi trường image_url gốc.
+
+   **GIẢI PHÁP ĐÃ TRIỂN KHAI:**
+   1. ✅ **Cập nhật logic trong handle_llm7_chat (server.py):**
+      * Sửa lỗi logic khi tích hợp mô tả ảnh từ Gemini Vision.
+      * Đảm bảo payload gửi đến LLM7 API luôn bao gồm cả 'text' và 'image_url' trong array content.
+      * Thêm bước kiểm tra và tái cấu trúc messages[i]['content'] để đảm bảo format Vision-ready.
+   
+   **KẾT QUẢ:**
+   ✅ AI đã có thể nhận diện và xử lý hình ảnh trực tiếp qua LLM7 API kết hợp với Gemini Vision hỗ trợ.
+   ✅ Format payload chuẩn xác giúp tránh lỗi "không thể xem ảnh" trên môi trường production.
