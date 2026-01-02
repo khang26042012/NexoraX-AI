@@ -3174,3 +3174,20 @@ BT. ✅ FIX LỖI AI KHÔNG XEM ĐƯỢC ẢNH SAU KHI DEPLOY
    **KẾT QUẢ:**
    ✅ AI đã có thể nhận diện và xử lý hình ảnh trực tiếp qua LLM7 API kết hợp với Gemini Vision hỗ trợ.
    ✅ Format payload chuẩn xác giúp tránh lỗi "không thể xem ảnh" trên môi trường production.
+
+✨ CẬP NHẬT MỚI NHẤT - 02/01/2026 (Fix lỗi thiếu thư viện Pillow):
+-----------------------------------------------------------------------------
+BU. ✅ CÀI ĐẶT THƯ VIỆN PILLOW (PIL) ĐỂ XỬ LÝ ẢNH
+   
+   **BỐI CẢNH:**
+   - Người dùng gặp lỗi "No module named 'PIL'" khi gọi GPT-5 để xử lý ảnh.
+   - Nguyên nhân do môi trường chạy thiếu thư viện Pillow cần thiết cho việc resize và xử lý ảnh.
+
+   **GIẢI PHÁP ĐÃ TRIỂN KHAI:**
+   1. ✅ **Cài đặt thư viện:** Đã cài đặt Pillow-12.1.0 qua pip.
+   2. ✅ **Cập nhật requirements.txt:** Thêm Pillow vào danh sách phụ thuộc để đảm bảo tính ổn định khi deploy lại.
+   3. ✅ **Restart server:** Khởi động lại workflow để hệ thống nhận diện thư viện mới.
+   
+   **KẾT QUẢ:**
+   ✅ Lỗi "No module named 'PIL'" đã được khắc phục hoàn toàn.
+   ✅ Chức năng xử lý ảnh (nén, resize) hoạt động bình thường.
