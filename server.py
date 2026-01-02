@@ -1189,8 +1189,8 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                                     img_data = base64.b64decode(encoded)
                                     img = Image.open(io.BytesIO(img_data))
                                     
-                                    # Resize if too large (max 1024px)
-                                    max_size = 1024
+                                    # Resize if too large (max 408px as requested by user)
+                                    max_size = 408
                                     if max(img.size) > max_size:
                                         img.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
                                         
@@ -1199,7 +1199,7 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                                         img.save(buffered, format="JPEG", quality=85, optimize=True)
                                         new_base64 = base64.b64encode(buffered.getvalue()).decode()
                                         file['base64'] = f"data:image/jpeg;base64,{new_base64}"
-                                        logger.info(f"Resized image from {len(encoded)} to {len(new_base64)} chars")
+                                        logger.info(f"Resized image from {len(encoded)} to {len(new_base64)} chars (max_size: 408px)")
                                 except Exception as e:
                                     logger.error(f"Error resizing image: {e}")
 
@@ -2034,8 +2034,8 @@ Trả về JSON theo format đã chỉ định."""
                                     img_data = base64.b64decode(encoded)
                                     img = Image.open(io.BytesIO(img_data))
                                     
-                                    # Resize if too large (max 1024px)
-                                    max_size = 1024
+                                    # Resize if too large (max 408px as requested by user)
+                                    max_size = 408
                                     if max(img.size) > max_size:
                                         img.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
                                         
@@ -2044,7 +2044,7 @@ Trả về JSON theo format đã chỉ định."""
                                         img.save(buffered, format="JPEG", quality=85, optimize=True)
                                         new_base64 = base64.b64encode(buffered.getvalue()).decode()
                                         file['base64'] = f"data:image/jpeg;base64,{new_base64}"
-                                        logger.info(f"Resized image from {len(encoded)} to {len(new_base64)} chars")
+                                        logger.info(f"Resized image from {len(encoded)} to {len(new_base64)} chars (max_size: 408px)")
                                 except Exception as e:
                                     logger.error(f"Error resizing image: {e}")
 
