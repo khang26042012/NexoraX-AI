@@ -1224,7 +1224,7 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                         break
             
             llm7_payload = {
-                "model": model_id,
+                "model": "gpt-5-chat",
                 "messages": messages,
                 "temperature": 0.7
             }
@@ -2032,7 +2032,7 @@ Trả về JSON theo format đã chỉ định."""
                         break
             
             llm7_payload = {
-                "model": model_id,
+                "model": "gpt-5-chat",
                 "messages": messages,
                 "temperature": 0.7
             }
@@ -2071,7 +2071,7 @@ Trả về JSON theo format đã chỉ định."""
             
             response_json = json.dumps({
                 "reply": reply,
-                "model": model_id
+                "model": "gpt-5-chat"
             }, ensure_ascii=False)
             self.wfile.write(response_json.encode('utf-8'))
             
@@ -2093,12 +2093,15 @@ Trả về JSON theo format đã chỉ định."""
             logger.error(f"LLM7 chat error: {e}")
             logger.error(f"Exception type: {type(e)}")
             logger.error(f"Exception args: {e.args}")
-            # Lấy model_id từ request_data nếu có thể
+            # Lấy model name từ request_data nếu có thể
+            model_display_name = "AI"
             try:
-                model_id_error = request_data.get('model', 'AI')
+                # Đảm bảo request_data tồn tại và có trường model
+                if 'request_data' in locals() and isinstance(request_data, dict):
+                    model_display_name = request_data.get('model', 'AI')
             except:
-                model_id_error = 'AI'
-            self._send_json_error(503, f"Xin lỗi, đã có lỗi xảy ra khi gọi {model_id_error}. Chi tiết: Lỗi hệ thống: {str(e)} Vui lòng thử lại hoặc chọn model khác.", "SYSTEM_ERROR")
+                pass
+            self._send_json_error(503, f"Xin lỗi, đã có lỗi xảy ra khi gọi {model_display_name}. Chi tiết: Lỗi hệ thống: {str(e)} Vui lòng thử lại hoặc chọn model khác.", "SYSTEM_ERROR")
 
     def handle_enhance_prompt(self):
         """Enhance prompt using Gemini AI to expand Vietnamese abbreviations and improve quality"""
