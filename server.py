@@ -664,6 +664,53 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             logger.debug(f"Error extracting username from cookie: {e}")
         return None
     
+    def get_gemini_vision_description(self, image_data_base64):
+        """
+        Sử dụng Gemini 2.5 Flash để mô tả hình ảnh trước khi gửi cho các model khác.
+        Đây là model độc lập, không ảnh hưởng đến Gemini chính trên web.
+        """
+        try:
+            api_key = get_api_key('gemini')
+            if not api_key:
+                return "Không có API Key cho Gemini Vision."
+
+            # Chuẩn bị dữ liệu base64 (bỏ prefix nếu có)
+            base64_data = image_data_base64
+            if ',' in image_data_base64:
+                base64_data = image_data_base64.split(',', 1)[1]
+
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+            
+            payload = {
+                "contents": [{
+                    "parts": [
+                        {"text": "Hãy mô tả chi tiết nội dung của hình ảnh này bằng tiếng Việt. Nếu có chữ trong ảnh, hãy trích xuất toàn bộ văn bản đó. Trả về kết quả ngắn gọn nhưng đầy đủ thông tin nhất có thể."},
+                        {
+                            "inline_data": {
+                                "mime_type": "image/jpeg",
+                                "data": base64_data
+                            }
+                        }
+                    ]
+                }]
+            }
+
+            req = urllib.request.Request(
+                url,
+                data=json.dumps(payload).encode('utf-8'),
+                headers={'Content-Type': 'application/json'}
+            )
+            
+            with urllib.request.urlopen(req, timeout=15) as response:
+                result = json.loads(response.read().decode('utf-8'))
+                if 'candidates' in result and len(result['candidates']) > 0:
+                    description = result['candidates'][0]['content']['parts'][0]['text']
+                    return description
+            return "Không thể lấy mô tả từ Gemini Vision."
+        except Exception as e:
+            logger.error(f"Gemini Vision Error: {e}")
+            return f"Lỗi xử lý ảnh: {str(e)}"
+
     def do_POST(self):
         """Handle POST requests for API proxy"""
         if self.path == '/api/gemini':
@@ -1169,8 +1216,15 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                         # If we have images, we should limit the number of previous messages to save tokens
                         # This drastically reduces "Total content length exceeds limit" errors
                         
-                        # Fix: Some images are still too large even with limited history.
-                        # We will resize the images if they are in base64 format.
+                        # Step 1: Get image description from Gemini Vision (Independent processing)
+                        image_descriptions = []
+                        for file in files:
+                            base64_val = file.get('base64', '')
+                            if base64_val:
+                                desc = self.get_gemini_vision_description(base64_val)
+                                image_descriptions.append(desc)
+                        
+                        # Step 2: Resize images for the final API call
                         import base64
                         import io
                         from PIL import Image
@@ -1206,6 +1260,11 @@ class NexoraXHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                                         logger.info(f"Resized image from {len(encoded)} to {len(new_base64)} chars (max_size: 408px, quality: 45)")
                                 except Exception as e:
                                     logger.error(f"Error resizing image: {e}")
+
+                        # Step 3: Integrate descriptions into the prompt
+                        if image_descriptions:
+                            all_desc = "\n".join([f"- Hình ảnh {idx+1}: {desc}" for idx, desc in enumerate(image_descriptions)])
+                            messages[i]['content'] = f"{current_content}\n\n[Hệ thống: Người dùng đã gửi kèm hình ảnh. Dưới đây là mô tả nội dung hình ảnh từ Gemini Vision để bạn tham khảo:]\n{all_desc}"
 
                         if len(messages) > 1:
                             # Keep system prompt (index 0) and the current user message (the one with images)
@@ -2018,8 +2077,15 @@ Trả về JSON theo format đã chỉ định."""
                         # If we have images, we should limit the number of previous messages to save tokens
                         # This drastically reduces "Total content length exceeds limit" errors
                         
-                        # Fix: Some images are still too large even with limited history.
-                        # We will resize the images if they are in base64 format.
+                        # Step 1: Get image description from Gemini Vision (Independent processing)
+                        image_descriptions = []
+                        for file in files:
+                            base64_val = file.get('base64', '')
+                            if base64_val:
+                                desc = self.get_gemini_vision_description(base64_val)
+                                image_descriptions.append(desc)
+                        
+                        # Step 2: Resize images for the final API call
                         import base64
                         import io
                         from PIL import Image
@@ -2055,6 +2121,11 @@ Trả về JSON theo format đã chỉ định."""
                                         logger.info(f"Resized image from {len(encoded)} to {len(new_base64)} chars (max_size: 408px, quality: 45)")
                                 except Exception as e:
                                     logger.error(f"Error resizing image: {e}")
+
+                        # Step 3: Integrate descriptions into the prompt
+                        if image_descriptions:
+                            all_desc = "\n".join([f"- Hình ảnh {idx+1}: {desc}" for idx, desc in enumerate(image_descriptions)])
+                            messages[i]['content'] = f"{current_content}\n\n[Hệ thống: Người dùng đã gửi kèm hình ảnh. Dưới đây là mô tả nội dung hình ảnh từ Gemini Vision để bạn tham khảo:]\n{all_desc}"
 
                         if len(messages) > 1:
                             # Keep system prompt (index 0) and the current user message (the one with images)
