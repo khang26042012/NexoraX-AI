@@ -3492,6 +3492,8 @@ Vui lòng trả lời:"""
         # Handle root path
         if self.path == '/':
             self.path = '/index.html'
+        elif self.path == '/admin':
+            self.path = '/admin.html'
         
         # Clean path
         path = unquote(self.path)
