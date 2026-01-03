@@ -1,6 +1,7 @@
 /**
  * ADMIN-DASHBOARD.JS
  * Logic điều khiển trang quản trị NexoraX AI
+ * Lưu ý: Sử dụng Relative Path (đường dẫn tương đối) cho API để đảm bảo hoạt động khi deploy lên Cloud (Render/Koyeb)
  */
 
 const ADMIN_PIN = "26042012";

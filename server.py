@@ -3494,6 +3494,12 @@ Vui lòng trả lời:"""
             self.path = '/index.html'
         elif self.path == '/admin' or self.path == '/admin/':
             self.path = '/admin.html'
+        elif self.path == '/ping':
+            self.send_response(200)
+            self.send_header('Content-type', 'text/plain')
+            self.end_headers()
+            self.wfile.write(b"pong")
+            return
         
         # Clean path
         path = unquote(self.path)
@@ -3547,8 +3553,11 @@ Vui lòng trả lời:"""
         """Override default logging to use our logger"""
         logger.info(f"{self.client_address[0]} - {format % args}")
 
-def run_server(port=5000):
+def run_server(port=None):
     """Run the NexoraX AI server"""
+    if port is None:
+        port = int(os.environ.get('PORT', 5000))
+    
     handler = NexoraXHTTPRequestHandler
     
     # Allow reuse of socket address to prevent "Address already in use" errors
