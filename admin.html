@@ -140,11 +140,16 @@
             </div>
 
             <!-- Tab: Config (Cấu hình) -->
-            <div id="tab-config" class="tab-content hidden max-w-2xl mx-auto space-y-6">
-                <div class="glass-card p-8 rounded-3xl">
-                    <h3 class="text-white font-semibold mb-6">Thiết lập khóa API</h3>
-                    <div id="configList" class="space-y-4">
-                        <!-- Sẽ được fill bằng JS -->
+            <div id="tab-config" class="tab-content hidden h-full">
+                <div class="glass-card p-4 md:p-8 rounded-3xl h-full flex flex-col">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-white font-semibold">Universal API Configurator</h3>
+                        <div class="text-[10px] text-slate-500 uppercase font-bold bg-slate-800 px-3 py-1 rounded-full border border-slate-700">
+                            Dynamic Sync Enabled
+                        </div>
+                    </div>
+                    <div id="configList" class="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto pr-2">
+                        <!-- Sẽ được fill bằng JS một cách linh hoạt -->
                     </div>
                 </div>
             </div>

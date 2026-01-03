@@ -274,24 +274,105 @@ function startLogPolling() {
 }
 
 /**
- * CẤU HÌNH (CONFIG)
+ * CẤU HÌNH (CONFIG) - Universal API Configurator
  */
 async function refreshConfig() {
     const container = document.getElementById('configList');
+    container.innerHTML = `
+        <div class="col-span-full flex items-center justify-center py-12">
+            <div class="w-8 h-8 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
+        </div>
+    `;
+
     try {
         const res = await fetch('/api/admin/config');
-        const config = await res.json();
+        const data = await res.json();
         
-        container.innerHTML = Object.entries(config).map(([key, value]) => `
-            <div class="space-y-1">
-                <label class="text-[10px] font-bold text-slate-500 uppercase">${key}</label>
-                <div class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white font-mono text-sm">
-                    ${value}
+        if (!data.success) throw new Error(data.message);
+
+        const config = data.config;
+        
+        container.innerHTML = Object.entries(config).map(([key, value]) => {
+            // Chuyển key sang Title Case (ví dụ: secret_tool_x -> Secret Tool X)
+            const label = key.split(/_|-/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+            
+            return `
+                <div class="glass-card bg-slate-900/40 p-5 rounded-2xl border border-slate-800/50 hover:border-blue-500/30 transition-all group">
+                    <div class="flex items-center justify-between mb-3">
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">${label}</label>
+                        <span class="text-[10px] text-slate-600 font-mono">key: ${key}</span>
+                    </div>
+                    
+                    <div class="relative mb-4">
+                        <input type="password" id="input-${key}" value="${value || ''}" 
+                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-mono"
+                            placeholder="Nhập API key cho ${label}...">
+                        <button onclick="toggleVisibility('${key}')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-blue-400 transition-colors">
+                            <i data-lucide="eye" id="eye-${key}" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+
+                    <button onclick="updateConfig('${key}')" 
+                        class="w-full bg-blue-600/10 hover:bg-blue-600 text-blue-400 hover:text-white py-2.5 rounded-xl text-xs font-bold transition-all border border-blue-600/20 flex items-center justify-center gap-2">
+                        <i data-lucide="save" class="w-3.5 h-3.5"></i> Lưu cấu hình
+                    </button>
                 </div>
-            </div>
-        `).join('');
-    } catch (err) { console.error('Config fetch error'); }
+            `;
+        }).join('');
+
+        // Khởi tạo lại icons sau khi render
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    } catch (err) {
+        container.innerHTML = `<div class="col-span-full text-red-400 text-sm bg-red-400/10 p-4 rounded-xl border border-red-400/20">Lỗi tải cấu hình: ${err.message}</div>`;
+    }
 }
+
+// Hàm hiển thị/ẩn mật khẩu
+window.toggleVisibility = (key) => {
+    const input = document.getElementById(`input-${key}`);
+    const icon = document.getElementById(`eye-${key}`);
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.setAttribute('data-lucide', 'eye-off');
+    } else {
+        input.type = 'password';
+        icon.setAttribute('data-lucide', 'eye');
+    }
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+};
+
+// Hàm cập nhật API Key
+window.updateConfig = async (key) => {
+    const value = document.getElementById(`input-${key}`).value;
+    const btn = event.currentTarget;
+    const originalContent = btn.innerHTML;
+
+    btn.disabled = true;
+    btn.innerHTML = `<div class="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>`;
+
+    try {
+        const res = await fetch('/api/admin/config/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ service: key, api_key: value })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            // Hiển thị thông báo thành công (tạm thời dùng alert hoặc Toast nếu có)
+            alert(`Đã cập nhật cấu hình cho ${key.toUpperCase()}!`);
+        } else {
+            throw new Error(data.message);
+        }
+    } catch (err) {
+        alert(`Lỗi: ${err.message}`);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalContent;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+};
 
 function escapeHtml(text) {
     const div = document.createElement('div');

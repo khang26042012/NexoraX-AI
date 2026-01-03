@@ -3280,30 +3280,24 @@ Hãy xử lý prompt sau:"""
             self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
 
     def handle_admin_config(self):
-        """Admin API: Get current configuration (API keys masked)"""
+        """Admin API: Get current configuration (Universal)"""
         try:
             config_data = {}
             
-            # Get current API keys (masked)
-            for service in ['gemini', 'serpapi', 'llm7']:
-                api_key = get_api_key(service)
-                if api_key:
-                    # Show only first 8 and last 4 characters
-                    if len(api_key) > 12:
-                        masked = api_key[:8] + '...' + api_key[-4:]
-                    else:
-                        masked = api_key[:4] + '...'
-                    config_data[service] = {
-                        'configured': True,
-                        'masked_key': masked,
-                        'has_override': service in config.config_override
-                    }
-                else:
-                    config_data[service] = {
-                        'configured': False,
-                        'masked_key': None,
-                        'has_override': False
-                    }
+            # Danh sách các dịch vụ mặc định
+            default_services = ['gemini', 'serpapi', 'serper', 'llm7']
+            
+            # Lấy tất cả keys từ config_override trước (đây là các key đã được admin lưu)
+            with config.config_lock:
+                for service_key, value in config.config_override.items():
+                    config_data[service_key] = value
+            
+            # Sau đó lấy các dịch vụ mặc định nếu chưa có trong override
+            for service in default_services:
+                if service not in config_data:
+                    val = get_api_key(service)
+                    if val:
+                        config_data[service] = val
             
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
@@ -3316,14 +3310,14 @@ Hãy xử lý prompt sau:"""
             }, ensure_ascii=False)
             self.wfile.write(response_json.encode('utf-8'))
             
-            logger.info("Admin API: Retrieved config")
+            logger.info("Admin API: Retrieved universal config")
             
         except Exception as e:
             logger.error(f"Admin get config error: {e}")
             self._send_json_error(503, f"Lỗi hệ thống: {str(e)}", "SYSTEM_ERROR")
 
     def handle_admin_config_update(self):
-        """Admin API: Update API key configuration"""
+        """Admin API: Update ANY API key configuration"""
         try:
             content_length = int(self.headers['Content-Length'])
             post_data = self.rfile.read(content_length)
@@ -3336,20 +3330,11 @@ Hãy xử lý prompt sau:"""
                 self._send_json_error(400, "Service không được để trống", "MISSING_SERVICE")
                 return
             
-            if service not in ['gemini', 'serpapi', 'llm7']:
-                self._send_json_error(400, f"Service '{service}' không hợp lệ. Chỉ chấp nhận: gemini, serpapi, llm7", "INVALID_SERVICE")
-                return
-            
             if not api_key:
                 self._send_json_error(400, "API key không được để trống", "MISSING_API_KEY")
                 return
             
-            # Validate API key length (basic validation)
-            if len(api_key) < 10:
-                self._send_json_error(400, "API key quá ngắn, có vẻ không hợp lệ", "INVALID_API_KEY")
-                return
-            
-            # Update config override using config.py function
+            # Cập nhật cấu hình (Hỗ trợ mọi key bất kỳ)
             if not save_config_override(service, api_key):
                 self._send_json_error(500, "Không thể lưu cấu hình", "SAVE_ERROR")
                 return
@@ -3361,11 +3346,11 @@ Hãy xử lý prompt sau:"""
             
             response_json = json.dumps({
                 "success": True,
-                "message": f"API key cho service '{service}' đã được cập nhật thành công"
+                "message": f"Cấu hình cho '{service}' đã được cập nhật thành công"
             }, ensure_ascii=False)
             self.wfile.write(response_json.encode('utf-8'))
             
-            logger.info(f"Admin API: Updated config for service '{service}'")
+            logger.info(f"Admin API: Updated universal config for service '{service}'")
             
         except json.JSONDecodeError as e:
             logger.error(f"Invalid JSON in config update request: {e}")
