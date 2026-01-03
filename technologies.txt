@@ -1,0 +1,33 @@
+# CÔNG NGHỆ CỐT LÕI - NEXORAX AI
+
+## 1. Ngôn ngữ lập trình (Programming Languages)
+- Frontend: JavaScript (ES6+), HTML5, CSS3
+- Backend: Python 3.12.x
+
+## 2. Frameworks & Kiến trúc (Frameworks & Architecture)
+- Backend Framework: Python Base HTTP Server (Lightweight, No external dependencies)
+- Frontend Framework: Vanilla JavaScript (Modular ES6 Architecture)
+- CSS Framework: TailwindCSS (via CDN)
+
+## 3. Thư viện Frontend (Frontend Libraries)
+- Marked.js: Xử lý và hiển thị Markdown (GitHub Flavored)
+- Highlight.js: Cú pháp màu cho các đoạn mã (Syntax Highlighting)
+- Canvas-confetti: Hiệu ứng pháo hoa khi hoàn thành tác vụ
+- Lucide Icons: Hệ thống icon hiện đại
+
+## 4. Công nghệ AI & APIs (AI & Integration)
+- Google Gemini API: Mô hình ngôn ngữ chính và phân tích tìm kiếm
+- Serper API: Công cụ tìm kiếm Google thời gian thực
+- LLM7.io API: Tích hợp đa mô hình (GPT-5 Mini, Gemini Search, DeepSeek...)
+- Pollinations AI: Tạo hình ảnh từ văn bản
+
+## 5. Quản lý dữ liệu & Bảo mật (Data & Security)
+- Database: Replit PostgreSQL (Neon-backed)
+- Authentication: GitHub OAuth 2.0 & Custom Session Management
+- Storage: LocalStorage (Browser persistence)
+- Security: CSRF Protection, XSS Filtering, Secure API Proxying
+
+## 6. Môi trường & Triển khai (Environment & Deployment)
+- Phát triển: Replit Environment (NixOS)
+- Triển khai (Production): Koyeb Cloud (Autoscale Deployment)
+- Web Server: Gunicorn (Production) / Python http.server (Development)
