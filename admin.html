@@ -6,236 +6,149 @@
     <title>Admin Dashboard | NexoraX AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0f172a;
-            color: #e2e8f0;
-        }
-        .terminal-view {
-            font-family: 'Fira Code', monospace;
-            background-color: #000;
-            color: #10b981;
-            box-shadow: inset 0 0 10px rgba(16, 185, 129, 0.2);
-        }
-        .neon-border {
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
-            border: 1px solid rgba(59, 130, 246, 0.5);
-        }
-        .nav-link.active {
-            background: rgba(59, 130, 246, 0.2);
-            border-left: 4px solid #3b82f6;
-            color: #3b82f6;
-        }
-        .glass-card {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        @keyframes pulse-neon {
-            0% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.2); }
-            50% { box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
-            100% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.2); }
-        }
-        .neon-pulse {
-            animation: pulse-neon 2s infinite;
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #e2e8f0; }
+        .terminal-view { font-family: 'Fira Code', monospace; background-color: #000; color: #10b981; }
+        .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .sidebar-transition { transition: transform 0.3s ease-in-out; }
     </style>
 </head>
-<body class="h-screen flex overflow-hidden">
-    <!-- Sidebar -->
-    <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col z-20">
-        <div class="p-6">
-            <div class="flex items-center gap-3">
-                <img src="assets/images/brand-logo.png" alt="Logo" class="w-10 h-10 object-contain">
-                <div>
-                    <h1 class="font-bold text-xl tracking-tight text-blue-400">NexoraX</h1>
-                    <p class="text-[10px] text-slate-500 uppercase font-semibold">Admin Panel v2.0</p>
-                </div>
+<body class="h-screen flex flex-col md:flex-row overflow-hidden">
+    
+    <!-- Màn hình khóa (Lock Screen) -->
+    <div id="lockScreen" class="fixed inset-0 z-[100] bg-slate-950 flex items-center justify-center p-4">
+        <div class="glass-card p-8 rounded-3xl w-full max-w-md text-center space-y-6">
+            <div class="w-20 h-20 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto text-blue-500">
+                <i data-lucide="lock" class="w-10 h-10"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-white">Yêu cầu xác thực</h2>
+            <p class="text-slate-400 text-sm">Vui lòng nhập mã PIN để truy cập hệ thống quản trị.</p>
+            <div class="space-y-4">
+                <input type="password" id="pinInput" maxlength="8" placeholder="••••••••" 
+                    class="w-full bg-slate-900 border border-slate-800 rounded-2xl px-6 py-4 text-center text-2xl tracking-[1em] text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all">
+                <p id="pinError" class="text-red-500 text-xs hidden">Mã PIN không chính xác. Vui lòng thử lại.</p>
+                <button id="unlockBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-2xl font-bold transition-all shadow-lg shadow-blue-900/20">
+                    Mở khóa hệ thống
+                </button>
             </div>
         </div>
-        
-        <nav class="flex-1 px-4 py-4 space-y-2">
-            <a href="#" data-tab="overview" class="nav-link active flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                <span class="font-medium">Tổng quan</span>
-            </a>
-            <a href="#" data-tab="logs" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-800">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                <span class="font-medium">Nhật ký</span>
-            </a>
-            <a href="#" data-tab="config" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-800">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                <span class="font-medium">Cấu hình API</span>
-            </a>
-        </nav>
+    </div>
 
-        <div class="p-4 border-t border-slate-800">
-            <a href="/" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-800">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                <span class="font-medium">Về trang chủ</span>
-            </a>
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-slate-900 border-r border-slate-800 z-50 transform -translate-x-full md:translate-x-0 sidebar-transition flex flex-col">
+        <div class="p-6 border-b border-slate-800 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <img src="assets/images/brand-logo.png" alt="Logo" class="w-8 h-8">
+                <span class="font-bold text-lg text-blue-400">NexoraX Admin</span>
+            </div>
+            <button id="closeSidebar" class="md:hidden text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+        <nav class="flex-1 p-4 space-y-2">
+            <button data-tab="overview" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-600/10 text-blue-400 font-medium">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Tổng quan
+            </button>
+            <button data-tab="logs" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-medium">
+                <i data-lucide="terminal" class="w-5 h-5"></i> Nhật ký hệ thống
+            </button>
+            <button data-tab="config" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-medium">
+                <i data-lucide="settings" class="w-5 h-5"></i> Cấu hình API
+            </button>
+        </nav>
+        <div class="p-4 border-t border-slate-800 text-xs text-slate-500 text-center">
+            NexoraX AI v2.0 &bull; 2026
         </div>
     </aside>
 
-    <!-- Main Content -->
-    <main class="flex-1 relative overflow-y-auto bg-slate-950 p-8">
-        <!-- Tab: Overview -->
-        <section id="tab-overview" class="tab-content space-y-8">
-            <header class="flex justify-between items-end">
-                <div>
-                    <h2 class="text-3xl font-bold text-white">Hệ thống Overview</h2>
-                    <p class="text-slate-400">Theo dõi hoạt động của NexoraX AI theo thời gian thực</p>
-                </div>
-                <div class="text-right">
-                    <p class="text-xs text-slate-500 uppercase font-bold tracking-widest">Cập nhật lần cuối</p>
-                    <p id="lastUpdate" class="text-blue-400 font-mono">--:--:--</p>
-                </div>
-            </header>
+    <!-- Overlay cho mobile sidebar -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden"></div>
 
-            <!-- Stats Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="glass-card p-6 rounded-3xl neon-pulse">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="p-3 bg-blue-500/10 rounded-2xl text-blue-500">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                        </div>
-                    </div>
-                    <h3 class="text-slate-400 text-sm font-medium">Tổng người dùng</h3>
-                    <p id="stat-users" class="text-3xl font-bold text-white mt-1">0</p>
+    <!-- Main Content Area -->
+    <div id="dashboardContent" class="flex-1 flex flex-col min-w-0 opacity-0 transition-opacity duration-500 h-full">
+        <!-- Top Bar -->
+        <header class="h-16 border-b border-slate-800 bg-slate-900/50 backdrop-blur-md flex items-center px-4 md:px-8 shrink-0">
+            <button id="openSidebar" class="md:hidden text-slate-400 mr-4">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+            <h2 id="currentTabTitle" class="text-lg font-semibold text-white">Tổng quan hệ thống</h2>
+            <div class="ml-auto flex items-center gap-4">
+                <div id="connectionStatus" class="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-green-500 bg-green-500/10 px-3 py-1 rounded-full border border-green-500/20">
+                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> Online
                 </div>
-                <div class="glass-card p-6 rounded-3xl">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="p-3 bg-green-500/10 rounded-2xl text-green-500">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                        </div>
+            </div>
+        </header>
+
+        <!-- Dynamic Content -->
+        <main class="flex-1 overflow-y-auto p-4 md:p-8">
+            <!-- Tab: Overview -->
+            <div id="tab-overview" class="tab-content space-y-8">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="glass-card p-6 rounded-3xl">
+                        <div class="text-slate-400 text-xs font-bold uppercase mb-2">Tổng yêu cầu</div>
+                        <div id="totalCalls" class="text-3xl font-bold text-white">0</div>
+                        <div class="text-[10px] text-blue-400 mt-2 flex items-center gap-1"><i data-lucide="trending-up" class="w-3 h-3"></i> Cập nhật liên tục</div>
                     </div>
-                    <h3 class="text-slate-400 text-sm font-medium">Phiên hoạt động</h3>
-                    <p id="stat-sessions" class="text-3xl font-bold text-white mt-1">0</p>
+                    <div class="glass-card p-6 rounded-3xl">
+                        <div class="text-slate-400 text-xs font-bold uppercase mb-2">Người dùng duy nhất</div>
+                        <div id="uniqueUsers" class="text-3xl font-bold text-white">0</div>
+                        <div class="text-[10px] text-purple-400 mt-2 flex items-center gap-1"><i data-lucide="users" class="w-3 h-3"></i> Tài khoản đã đăng ký</div>
+                    </div>
+                    <div class="glass-card p-6 rounded-3xl sm:col-span-2 lg:col-span-1">
+                        <div class="text-slate-400 text-xs font-bold uppercase mb-2">Phiên hoạt động</div>
+                        <div id="activeSessions" class="text-3xl font-bold text-white">0</div>
+                        <div class="text-[10px] text-green-400 mt-2 flex items-center gap-1"><i data-lucide="zap" class="w-3 h-3"></i> Đang trực tuyến</div>
+                    </div>
                 </div>
-                <div class="glass-card p-6 rounded-3xl">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="p-3 bg-purple-500/10 rounded-2xl text-purple-500">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path></svg>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="glass-card p-8 rounded-3xl">
+                        <h3 class="text-white font-semibold mb-6 flex items-center gap-2"><i data-lucide="pie-chart" class="w-5 h-5 text-blue-400"></i> Phân bổ Mô hình AI</h3>
+                        <div class="h-64 relative">
+                            <canvas id="modelChart"></canvas>
                         </div>
                     </div>
-                    <h3 class="text-slate-400 text-sm font-medium">Tổng yêu cầu</h3>
-                    <p id="stat-requests" class="text-3xl font-bold text-white mt-1">0</p>
+                    <div class="glass-card p-8 rounded-3xl">
+                        <h3 class="text-white font-semibold mb-6 flex items-center gap-2"><i data-lucide="bar-chart-3" class="w-5 h-5 text-purple-400"></i> Hoạt động người dùng</h3>
+                        <div class="h-64 relative">
+                            <canvas id="userChart"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Charts Grid -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="glass-card p-8 rounded-3xl border border-slate-800">
-                    <h3 class="text-lg font-semibold text-white mb-6 flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-                        Phân bổ Model AI
-                    </h3>
-                    <div class="relative h-64">
-                        <canvas id="modelChart"></canvas>
-                    </div>
-                </div>
-                <div class="glass-card p-8 rounded-3xl border border-slate-800">
-                    <h3 class="text-lg font-semibold text-white mb-6 flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-purple-500"></span>
-                        Xu hướng sử dụng
-                    </h3>
-                    <div class="relative h-64">
-                        <canvas id="usageChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Tab: Logs -->
-        <section id="tab-logs" class="tab-content hidden h-full flex flex-col">
-            <header class="mb-6 flex justify-between items-center">
-                <div>
-                    <h2 class="text-3xl font-bold text-white">Nhật ký hệ thống</h2>
-                    <p class="text-slate-400 font-mono text-sm">Real-time log stream từ server.py</p>
-                </div>
-                <div class="flex gap-4">
-                    <button id="clearLogsBtn" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl transition-all text-sm font-medium border border-slate-700">Clear View</button>
-                    <div class="flex items-center gap-2 bg-green-500/10 text-green-500 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-green-500/20">
-                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                        Live Connection
-                    </div>
-                </div>
-            </header>
-            
-            <div class="flex-1 bg-black rounded-3xl border border-slate-800 overflow-hidden flex flex-col shadow-2xl">
-                <div class="bg-slate-900 px-4 py-2 border-b border-slate-800 flex items-center gap-2">
-                    <div class="flex gap-1.5">
-                        <div class="w-3 h-3 rounded-full bg-red-500/50"></div>
-                        <div class="w-3 h-3 rounded-full bg-yellow-500/50"></div>
-                        <div class="w-3 h-3 rounded-full bg-green-500/50"></div>
-                    </div>
-                    <span class="text-[10px] text-slate-500 font-mono ml-2 uppercase tracking-tighter">terminal@nexorax-server</span>
-                </div>
-                <div id="logsContainer" class="flex-1 overflow-y-auto p-6 text-sm terminal-view scroll-smooth">
-                    <div class="text-slate-600 italic mb-2">// Đang khởi tạo luồng dữ liệu...</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Tab: Config -->
-        <section id="tab-config" class="tab-content hidden max-w-4xl mx-auto">
-            <header class="mb-10">
-                <h2 class="text-3xl font-bold text-white">Cấu hình API & Hệ thống</h2>
-                <p class="text-slate-400">Quản lý các Key bảo mật và thiết lập lõi (Hot-reload enabled)</p>
-            </header>
-
-            <div class="space-y-6">
-                <form id="configForm" class="space-y-6">
-                    <div class="glass-card p-8 rounded-3xl space-y-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="space-y-2">
-                                <label class="text-sm font-medium text-slate-400 ml-1">Google Gemini Key</label>
-                                <input type="password" name="GEMINI_API_KEY" placeholder="Bắt đầu bằng AIza..." class="w-full bg-slate-900 border border-slate-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-mono">
+            <!-- Tab: Logs -->
+            <div id="tab-logs" class="tab-content hidden h-full flex flex-col">
+                <div class="flex-1 bg-black border border-slate-800 rounded-3xl overflow-hidden flex flex-col">
+                    <div class="bg-slate-900 px-4 py-2 border-b border-slate-800 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="flex gap-1.5">
+                                <div class="w-2.5 h-2.5 rounded-full bg-red-500/50"></div>
+                                <div class="w-2.5 h-2.5 rounded-full bg-yellow-500/50"></div>
+                                <div class="w-2.5 h-2.5 rounded-full bg-green-500/50"></div>
                             </div>
-                            <div class="space-y-2">
-                                <label class="text-sm font-medium text-slate-400 ml-1">Serper (Search) Key</label>
-                                <input type="password" name="SERPER_API_KEY" class="w-full bg-slate-900 border border-slate-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-mono">
-                            </div>
-                            <div class="space-y-2">
-                                <label class="text-sm font-medium text-slate-400 ml-1">LLM7 API Key</label>
-                                <input type="password" name="LLM7_API_KEY" class="w-full bg-slate-900 border border-slate-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-mono">
-                            </div>
-                            <div class="space-y-2">
-                                <label class="text-sm font-medium text-slate-400 ml-1">GitHub Client ID</label>
-                                <input type="text" name="GITHUB_CLIENT_ID" class="w-full bg-slate-900 border border-slate-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-mono">
-                            </div>
+                            <span class="text-[10px] text-slate-500 font-mono ml-2">server@nexorax-ai</span>
                         </div>
+                        <button id="clearLogs" class="text-[10px] text-slate-500 hover:text-white transition-all uppercase font-bold">Clear</button>
                     </div>
-
-                    <div class="flex justify-end items-center gap-4">
-                        <p class="text-xs text-slate-500 italic">* Các key được mã hóa và ẩn đi vì lý do bảo mật.</p>
-                        <button type="submit" class="px-10 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold transition-all shadow-lg shadow-blue-900/20 active:scale-95">
-                            Lưu cấu hình & Reload
-                        </button>
-                    </div>
-                </form>
-
-                <div class="bg-blue-500/5 border border-blue-500/10 rounded-2xl p-6 flex items-start gap-4">
-                    <div class="text-blue-500 mt-1">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    </div>
-                    <div>
-                        <h4 class="text-blue-400 font-semibold text-sm">Thông tin bảo mật</h4>
-                        <p class="text-xs text-slate-500 leading-relaxed mt-1">Mọi thay đổi trong phần này sẽ có hiệu lực ngay lập tức trên Server mà không cần khởi động lại dịch vụ. Vui lòng kiểm tra kỹ Key trước khi lưu để tránh gián đoạn AI.</p>
+                    <div id="logsContainer" class="flex-1 overflow-y-auto p-4 text-xs terminal-view scroll-smooth">
+                        <div class="text-slate-700 italic">// Đang kết nối tới luồng dữ liệu...</div>
                     </div>
                 </div>
             </div>
-        </section>
-    </main>
 
-    <!-- Toast -->
-    <div id="toast" class="fixed bottom-8 right-8 translate-y-20 opacity-0 transition-all duration-300 z-50">
-        <div class="bg-blue-600 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3">
-            <span id="toastIcon">✨</span>
-            <span id="toastMessage" class="font-medium text-sm">Thông báo từ hệ thống</span>
-        </div>
+            <!-- Tab: Config (Cấu hình) -->
+            <div id="tab-config" class="tab-content hidden max-w-2xl mx-auto space-y-6">
+                <div class="glass-card p-8 rounded-3xl">
+                    <h3 class="text-white font-semibold mb-6">Thiết lập khóa API</h3>
+                    <div id="configList" class="space-y-4">
+                        <!-- Sẽ được fill bằng JS -->
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
 
     <script type="module" src="src/js/admin-dashboard.js"></script>

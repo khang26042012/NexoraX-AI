@@ -1,142 +1,238 @@
 /**
  * ADMIN-DASHBOARD.JS
- * Quản lý logic cho giao diện Admin NexoraX AI
+ * Logic điều khiển trang quản trị NexoraX AI
  */
 
+const ADMIN_PIN = "26042012";
+
+// Quản lý trạng thái Dashboard
+const state = {
+    isUnlocked: false,
+    currentTab: 'overview',
+    charts: {
+        model: null,
+        user: null
+    }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
-    initTabs();
-    initOverview();
-    initLogs();
-    initConfig();
+    // Khởi tạo Lucide Icons
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    
+    // Kiểm tra trạng thái đã đăng nhập từ sessionStorage
+    if (sessionStorage.getItem('admin_session') === 'true') {
+        unlockDashboard();
+    }
+
+    initAuthLogic();
+    initSidebarLogic();
+    initTabLogic();
 });
 
-// ===================================
-// TAB SYSTEM
-// ===================================
-function initTabs() {
-    const navLinks = document.querySelectorAll('.nav-link');
-    const sections = document.querySelectorAll('.tab-content');
+/**
+ * LOGIC XÁC THỰC PIN
+ */
+function initAuthLogic() {
+    const unlockBtn = document.getElementById('unlockBtn');
+    const pinInput = document.getElementById('pinInput');
+    const errorMsg = document.getElementById('pinError');
 
-    navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const tabId = link.getAttribute('data-tab');
+    const handleUnlock = () => {
+        if (pinInput.value === ADMIN_PIN) {
+            sessionStorage.setItem('admin_session', 'true');
+            unlockDashboard();
+        } else {
+            errorMsg.classList.remove('hidden');
+            pinInput.classList.add('border-red-500');
+            pinInput.value = '';
+            setTimeout(() => {
+                errorMsg.classList.add('hidden');
+                pinInput.classList.remove('border-red-500');
+            }, 3000);
+        }
+    };
 
-            // Cập nhật UI menu
-            navLinks.forEach(l => {
-                l.classList.remove('active', 'text-white', 'bg-slate-800');
-                l.classList.add('text-slate-400');
-            });
-            link.classList.add('active', 'text-white');
-            link.classList.remove('text-slate-400');
+    unlockBtn.addEventListener('click', handleUnlock);
+    pinInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleUnlock();
+    });
+}
 
-            // Chuyển tab nội dung
-            sections.forEach(s => s.classList.add('hidden'));
+function unlockDashboard() {
+    state.isUnlocked = true;
+    document.getElementById('lockScreen').style.display = 'none';
+    document.getElementById('dashboardContent').style.opacity = '1';
+    
+    // Khởi động fetch dữ liệu
+    refreshData();
+    setInterval(refreshData, 5000); // Polling mỗi 5s
+    startLogPolling();
+}
+
+/**
+ * LOGIC SIDEBAR (MOBILE RESPONSIVE)
+ */
+function initSidebarLogic() {
+    const sidebar = document.getElementById('sidebar');
+    const openBtn = document.getElementById('openSidebar');
+    const closeBtn = document.getElementById('closeSidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+
+    const toggleSidebar = (isOpen) => {
+        if (isOpen) {
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+        } else {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        }
+    };
+
+    openBtn.addEventListener('click', () => toggleSidebar(true));
+    closeBtn.addEventListener('click', () => toggleSidebar(false));
+    overlay.addEventListener('click', () => toggleSidebar(false));
+
+    // Đóng sidebar khi click chọn tab trên mobile
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth < 768) toggleSidebar(false);
+        });
+    });
+}
+
+/**
+ * LOGIC CHUYỂN TAB
+ */
+function initTabLogic() {
+    const tabs = document.querySelectorAll('.nav-link');
+    const contents = document.querySelectorAll('.tab-content');
+    const title = document.getElementById('currentTabTitle');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabId = tab.getAttribute('data-tab');
+            state.currentTab = tabId;
+
+            // Cập nhật UI nút
+            tabs.forEach(t => t.classList.remove('bg-blue-600/10', 'text-blue-400'));
+            tabs.forEach(t => t.classList.add('text-slate-400'));
+            tab.classList.remove('text-slate-400');
+            tab.classList.add('bg-blue-600/10', 'text-blue-400');
+
+            // Hiển thị nội dung
+            contents.forEach(c => c.classList.add('hidden'));
             document.getElementById(`tab-${tabId}`).classList.remove('hidden');
 
-            // Trigger data fetch tùy theo tab
-            if (tabId === 'overview') refreshOverview();
+            // Cập nhật tiêu đề
+            const titles = {
+                'overview': 'Tổng quan hệ thống',
+                'logs': 'Nhật ký hệ thống',
+                'config': 'Cấu hình API'
+            };
+            title.textContent = titles[tabId];
+
             if (tabId === 'config') refreshConfig();
         });
     });
 }
 
-// ===================================
-// OVERVIEW & CHARTS
-// ===================================
-let modelChart = null;
-let usageChart = null;
+/**
+ * FETCH DỮ LIỆU & RENDER BIỂU ĐỒ
+ */
+async function refreshData() {
+    if (!state.isUnlocked || state.currentTab !== 'overview') return;
 
-async function initOverview() {
-    refreshOverview();
-    // Refresh stats mỗi 30s
-    setInterval(refreshOverview, 30000);
-}
-
-async function refreshOverview() {
     try {
-        const res = await fetch('/api/admin/stats');
-        const data = await res.json();
+        const [usageRes, statsRes] = await Promise.all([
+            fetch('/api/admin/usage'),
+            fetch('/api/admin/stats')
+        ]);
+
+        const usage = await usageRes.json();
+        const stats = await statsRes.json();
+
+        // Cập nhật số liệu Cards
+        document.getElementById('totalCalls').textContent = usage.total_calls || 0;
+        document.getElementById('uniqueUsers').textContent = usage.unique_users || 0;
+        document.getElementById('activeSessions').textContent = stats.active_sessions || 0;
+
+        // Render Biểu đồ Model AI
+        renderModelChart(usage.models_stats || {});
         
-        if (!data) return;
+        // Render Biểu đồ Người dùng (Top 5)
+        renderUserChart(usage.users_stats || {});
 
-        // Update cards
-        document.getElementById('stat-users').textContent = data.total_users || 0;
-        document.getElementById('stat-sessions').textContent = data.active_sessions || 0;
-        document.getElementById('stat-requests').textContent = data.total_requests || 0;
-        document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
-
-        // Render Charts
-        renderModelChart(data.usage_stats?.per_model || {});
-        renderUsageChart(data.usage_stats?.daily_trends || []);
     } catch (err) {
-        console.error('Lỗi fetch stats:', err);
-        showToast('❌ Không thể kết nối tới server API.', 'error');
+        console.error('Lỗi fetch dữ liệu admin:', err);
     }
 }
 
-function renderModelChart(modelData) {
+function renderModelChart(data) {
     const ctx = document.getElementById('modelChart').getContext('2d');
-    const labels = Object.keys(modelData);
-    const values = Object.values(modelData);
+    const labels = Object.keys(data);
+    const values = Object.values(data);
 
-    if (modelChart) modelChart.destroy();
+    if (state.charts.model) {
+        state.charts.model.data.labels = labels;
+        state.charts.model.data.datasets[0].data = values;
+        state.charts.model.update();
+        return;
+    }
 
-    modelChart = new Chart(ctx, {
-        type: 'doughnut',
+    state.charts.model = new Chart(ctx, {
+        type: 'pie',
         data: {
             labels: labels,
             datasets: [{
                 data: values,
-                backgroundColor: [
-                    '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6366f1'
-                ],
-                borderWidth: 0,
-                hoverOffset: 20
+                backgroundColor: ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6366f1'],
+                borderWidth: 0
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    position: 'right',
-                    labels: { color: '#94a3b8', font: { size: 11, family: 'Inter' }, usePointStyle: true, padding: 15 }
-                }
-            },
-            cutout: '70%'
+                legend: { position: 'right', labels: { color: '#94a3b8', font: { size: 10 } } }
+            }
         }
     });
 }
 
-function renderUsageChart(trends) {
-    const ctx = document.getElementById('usageChart').getContext('2d');
+function renderUserChart(data) {
+    const ctx = document.getElementById('userChart').getContext('2d');
     
-    // Mock data nếu backend chưa có lịch sử theo ngày
-    const labels = trends.length > 0 ? trends.map(t => t.date) : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const values = trends.length > 0 ? trends.map(t => t.count) : [12, 19, 15, 25, 22, 30, 45];
+    // Lấy top 7 người dùng active nhất
+    const sortedUsers = Object.entries(data)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 7);
+    
+    const labels = sortedUsers.map(u => u[0]);
+    const values = sortedUsers.map(u => u[1]);
 
-    if (usageChart) usageChart.destroy();
+    if (state.charts.user) {
+        state.charts.user.data.labels = labels;
+        state.charts.user.data.datasets[0].data = values;
+        state.charts.user.update();
+        return;
+    }
 
-    usageChart = new Chart(ctx, {
+    state.charts.user = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: labels,
             datasets: [{
                 label: 'Requests',
                 data: values,
-                backgroundColor: 'rgba(59, 130, 246, 0.5)',
-                borderColor: '#3b82f6',
-                borderWidth: 2,
-                borderRadius: 8,
-                barThickness: 15
+                backgroundColor: '#8b5cf6',
+                borderRadius: 4
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } },
+                y: { beginAtZero: true, grid: { color: '#1e293b' }, ticks: { color: '#64748b' } },
                 x: { grid: { display: false }, ticks: { color: '#64748b' } }
             },
             plugins: { legend: { display: false } }
@@ -144,130 +240,56 @@ function renderUsageChart(trends) {
     });
 }
 
-// ===================================
-// LIVE LOGS
-// ===================================
-let logInterval = null;
-
-function initLogs() {
+/**
+ * NHẬT KÝ (LOGS)
+ */
+function startLogPolling() {
     const container = document.getElementById('logsContainer');
-    const clearBtn = document.getElementById('clearLogsBtn');
-
-    clearBtn.addEventListener('click', () => {
-        container.innerHTML = '<div class="text-slate-600 italic mb-2">// View đã được làm sạch...</div>';
+    document.getElementById('clearLogs').addEventListener('click', () => {
+        container.innerHTML = '<div class="text-slate-700 italic">// View cleared...</div>';
     });
 
-    // Start polling khi tab logs được click (xử lý bởi initTabs gọi refresh)
-    // Nhưng vì logs cần real-time, ta sẽ chạy ngầm hoặc chạy khi tab active
-    logInterval = setInterval(fetchLogs, 3000);
-}
-
-async function fetchLogs() {
-    const logsTab = document.getElementById('tab-logs');
-    if (logsTab.classList.contains('hidden')) return;
-
-    try {
-        const res = await fetch('/api/admin/logs?limit=50');
-        const data = await res.json();
-        
-        if (data && data.logs) {
-            renderLogs(data.logs);
-        }
-    } catch (err) {
-        console.error('Lỗi fetch logs:', err);
-    }
-}
-
-function renderLogs(logs) {
-    const container = document.getElementById('logsContainer');
-    const isAtBottom = container.scrollHeight - container.clientHeight <= container.scrollTop + 50;
-
-    container.innerHTML = logs.map(log => {
-        let colorClass = 'text-green-500';
-        if (log.includes('ERROR')) colorClass = 'text-red-400';
-        if (log.includes('WARNING')) colorClass = 'text-yellow-400';
-        if (log.includes('INFO')) colorClass = 'text-blue-400';
-        
-        return `<div class="mb-1 font-mono"><span class="text-slate-700 select-none mr-2">➜</span><span class="${colorClass}">${escapeHtml(log)}</span></div>`;
-    }).join('');
-
-    if (isAtBottom) {
-        container.scrollTop = container.scrollHeight;
-    }
-}
-
-// ===================================
-// CONFIG MANAGEMENT
-// ===================================
-function initConfig() {
-    const form = document.getElementById('configForm');
-    
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(form);
-        const config = {};
-        
-        formData.forEach((value, key) => {
-            if (value.trim()) config[key] = value.trim();
-        });
+    setInterval(async () => {
+        if (state.currentTab !== 'logs') return;
 
         try {
-            const res = await fetch('/api/admin/config/update', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(config)
-            });
+            const res = await fetch('/api/admin/logs?limit=40');
+            const data = await res.json();
             
-            const result = await res.json();
-            if (result.status === 'success') {
-                showToast('🚀 Cấu hình đã được cập nhật thành công!');
-                refreshConfig(); // Tải lại để xem masked keys
-            } else {
-                showToast('❌ Lỗi: ' + result.message, 'error');
+            if (data && data.logs) {
+                const logsHtml = data.logs.map(log => {
+                    let color = 'text-green-500';
+                    if (log.includes('ERROR')) color = 'text-red-400';
+                    if (log.includes('WARNING')) color = 'text-yellow-400';
+                    return `<div class="mb-1 ${color} font-mono">${escapeHtml(log)}</div>`;
+                }).join('');
+                
+                const isAtBottom = container.scrollHeight - container.clientHeight <= container.scrollTop + 50;
+                container.innerHTML = logsHtml;
+                if (isAtBottom) container.scrollTop = container.scrollHeight;
             }
-        } catch (err) {
-            showToast('❌ Lỗi kết nối server.', 'error');
-        }
-    });
+        } catch (err) { console.error('Log fetch error'); }
+    }, 3000);
 }
 
+/**
+ * CẤU HÌNH (CONFIG)
+ */
 async function refreshConfig() {
+    const container = document.getElementById('configList');
     try {
         const res = await fetch('/api/admin/config');
-        const data = await res.json();
+        const config = await res.json();
         
-        if (data) {
-            const inputs = document.querySelectorAll('#configForm input');
-            inputs.forEach(input => {
-                const key = input.name;
-                if (data[key]) {
-                    input.placeholder = data[key]; // Hiển thị masked value làm placeholder
-                    input.value = ''; // Để trống để user nhập mới nếu muốn
-                }
-            });
-        }
-    } catch (err) {
-        console.error('Lỗi fetch config:', err);
-    }
-}
-
-// ===================================
-// UTILS
-// ===================================
-function showToast(message, type = 'success') {
-    const toast = document.getElementById('toast');
-    const msgEl = document.getElementById('toastMessage');
-    const iconEl = document.getElementById('toastIcon');
-
-    msgEl.textContent = message;
-    iconEl.textContent = type === 'success' ? '✨' : '⚠️';
-    toast.querySelector('div').className = `${type === 'success' ? 'bg-blue-600' : 'bg-red-600'} text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3`;
-
-    toast.classList.remove('translate-y-20', 'opacity-0');
-    
-    setTimeout(() => {
-        toast.classList.add('translate-y-20', 'opacity-0');
-    }, 3000);
+        container.innerHTML = Object.entries(config).map(([key, value]) => `
+            <div class="space-y-1">
+                <label class="text-[10px] font-bold text-slate-500 uppercase">${key}</label>
+                <div class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white font-mono text-sm">
+                    ${value}
+                </div>
+            </div>
+        `).join('');
+    } catch (err) { console.error('Config fetch error'); }
 }
 
 function escapeHtml(text) {
